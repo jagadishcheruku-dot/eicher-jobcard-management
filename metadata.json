@@ -1,0 +1,8 @@
+{
+  "name": "Eicher Job Card & Spares Management",
+  "description": "Standalone Eicher tractor job card, customer, complaints, staff and spares management application with Telugu localization",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

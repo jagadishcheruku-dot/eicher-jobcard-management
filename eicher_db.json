@@ -1,0 +1,74 @@
+{
+  "customers": [],
+  "spares": [
+    {
+      "id": 1,
+      "part_key": "d3540010",
+      "part_no": "D3540010",
+      "part_desc": "ENGINE OIL FILTER ELEMENT",
+      "mrp": "240",
+      "category": "Filters",
+      "full_data": "{\"partNo\":\"D3540010\",\"partDesc\":\"ENGINE OIL FILTER ELEMENT\",\"mrp\":\"240\",\"category\":\"Filters\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    },
+    {
+      "id": 2,
+      "part_key": "d3540020",
+      "part_no": "D3540020",
+      "part_desc": "DIESEL FILTER PRIMARY",
+      "mrp": "180",
+      "category": "Filters",
+      "full_data": "{\"partNo\":\"D3540020\",\"partDesc\":\"DIESEL FILTER PRIMARY\",\"mrp\":\"180\",\"category\":\"Filters\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    },
+    {
+      "id": 3,
+      "part_key": "d3540030",
+      "part_no": "D3540030",
+      "part_desc": "DIESEL FILTER SECONDARY",
+      "mrp": "195",
+      "category": "Filters",
+      "full_data": "{\"partNo\":\"D3540030\",\"partDesc\":\"DIESEL FILTER SECONDARY\",\"mrp\":\"195\",\"category\":\"Filters\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    },
+    {
+      "id": 4,
+      "part_key": "e1020045",
+      "part_no": "E1020045",
+      "part_desc": "FAN BELT B-44",
+      "mrp": "350",
+      "category": "Belts",
+      "full_data": "{\"partNo\":\"E1020045\",\"partDesc\":\"FAN BELT B-44\",\"mrp\":\"350\",\"category\":\"Belts\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    },
+    {
+      "id": 5,
+      "part_key": "e2030090",
+      "part_no": "E2030090",
+      "part_desc": "CLUTCH PLATE 11 INCH",
+      "mrp": "2850",
+      "category": "Clutch",
+      "full_data": "{\"partNo\":\"E2030090\",\"partDesc\":\"CLUTCH PLATE 11 INCH\",\"mrp\":\"2850\",\"category\":\"Clutch\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    },
+    {
+      "id": 6,
+      "part_key": "e4050012",
+      "part_no": "E4050012",
+      "part_desc": "ENGINE OIL 15W40 (7.5 LTR)",
+      "mrp": "2650",
+      "category": "Oils & Lubricants",
+      "full_data": "{\"partNo\":\"E4050012\",\"partDesc\":\"ENGINE OIL 15W40 (7.5 LTR)\",\"mrp\":\"2650\",\"category\":\"Oils & Lubricants\"}",
+      "updated_at": "2026-09-04T10:03:22.498Z"
+    }
+  ],
+  "jobcards": [],
+  "complaints": [],
+  "staff": [],
+  "staff_attendance": {},
+  "app_settings": {
+    "dealershipCode": "4731",
+    "defaultBranch": "Tiruvuru"
+  },
+  "service_camps": []
+}

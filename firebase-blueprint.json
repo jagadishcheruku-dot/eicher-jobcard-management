@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "Staff": {
+      "title": "Staff",
+      "description": "Dealership mechanics, technicians, and workshop staff members",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "role": { "type": "string" },
+        "mobileNumber": { "type": "string" },
+        "village": { "type": "string" },
+        "mandal": { "type": "string" },
+        "dateOfJoining": { "type": "string" },
+        "supervisor": { "type": "string" },
+        "branch": { "type": "string" },
+        "address": { "type": "string" },
+        "status": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "JobCard": {
+      "title": "JobCard",
+      "description": "Tractor service job card entries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobNo": { "type": "string" },
+        "onlineJobCardNo": { "type": "string" },
+        "chassisNo": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["chassisNo"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Tractor customer master records",
+      "type": "object",
+      "properties": {
+        "chassisNo": { "type": "string" },
+        "custName": { "type": "string" },
+        "mobileNumber": { "type": "string" }
+      },
+      "required": ["chassisNo"]
+    },
+    "Complaint": {
+      "title": "Complaint",
+      "description": "Customer complaints and service requests",
+      "type": "object",
+      "properties": {
+        "complaintId": { "type": "string" },
+        "chassisNo": { "type": "string" },
+        "customerName": { "type": "string" },
+        "problemDescription": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["chassisNo"]
+    },
+    "MasterData": {
+      "title": "MasterData",
+      "description": "Master data chunks and metadata",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/staff/{staffId}": {
+      "schema": "Staff",
+      "description": "Staff and mechanic documents"
+    },
+    "/jobcards/{cardId}": {
+      "schema": "JobCard",
+      "description": "Job card records"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Customer records"
+    },
+    "/complaints/{complaintId}": {
+      "schema": "Complaint",
+      "description": "Customer service complaints"
+    },
+    "/customers_master/{chunkId}": {
+      "schema": "MasterData",
+      "description": "Customer master bulk data chunks"
+    },
+    "/spares_master/{chunkId}": {
+      "schema": "MasterData",
+      "description": "Spares master bulk data chunks"
+    },
+    "/app_master_data/{docId}": {
+      "schema": "MasterData",
+      "description": "Application master data metadata"
+    },
+    "/attendance/{docId}": {
+      "schema": "MasterData",
+      "description": "Staff attendance documents"
+    },
+    "/staff_attendance/{attendanceId}": {
+      "schema": "MasterData",
+      "description": "Staff attendance logs"
+    },
+    "/service_camps/{campId}": {
+      "schema": "MasterData",
+      "description": "Service camp planning documents"
+    }
+  }
+}
