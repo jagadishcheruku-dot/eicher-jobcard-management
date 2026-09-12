@@ -74,6 +74,35 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
     }
   }, [customer, isOpen]);
 
+  // Extract past followup & call history.
+  // NOTE: every hook must run BEFORE the `isOpen` early return below. Otherwise the
+  // hook count changes between renders and React throws error #310
+  // ("Rendered more hooks than during the previous render"), which the ErrorBoundary
+  // turns into the "reload" screen for the whole Free Service Followup view.
+  const existingFollowups: any[] = useMemo(() => {
+    if (!customer) return [];
+    const hist = customer.followupHistory || customer.history || customer.rec?.followupHistory;
+    let list: any[] = [];
+    if (Array.isArray(hist)) list = hist;
+    else if (typeof hist === "string") {
+      try {
+        list = JSON.parse(hist);
+      } catch {
+        list = [];
+      }
+    }
+    if (list.length === 0 && (customer.lastRemarks || customer.remarks || customer.notes)) {
+      list = [{
+        callDate: customer.lastCallDate || customer.callDate || "",
+        remarks: customer.lastRemarks || customer.remarks || customer.notes,
+        nextCallDate: customer.nextCallDate || customer.preferredDate,
+        calledBy: customer.lastCalledBy || customer.calledBy || "Staff",
+        status: customer.lastCallStatus || customer.status || "Completed"
+      }];
+    }
+    return list;
+  }, [customer]);
+
   if (!isOpen || !customer) return null;
 
   // Helper extraction
@@ -105,31 +134,6 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
     const cardCh = String(c.chassisNo || c.chassis || "").trim().toLowerCase();
     return cardCh && chassisNo && cardCh.includes(chassisNo.toLowerCase());
   });
-
-  // Extract past followup & call history
-  const existingFollowups: any[] = useMemo(() => {
-    if (!customer) return [];
-    const hist = customer.followupHistory || customer.history || customer.rec?.followupHistory;
-    let list: any[] = [];
-    if (Array.isArray(hist)) list = hist;
-    else if (typeof hist === "string") {
-      try {
-        list = JSON.parse(hist);
-      } catch {
-        list = [];
-      }
-    }
-    if (list.length === 0 && (customer.lastRemarks || customer.remarks || customer.notes)) {
-      list = [{
-        callDate: customer.lastCallDate || customer.callDate || "",
-        remarks: customer.lastRemarks || customer.remarks || customer.notes,
-        nextCallDate: customer.nextCallDate || customer.preferredDate,
-        calledBy: customer.lastCalledBy || customer.calledBy || "Staff",
-        status: customer.lastCallStatus || customer.status || "Completed"
-      }];
-    }
-    return list;
-  }, [customer]);
 
   // Handle Save
   const handleSaveCallLogSubmit = async (e: React.FormEvent) => {
