@@ -1554,9 +1554,9 @@ function gY() {
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const cleaned = parsed.filter((item: string) => item && item !== "customer_data");
+            const cleaned = parsed.filter(Boolean);
             const expanded = cleaned.flatMap((item: string) =>
-              (item === "customer_data" || item === "job_cards_data") ? [item] : [item]
+              (item === "customers_and_jobcards" || item === "saved_cards") ? ["customer_data", "job_cards_data"] : [item]
             );
             const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
             const finalOrder = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
@@ -1601,9 +1601,9 @@ function gY() {
           if (snap.exists()) {
             const data = snap.data();
             if (Array.isArray(data.order) && data.order.length > 0) {
-              const cleaned = data.order.filter((item: string) => item && item !== "customer_data");
+              const cleaned = data.order.filter(Boolean);
               const expanded = cleaned.flatMap((item: string) =>
-                (item === "customer_data" || item === "job_cards_data") ? [item] : [item]
+                (item === "customers_and_jobcards" || item === "saved_cards") ? ["customer_data", "job_cards_data"] : [item]
               );
               const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
               const valid = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
@@ -10827,11 +10827,11 @@ ${b}`));
                         className: "h-6 w-[1px] bg-slate-700 mx-0.5 shrink-0",
                       }),
                       w.filter((menuKey: string) => {
-                        if (!menuKey || menuKey === "customer_data") return false;
+                        if (!menuKey) return false;
                         if (!currentSystemUser || currentSystemUser.isAdmin) return true;
                         if (!currentSystemUser.allowedMenus || currentSystemUser.allowedMenus.length === 0) return true;
-                        if (menuKey === "customers_and_jobcards" || menuKey === "saved_cards") {
-                          return currentSystemUser.allowedMenus.includes("customers_and_jobcards") || currentSystemUser.allowedMenus.includes("saved_cards");
+                        if (menuKey === "customer_data" || menuKey === "job_cards_data" || menuKey === "saved_cards") {
+                          return currentSystemUser.allowedMenus.includes("customer_data") || currentSystemUser.allowedMenus.includes("job_cards_data") || currentSystemUser.allowedMenus.includes("saved_cards");
                         }
                         return currentSystemUser.allowedMenus.includes(menuKey);
                       }).map((d, idx) => {
@@ -10878,7 +10878,27 @@ ${b}`));
                           label = e === "te" ? "అటెండెన్స్" : "Staff";
                           activeColor =
                             "bg-teal-700 text-white shadow-md ring-1 ring-teal-400";
-                        } else if (d === "customer_data" || d === "job_cards_data" || d === "customer_details" || d === "followup" || d === "saved_cards") {
+                        } else if (d === "customer_data") {
+                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          label = e === "te" ? "కస్టమర్లు" : "Customers";
+                          activeColor =
+                            "bg-blue-700 text-white shadow-md ring-1 ring-blue-400";
+                          badge = i.jsx("span", {
+                            className:
+                              "absolute -top-1 -right-1 text-[8px] px-1 bg-blue-600 text-white font-black rounded-full",
+                            children: _a.length,
+                          });
+                        } else if (d === "job_cards_data") {
+                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          label = e === "te" ? "జాబ్ కార్డులు" : "Job Cards";
+                          activeColor =
+                            "bg-orange-700 text-white shadow-md ring-1 ring-orange-400";
+                          badge = i.jsx("span", {
+                            className:
+                              "absolute -top-1 -right-1 text-[8px] px-1 bg-orange-600 text-white font-black rounded-full",
+                            children: hh.length,
+                          });
+                        } else if (d === "customer_details" || d === "followup" || d === "saved_cards") {
                           icon = i.jsx(ql, { className: "w-4 h-4" });
                           label = e === "te" ? "కస్టమర్లు" : "Customers";
                           activeColor =
