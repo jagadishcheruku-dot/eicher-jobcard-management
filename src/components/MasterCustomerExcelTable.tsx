@@ -1485,7 +1485,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   }, [selectedChassisModal, selectedChassisCustomer, allCards]);
 
   return (
-    <div className="w-full space-y-2.5 bg-white border border-slate-200 shadow-sm p-2.5 md:p-3 rounded-2xl print:p-0 print:border-none print:shadow-none">
+    <div className="w-full space-y-3 bg-white shadow-sm p-3 md:p-4 rounded-3xl print:p-0 print:border-none print:shadow-none">
       {/* Toast message popup */}
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-50 bg-slate-900/95 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-bounce">
@@ -1495,7 +1495,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       )}
 
       {/* 1. TOP COMPACT METRICS BAR (5 Value Boxes: ~1cm x 2cm proportions) */}
-      <div className="w-full flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50/90 p-1.5 sm:p-2 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="w-full flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 p-1.5 sm:p-2 rounded-2xl">
         {/* Box 1: Total Deliveries */}
         <button
           type="button"
@@ -1503,9 +1503,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("all");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "all"
-              ? "bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-300"
+              ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/30"
               : "bg-blue-50/90 hover:bg-blue-100/80 border-blue-200 text-blue-950"
           }`}
           title="Click to show All Customer Deliveries"
@@ -1528,9 +1528,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("reporting");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "reporting"
-              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-300"
+              ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/30"
               : "bg-emerald-50/90 hover:bg-emerald-100/80 border-emerald-200 text-emerald-950"
           }`}
           title="Click to filter Reporting Customers (≥1 Job Card)"
@@ -1553,9 +1553,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("not_reporting");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "not_reporting"
-              ? "bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-300"
+              ? "bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-600/30"
               : "bg-rose-50/90 hover:bg-rose-100/80 border-rose-200 text-rose-950"
           }`}
           title="Click to filter Not Reporting Customers (0 Job Cards)"
@@ -1578,9 +1578,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("duplicate");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "duplicate"
-              ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-300"
+              ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-600/30"
               : "bg-amber-50/90 hover:bg-amber-100/80 border-amber-200 text-amber-950"
           }`}
           title="Click to filter Duplicate Chassis / Customers"
@@ -1621,9 +1621,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("out_of_wty");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[145px] max-w-[230px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[145px] max-w-[230px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "out_of_wty"
-              ? "bg-red-600 text-white border-red-600 shadow-xs ring-2 ring-red-300"
+              ? "bg-red-600 text-white border-red-600 shadow-lg shadow-red-600/30"
               : "bg-red-50/95 hover:bg-red-100 border-red-300 text-red-950"
           }`}
           title={isTe ? "వారంటీ ముగిసిన కస్టమర్లు (> 2 సంవత్సరాలు) - క్లిక్ చేయండి" : "Click to filter Out of Warranty (> 2 Years)"}
@@ -1646,9 +1646,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("in_wty");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[200px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[200px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "in_wty"
-              ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-2 ring-slate-400"
+              ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-600/30"
               : "bg-slate-100/90 hover:bg-slate-200/80 border-slate-300 text-slate-900"
           }`}
           title={isTe ? "వారంటీ లో ఉన్న కస్టమర్లు (≤ 2 సంవత్సరాలు) - క్లిక్ చేయండి" : "Click to filter In Warranty (≤ 2 Years)"}
@@ -1687,10 +1687,10 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                     ? "కస్టమర్ పేరు, ఛాసిస్ నెం, మొబైల్, గ్రామం, మోడల్ ద్వారా వెతకండి..."
                     : "Search customer, chassis, mobile, village, model...")
               }
-              className={`w-full pl-8 pr-7 py-1.5 text-xs font-semibold rounded-lg outline-none transition-all placeholder:text-slate-400 ${
+              className={`w-full pl-8 pr-7 py-2 text-xs font-semibold rounded-full outline-none transition-all placeholder:text-slate-400 ${
                 isFiltersLocked
                   ? "bg-slate-100 text-slate-500 border border-slate-300 cursor-not-allowed"
-                  : "bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+                  : "bg-slate-100 hover:bg-slate-100 focus:bg-white text-slate-900 focus:ring-2 focus:ring-purple-500/40"
               }`}
             />
             {searchQuery && !isFiltersLocked && (
@@ -1705,7 +1705,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           </div>
 
           {/* Branch Filter Dropdown */}
-          <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-2xs">
+          <div className="flex items-center gap-1.5 bg-slate-100 rounded-full px-3 py-1.5">
             <Building2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
             <select
               value={selectedBranchFilter}
@@ -1727,7 +1727,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           </div>
 
           {/* Supervisor Filter Dropdown */}
-          <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-2xs">
+          <div className="flex items-center gap-1.5 bg-slate-100 rounded-full px-3 py-1.5">
             <UserCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <select
               value={selectedSupervisorFilter}
@@ -1957,7 +1957,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
         <table className="w-full border-collapse text-left text-slate-900 min-w-[2800px] text-xs">
           {/* Header Row */}
-          <thead className="bg-purple-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
+          <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
             <tr>
               <th className="py-2 px-2 text-center w-12 min-w-[48px] border-r border-purple-800 bg-purple-950 font-mono text-[11px]">
                 #

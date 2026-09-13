@@ -1067,41 +1067,26 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   };
 
   return (
-    <div className="w-full min-w-full space-y-3 flex flex-col min-h-0 bg-white rounded-2xl border border-slate-300 shadow-sm p-3 md:p-4 font-sans">
+    <div className="w-full min-w-full space-y-3 flex flex-col min-h-0 bg-white rounded-3xl shadow-sm p-3 md:p-4 font-sans">
       {/* EXCEL SPREADSHEET TOOLBAR */}
-      <div className="bg-emerald-800 text-white p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <div className="bg-slate-50 text-slate-800 p-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 pr-3 border-r border-emerald-700">
-            <div className="w-8 h-8 bg-white text-emerald-800 rounded-lg font-black flex items-center justify-center text-sm shadow-inner">
-              📊
-            </div>
-            <div>
-              <div className="text-sm font-black tracking-wide flex items-center gap-1.5">
-                <span>
-                  {isTe
-                    ? "సేవ్ చేసిన జాబ్ కార్డ్స్ ఎక్సెల్ షీట్ (పూర్తి ఎడిట్ & డిస్ప్లే)"
-                    : "Saved Job Cards Spreadsheet (Live Inline Edit)"}
-                </span>
-              </div>
-              <div className="text-[11px] text-emerald-200 font-mono">
-                {processedCards.length} {isTe ? "కార్డులు ఉన్నాయి" : "records listed"}
-              </div>
-            </div>
+          <div className="flex items-center gap-2 pr-3">
+            <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-full">
+              {processedCards.length} {isTe ? "కార్డులు" : "records"}
+            </span>
           </div>
 
           {/* Row Height / Density */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-emerald-200">
-              {isTe ? "లైన్ సైజు:" : "Density:"}
-            </span>
-            <div className="inline-flex rounded-lg bg-emerald-900/70 p-0.5 border border-emerald-700 text-xs">
+            <div className="inline-flex rounded-full bg-white p-1 text-xs">
               <button
                 type="button"
                 onClick={() => setRowDensity("compact")}
-                className={`px-2 py-1 rounded-md font-bold cursor-pointer transition-all ${
+                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
                   rowDensity === "compact"
-                    ? "bg-emerald-500 text-slate-950 shadow-xs"
-                    : "text-emerald-200 hover:text-white"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 🤏 Compact
@@ -1109,10 +1094,10 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               <button
                 type="button"
                 onClick={() => setRowDensity("normal")}
-                className={`px-2 py-1 rounded-md font-bold cursor-pointer transition-all ${
+                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
                   rowDensity === "normal"
-                    ? "bg-emerald-500 text-slate-950 shadow-xs"
-                    : "text-emerald-200 hover:text-white"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 ↔️ Normal
@@ -1120,10 +1105,10 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               <button
                 type="button"
                 onClick={() => setRowDensity("spacious")}
-                className={`px-2 py-1 rounded-md font-bold cursor-pointer transition-all ${
+                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
                   rowDensity === "spacious"
-                    ? "bg-emerald-500 text-slate-950 shadow-xs"
-                    : "text-emerald-200 hover:text-white"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
                 }`}
               >
                 ↕️ Spacious
@@ -1138,10 +1123,10 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           <button
             type="button"
             onClick={toggleFiltersLock}
-            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border shadow-2xs ${
+            className={`px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
               isFiltersLocked
-                ? "bg-amber-300 hover:bg-amber-400 text-slate-950 border-amber-500 ring-2 ring-amber-300"
-                : "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                ? "bg-amber-400 hover:bg-amber-500 text-amber-950 shadow-sm"
+                : "bg-white hover:bg-slate-100 text-slate-600"
             }`}
             title={
               isFiltersLocked
@@ -1170,10 +1155,10 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               type="button"
               disabled={isFiltersLocked}
               onClick={handleClearAllFilters}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors shadow-xs ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
                 isFiltersLocked
-                  ? "opacity-50 cursor-not-allowed bg-emerald-900/60 text-emerald-300"
-                  : "bg-amber-400 hover:bg-amber-300 text-amber-950 cursor-pointer"
+                  ? "opacity-50 cursor-not-allowed bg-slate-200 text-slate-400"
+                  : "bg-amber-400 hover:bg-amber-500 text-amber-950 cursor-pointer shadow-sm"
               }`}
               title="Reset all active filters"
             >
@@ -1185,23 +1170,23 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           <button
             type="button"
             onClick={handleExportFilteredExcel}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-emerald-50 text-emerald-950 rounded-xl text-xs font-black transition-colors shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-black transition-colors shadow-sm cursor-pointer"
             title="Export filtered records to Excel"
           >
-            <Download className="w-4 h-4 text-emerald-700" />
+            <Download className="w-4 h-4 text-white" />
             <span>{isTe ? "ఎక్సెల్ డౌన్‌లోడ్" : "Export Excel"}</span>
           </button>
         </div>
       </div>
 
       {/* QUICK STATUS FILTER TABS */}
-      <div className="flex items-center justify-between gap-2 flex-wrap bg-slate-50 p-2 rounded-xl border border-slate-200">
+      <div className="flex items-center justify-between gap-2 flex-wrap bg-slate-50 p-2 rounded-2xl">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
             type="button"
             disabled={isFiltersLocked}
             onClick={() => handleStatusFilterChange("all")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-2xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === "all"
                 ? "bg-slate-900 text-white border-slate-900 ring-2 ring-slate-400"
                 : "bg-white hover:bg-slate-100 text-slate-700 border-slate-300"
@@ -1217,7 +1202,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
             type="button"
             disabled={isFiltersLocked}
             onClick={() => handleStatusFilterChange("Open")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-2xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === "Open"
                 ? "bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-300 font-black"
                 : "bg-emerald-50/70 hover:bg-emerald-100 text-emerald-900 border-emerald-300"
@@ -1233,7 +1218,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
             type="button"
             disabled={isFiltersLocked}
             onClick={() => handleStatusFilterChange("Closed")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-2xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === "Closed"
                 ? "bg-rose-700 text-white border-rose-700 ring-2 ring-rose-300 font-black"
                 : "bg-rose-50/70 hover:bg-rose-100 text-rose-900 border-rose-300"
@@ -1249,7 +1234,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
             type="button"
             disabled={isFiltersLocked}
             onClick={() => handleStatusFilterChange("MissingOnline")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shadow-2xs ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === "MissingOnline"
                 ? "bg-amber-500 text-slate-950 border-amber-600 ring-2 ring-amber-300 font-black"
                 : "bg-amber-50 hover:bg-amber-100 text-amber-950 border-amber-300"
