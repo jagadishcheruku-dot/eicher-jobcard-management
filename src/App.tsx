@@ -84,6 +84,7 @@ import { MasterCustomerExcelTable } from "./components/MasterCustomerExcelTable"
 import { JobCardViewModal } from "./components/JobCardViewModal";
 import { formatDisplayDate, getCustomerDeliveryTimestamp, isDeliveryOutOfWarranty } from "./utils/dateFormatter";
 import { LanguageSelectionModal } from "./components/LanguageSelectionModal";
+import { CustomerSearchModal } from "./components/CustomerSearchModal";
 import { MenuOrderSettings, DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
 import BranchLoginView from "./components/BranchLoginView";
 import UserManagementModal from "./components/UserManagementModal";
@@ -1531,6 +1532,7 @@ function gY() {
       } catch {}
     },
     [showLanguageModal, setShowLanguageModal] = ce.useState(false),
+    [showCustomerSearchModal, setShowCustomerSearchModal] = ce.useState(false),
     [isOnline, setIsOnline] = ce.useState<boolean>(() => typeof navigator !== "undefined" ? navigator.onLine : true),
     [isFastSyncing, setIsFastSyncing] = ce.useState<boolean>(false),
     n = (d) => WW(d, e),
@@ -10299,6 +10301,15 @@ ${b}`));
             setShowLanguageModal(false);
           },
         }),
+      showCustomerSearchModal &&
+        i.jsx(CustomerSearchModal, {
+          isOpen: showCustomerSearchModal,
+          onClose: () => setShowCustomerSearchModal(false),
+          customers: _a,
+          jobCards: hh,
+          complaints: visibleFs,
+          language: e,
+        }),
       Yu
         ? i.jsx("div", {
         className:
@@ -11091,6 +11102,16 @@ ${b}`));
                                     className:
                                       "flex flex-wrap items-center gap-1.5",
                                     children: [
+                                      i.jsxs("button", {
+                                        type: "button",
+                                        onClick: () => setShowCustomerSearchModal(true),
+                                        className:
+                                          "px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] rounded-lg transition-colors border border-emerald-200 cursor-pointer flex items-center gap-1 shadow-2xs",
+                                        children: [
+                                          i.jsx("span", { children: "🔍" }),
+                                          " Find",
+                                        ],
+                                      }),
                                       i.jsxs("button", {
                                         type: "button",
                                         onClick: () => {
