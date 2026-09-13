@@ -598,14 +598,55 @@ app.post('/api/customers/bulk', async (req, res) => {
     localDb.bulkUpsertCustomers(normalizedRows as any, replaceAll);
 
     const client = getPool();
-    if (client) {
-      try {
-        const insertQuery = `
+    if (!client) {
+      return res.status(503).json({
+        success: false,
+        error: '❌ Cloud database NOT configured. Data saved locally only. Please set: SQL_HOST, SQL_USER, SQL_PASSWORD, SQL_DB_NAME'
+      });
+    }
+
+    try {
+      const insertQuery = `
+        INSERT INTO customers (
+          chassis_key, chassis_no, cust_name, father_name, cust_addr, village, mandal,
+          owner_mob, driver_mob, regd_no, engine_no, tractor_model, date_of_delivery,
+          followup_history, full_data, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
+        ON CONFLICT (chassis_key) DO UPDATE SET
+          chassis_no = EXCLUDED.chassis_no,
+          cust_name = EXCLUDED.cust_name,
+          father_name = EXCLUDED.father_name,
+          cust_addr = EXCLUDED.cust_addr,
+          village = EXCLUDED.village,
+          mandal = EXCLUDED.mandal,
+          owner_mob = EXCLUDED.owner_mob,
+          driver_mob = EXCLUDED.driver_mob,
+          regd_no = EXCLUDED.regd_no,
+          engine_no = EXCLUDED.engine_no,
+          tractor_model = EXCLUDED.tractor_model,
+          date_of_delivery = EXCLUDED.date_of_delivery,
+          followup_history = EXCLUDED.followup_history,
+          full_data = EXCLUDED.full_data,
+          updated_at = NOW()
+      `;
+
+      if (replaceAll) {
+        await client.query('DELETE FROM customers');
+      }
+
+      // Batch insert in chunks of 100 to avoid slow sequential queries
+      const batchSize = 100;
+      for (let i = 0; i < normalizedRows.length; i += batchSize) {
+        const chunk = normalizedRows.slice(i, i + batchSize);
+        const valuePlaceholders = chunk
+          .map((_, idx) => `($${idx * 15 + 1}, $${idx * 15 + 2}, $${idx * 15 + 3}, $${idx * 15 + 4}, $${idx * 15 + 5}, $${idx * 15 + 6}, $${idx * 15 + 7}, $${idx * 15 + 8}, $${idx * 15 + 9}, $${idx * 15 + 10}, $${idx * 15 + 11}, $${idx * 15 + 12}, $${idx * 15 + 13}, $${idx * 15 + 14}, $${idx * 15 + 15})`)
+          .join(',');
+        const batchQuery = `
           INSERT INTO customers (
             chassis_key, chassis_no, cust_name, father_name, cust_addr, village, mandal,
             owner_mob, driver_mob, regd_no, engine_no, tractor_model, date_of_delivery,
-            followup_history, full_data, updated_at
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
+            followup_history, full_data
+          ) VALUES ${valuePlaceholders}
           ON CONFLICT (chassis_key) DO UPDATE SET
             chassis_no = EXCLUDED.chassis_no,
             cust_name = EXCLUDED.cust_name,
@@ -623,54 +664,19 @@ app.post('/api/customers/bulk', async (req, res) => {
             full_data = EXCLUDED.full_data,
             updated_at = NOW()
         `;
-
-        if (replaceAll) {
-          await client.query('DELETE FROM customers');
-        }
-
-        // Batch insert in chunks of 100 to avoid slow sequential queries
-        const batchSize = 100;
-        for (let i = 0; i < normalizedRows.length; i += batchSize) {
-          const chunk = normalizedRows.slice(i, i + batchSize);
-          const valuePlaceholders = chunk
-            .map((_, idx) => `($${idx * 15 + 1}, $${idx * 15 + 2}, $${idx * 15 + 3}, $${idx * 15 + 4}, $${idx * 15 + 5}, $${idx * 15 + 6}, $${idx * 15 + 7}, $${idx * 15 + 8}, $${idx * 15 + 9}, $${idx * 15 + 10}, $${idx * 15 + 11}, $${idx * 15 + 12}, $${idx * 15 + 13}, $${idx * 15 + 14}, $${idx * 15 + 15})`)
-            .join(',');
-          const batchQuery = `
-            INSERT INTO customers (
-              chassis_key, chassis_no, cust_name, father_name, cust_addr, village, mandal,
-              owner_mob, driver_mob, regd_no, engine_no, tractor_model, date_of_delivery,
-              followup_history, full_data
-            ) VALUES ${valuePlaceholders}
-            ON CONFLICT (chassis_key) DO UPDATE SET
-              chassis_no = EXCLUDED.chassis_no,
-              cust_name = EXCLUDED.cust_name,
-              father_name = EXCLUDED.father_name,
-              cust_addr = EXCLUDED.cust_addr,
-              village = EXCLUDED.village,
-              mandal = EXCLUDED.mandal,
-              owner_mob = EXCLUDED.owner_mob,
-              driver_mob = EXCLUDED.driver_mob,
-              regd_no = EXCLUDED.regd_no,
-              engine_no = EXCLUDED.engine_no,
-              tractor_model = EXCLUDED.tractor_model,
-              date_of_delivery = EXCLUDED.date_of_delivery,
-              followup_history = EXCLUDED.followup_history,
-              full_data = EXCLUDED.full_data,
-              updated_at = NOW()
-          `;
-          const params = chunk.flatMap(item => [
-            item.chassisKey, item.chassisNo, item.custName, item.fatherName, item.custAddr,
-            item.village, item.mandal, item.ownerMob, item.driverMob, item.regdNo,
-            item.engineNo, item.tractorModel, item.dateOfDelivery, item.followupHistory, item.fullData
-          ]);
-          await client.query(batchQuery, params);
-        }
-      } catch (err) {
-        console.warn('Postgres bulk customer save notice:', err);
+        const params = chunk.flatMap(item => [
+          item.chassisKey, item.chassisNo, item.custName, item.fatherName, item.custAddr,
+          item.village, item.mandal, item.ownerMob, item.driverMob, item.regdNo,
+          item.engineNo, item.tractorModel, item.dateOfDelivery, item.followupHistory, item.fullData
+        ]);
+        await client.query(batchQuery, params);
       }
-    }
 
-    res.json({ success: true, count: normalizedRows.length });
+      res.json({ success: true, count: normalizedRows.length, cloudSaved: true });
+    } catch (err: any) {
+      console.error('Postgres bulk customer save error:', err);
+      res.status(500).json({ success: false, error: `❌ Database error: ${err.message}` });
+    }
   } catch (error: any) {
     console.error('Error saving customers bulk:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -784,42 +790,47 @@ app.post('/api/spares/bulk', async (req, res) => {
     localDb.bulkUpsertSpares(normalizedRows as any, replaceAll);
 
     const client = getPool();
-    if (client) {
-      try {
-        if (replaceAll) {
-          await client.query('DELETE FROM spares');
-        }
-
-        // Batch insert in chunks of 100 to avoid slow sequential queries
-        const batchSize = 100;
-        for (let i = 0; i < normalizedRows.length; i += batchSize) {
-          const chunk = normalizedRows.slice(i, i + batchSize);
-          const valuePlaceholders = chunk
-            .map((_, idx) => `($${idx * 6 + 1}, $${idx * 6 + 2}, $${idx * 6 + 3}, $${idx * 6 + 4}, $${idx * 6 + 5}, $${idx * 6 + 6})`)
-            .join(',');
-          const batchQuery = `
-            INSERT INTO spares (
-              part_key, part_no, part_desc, mrp, category, full_data
-            ) VALUES ${valuePlaceholders}
-            ON CONFLICT (part_key) DO UPDATE SET
-              part_no = EXCLUDED.part_no,
-              part_desc = EXCLUDED.part_desc,
-              mrp = EXCLUDED.mrp,
-              category = EXCLUDED.category,
-              full_data = EXCLUDED.full_data,
-              updated_at = NOW()
-          `;
-          const params = chunk.flatMap(item => [
-            item.partKey, item.partNo, item.partDesc, item.mrp, item.category, item.fullData
-          ]);
-          await client.query(batchQuery, params);
-        }
-      } catch (err) {
-        console.warn('Postgres save spares notice:', err);
-      }
+    if (!client) {
+      return res.status(503).json({
+        success: false,
+        error: '❌ Cloud database NOT configured. Data saved locally only. Please set: SQL_HOST, SQL_USER, SQL_PASSWORD, SQL_DB_NAME'
+      });
     }
 
-    res.json({ success: true, count: normalizedRows.length });
+    try {
+      if (replaceAll) {
+        await client.query('DELETE FROM spares');
+      }
+
+      // Batch insert in chunks of 100 to avoid slow sequential queries
+      const batchSize = 100;
+      for (let i = 0; i < normalizedRows.length; i += batchSize) {
+        const chunk = normalizedRows.slice(i, i + batchSize);
+        const valuePlaceholders = chunk
+          .map((_, idx) => `($${idx * 6 + 1}, $${idx * 6 + 2}, $${idx * 6 + 3}, $${idx * 6 + 4}, $${idx * 6 + 5}, $${idx * 6 + 6})`)
+          .join(',');
+        const batchQuery = `
+          INSERT INTO spares (
+            part_key, part_no, part_desc, mrp, category, full_data
+          ) VALUES ${valuePlaceholders}
+          ON CONFLICT (part_key) DO UPDATE SET
+            part_no = EXCLUDED.part_no,
+            part_desc = EXCLUDED.part_desc,
+            mrp = EXCLUDED.mrp,
+            category = EXCLUDED.category,
+            full_data = EXCLUDED.full_data,
+            updated_at = NOW()
+        `;
+        const params = chunk.flatMap(item => [
+          item.partKey, item.partNo, item.partDesc, item.mrp, item.category, item.fullData
+        ]);
+        await client.query(batchQuery, params);
+      }
+      res.json({ success: true, count: normalizedRows.length, cloudSaved: true });
+    } catch (err: any) {
+      console.error('Postgres save spares error:', err);
+      res.status(500).json({ success: false, error: `❌ Database error: ${err.message}` });
+    }
   } catch (error: any) {
     console.error('Error saving spares bulk:', error);
     res.status(500).json({ success: false, error: error.message });
