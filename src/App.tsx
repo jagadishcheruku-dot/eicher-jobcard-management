@@ -4326,19 +4326,25 @@ function gY() {
           R.SheetNames.forEach((shName) => {
             const sheet = R.Sheets[shName];
             if (sheet) {
-              const rows = lr
-                .sheet_to_json(sheet, { raw: !1, defval: "" })
-                .map((Ne) => {
-                  const xe = {};
-                  return (
-                    Ne &&
-                      typeof Ne == "object" &&
-                      Object.keys(Ne).forEach((Ue) => {
-                        xe[Ue] = Bs(Ne[Ue]);
-                      }),
-                    xe
-                  );
-                });
+              // Excel date cells are read twice: `raw:false` gives text formatted using the
+              // workbook's own number format (e.g. a US "mm-dd-yy" cell format renders as
+              // "12/05/15"), which the app's DD/MM parser then misreads as day-first and
+              // silently swaps day/month. `raw:true` returns the underlying Excel serial
+              // number instead, which dateFormatter's own serial-number parsing decodes
+              // unambiguously, so date columns use that value instead of the formatted text.
+              const rowsFormatted = lr.sheet_to_json(sheet, { raw: !1, defval: "" });
+              const rowsRaw = lr.sheet_to_json(sheet, { raw: !0, defval: "" });
+              const rows = rowsFormatted.map((Ne, rowIdx) => {
+                const xe = {};
+                const rawRow = rowsRaw[rowIdx] || {};
+                Ne &&
+                  typeof Ne == "object" &&
+                  Object.keys(Ne).forEach((Ue) => {
+                    const isDateCol = Ct(Ue).includes("date") || Ct(Ue) === "dod";
+                    xe[Ue] = Bs(isDateCol ? rawRow[Ue] : Ne[Ue]);
+                  });
+                return xe;
+              });
               le.push(...rows);
             }
           });
