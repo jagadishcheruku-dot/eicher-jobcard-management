@@ -12598,7 +12598,7 @@ ${b}`));
                               children: [
                                 i.jsxs("div", {
                                   className:
-                                    "w-full bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                    "w-full bg-white p-4 md:p-6 rounded-3xl shadow-sm space-y-6 print:hidden",
                                   children: [
                                     i.jsxs("div", {
                                       className:
@@ -12670,7 +12670,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => op(!zu),
@@ -14789,7 +14789,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => Um(!zd),
@@ -15035,7 +15035,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => lp(!Jd),
@@ -15326,7 +15326,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => D0(!Ju),
@@ -15767,7 +15767,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 print:hidden",
+                                        "bg-white p-4 rounded-3xl shadow-sm flex flex-wrap items-center justify-between gap-3 print:hidden",
                                       children: [
                                         i.jsxs("div", {
                                           className:
@@ -17288,7 +17288,7 @@ ${b}`));
                           c === "reports" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-2.5 md:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2.5 print:hidden",
+                                "w-full bg-white p-2.5 md:p-3 rounded-3xl shadow-sm space-y-2.5 print:hidden",
                               children: [
                                 i.jsxs("div", {
                                   className:
@@ -18823,7 +18823,7 @@ ${b}`));
                           c === "complaints" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                "w-full bg-white p-5 rounded-3xl shadow-sm space-y-6 print:hidden",
                               children: [
                                 i.jsxs("div", {
                                   className:
@@ -20277,7 +20277,7 @@ ${b}`));
                           c === "databases" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                "w-full bg-white p-5 rounded-3xl shadow-sm space-y-6 print:hidden",
                               children: [
                                 i.jsxs("div", {
                                   className: "border-b pb-3",
