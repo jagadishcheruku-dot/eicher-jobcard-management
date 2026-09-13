@@ -10336,7 +10336,7 @@ ${b}`));
     : ($t
       ? i.jsxs("div", {
           className:
-            "min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col md:flex-row print:block",
+            "min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-blue-50/40 text-slate-800 font-sans flex flex-col md:flex-row print:block",
           children: [
             i.jsxs("div", {
               className:
@@ -10468,21 +10468,21 @@ ${b}`));
               }),
             i.jsxs("aside", {
               className: `
-        ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"} 
-        w-72 ${f ? "md:w-16" : "md:w-64"} 
-        shrink-0 bg-white border-r border-slate-200 flex flex-col print:hidden shadow-xl md:shadow-xs transition-all duration-200
+        ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"}
+        w-72 ${f ? "md:w-[76px]" : "md:w-72"}
+        shrink-0 bg-white border-r border-slate-200/70 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
       `,
               children: [
                 i.jsxs("div", {
                   className:
-                    "p-3 md:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-2",
+                    "p-4 border-b border-slate-100 bg-white flex items-center justify-between gap-2",
                   children: [
                     i.jsxs("div", {
-                      className: "flex items-center gap-2 overflow-hidden",
+                      className: "flex items-center gap-2.5 overflow-hidden",
                       children: [
                         i.jsx("div", {
                           className:
-                            "bg-blue-900 text-white p-2 rounded-xl shadow-xs shrink-0",
+                            "bg-gradient-to-br from-indigo-600 via-blue-700 to-blue-900 text-white p-2.5 rounded-2xl shadow-lg shadow-blue-900/20 shrink-0",
                           children: i.jsx(Pb, {
                             className: "w-5 h-5 text-white",
                           }),
@@ -10494,12 +10494,12 @@ ${b}`));
                             children: [
                               i.jsx("h1", {
                                 className:
-                                  "text-xs font-black text-slate-900 leading-tight uppercase tracking-wide",
-                                children: "SRI GAYATHRI",
+                                  "text-sm font-black text-slate-900 leading-tight tracking-tight",
+                                children: "Sri Gayathri",
                               }),
                               i.jsx("p", {
                                 className:
-                                  "text-[9px] text-slate-500 font-extrabold uppercase",
+                                  "text-[10px] text-slate-400 font-bold uppercase tracking-wider",
                                 children: "Automotives",
                               }),
                             ],
@@ -10513,7 +10513,7 @@ ${b}`));
                           type: "button",
                           onClick: () => m(!f),
                           className:
-                            "hidden md:block p-1 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer shrink-0",
+                            "hidden md:flex items-center justify-center w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer shrink-0",
                           title: f ? "Expand Sidebar" : "Collapse Sidebar",
                           children: f
                             ? i.jsx(uD, { className: "w-4 h-4" })
@@ -10523,7 +10523,7 @@ ${b}`));
                           type: "button",
                           onClick: () => C(!0),
                           className:
-                            "p-1 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors cursor-pointer shrink-0",
+                            "flex items-center justify-center w-7 h-7 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer shrink-0",
                           title: "Hide Sidebar",
                           children: i.jsx(Ja, { className: "w-4 h-4" }),
                         }),
@@ -10531,28 +10531,12 @@ ${b}`));
                     }),
                   ],
                 }),
-                i.jsxs("div", {
+                !f && i.jsx("div", {
                   className:
-                    "px-3 py-2 border-b border-slate-200 bg-slate-100 flex items-center justify-between gap-1 shrink-0",
-                  children: [
-                    !f &&
-                      i.jsxs("button", {
-                        type: "button",
-                        onClick: () => setShowLanguageModal(true),
-                        className:
-                          "flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-blue-900 cursor-pointer transition-colors text-left",
-                        title: e === "te" ? "భాషను మార్చుకోండి (Click to change language)" : "Click to change language",
-                        children: [
-                          i.jsx(NK, { className: "w-3.5 h-3.5 text-blue-900 shrink-0" }),
-                          i.jsx("span", {
-                            children:
-                              e === "te" ? "భాష (Language)" : "Language",
-                          }),
-                        ],
-                      }),
-                    i.jsxs("div", {
+                    "px-4 py-3 border-b border-slate-100 flex items-center justify-center shrink-0",
+                  children: i.jsxs("div", {
                       className:
-                        "flex items-center bg-white p-0.5 rounded-lg border border-slate-300 shadow-2xs",
+                        "flex items-center bg-slate-100 p-1 rounded-full w-full",
                       children: [
                         i.jsx("button", {
                           type: "button",
@@ -10560,7 +10544,7 @@ ${b}`));
                             s("te");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `px-2.5 py-1 text-[11px] font-black rounded-md transition cursor-pointer ${e === "te" ? "bg-blue-900 text-white shadow-2xs" : "text-slate-600 hover:text-slate-950"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "te" ? "bg-white text-blue-900 shadow-sm" : "text-slate-400 hover:text-slate-600"}`,
                           title: "తెలుగు భాష ఎంచుకోండి",
                           children: "తెలుగు",
                         }),
@@ -10570,13 +10554,22 @@ ${b}`));
                             s("en");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `px-2.5 py-1 text-[11px] font-black rounded-md transition cursor-pointer ${e === "en" ? "bg-blue-900 text-white shadow-2xs" : "text-slate-600 hover:text-slate-950"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "en" ? "bg-white text-blue-900 shadow-sm" : "text-slate-400 hover:text-slate-600"}`,
                           title: "Select English Language",
                           children: "English",
                         }),
                       ],
                     }),
-                  ],
+                }),
+                f && i.jsx("div", {
+                  className: "px-3 py-3 border-b border-slate-100 flex items-center justify-center shrink-0",
+                  children: i.jsx("button", {
+                    type: "button",
+                    onClick: () => setShowLanguageModal(true),
+                    className: "w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-blue-900 transition-colors cursor-pointer",
+                    title: e === "te" ? "భాషను మార్చుకోండి" : "Change language",
+                    children: i.jsx(NK, { className: "w-4 h-4" }),
+                  }),
                 }),
                 i.jsxs("nav", {
                   className: "flex-1 p-2 md:p-3 space-y-2 overflow-y-auto",
@@ -10717,13 +10710,16 @@ ${b}`));
                           i.jsxs("button", {
                             type: "button",
                             onClick: () => u(d),
-                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-3"} rounded-xl font-bold text-xs transition-all border cursor-pointer ${R ? I : "text-slate-600 bg-white hover:bg-slate-50 hover:text-slate-900 border-slate-200"}`,
+                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-2.5"} rounded-2xl font-bold text-[13px] transition-all duration-150 cursor-pointer ${R ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`,
                             title: f ? v : void 0,
                             children: [
                               i.jsxs("div", {
-                                className: "flex items-center gap-2.5 min-w-0",
+                                className: "flex items-center gap-3 min-w-0",
                                 children: [
-                                  j,
+                                  i.jsx("span", {
+                                    className: `flex items-center justify-center w-7 h-7 rounded-xl shrink-0 transition-colors ${R ? "bg-white/20" : "bg-slate-100 group-hover:bg-slate-200"}`,
+                                    children: j,
+                                  }),
                                   !f &&
                                     i.jsx("span", {
                                       className: "truncate",
@@ -10743,12 +10739,12 @@ ${b}`));
                 }),
                 i.jsxs("div", {
                   className:
-                    "p-3 border-t border-slate-200 bg-slate-50/50 shrink-0 space-y-1.5",
+                    "p-3 border-t border-slate-100 shrink-0 space-y-1.5",
                   children: [
                     i.jsxs("button", {
                       type: "button",
                       onClick: T,
-                      className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer mb-2`,
+                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-xs rounded-2xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer mb-2`,
                       title: f ? "Add New Customer" : void 0,
                       children: [
                         i.jsx($p, { className: "w-4 h-4 shrink-0 text-white" }),
@@ -10763,14 +10759,14 @@ ${b}`));
                       i.jsxs("button", {
                         type: "button",
                         onClick: () => setIsUserManagementOpen(!0),
-                        className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer mb-2`,
+                        className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition-colors cursor-pointer mb-2`,
                         title: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "User Management",
                         children: [
-                          i.jsx(uf, { className: "w-4 h-4 shrink-0 text-white" }),
+                          i.jsx(uf, { className: "w-4 h-4 shrink-0" }),
                           !f &&
                             i.jsx("span", {
                               className: "truncate",
-                              children: e === "te" ? "🛡️ యూజర్లు & పర్మిషన్లు" : "🛡️ User Management",
+                              children: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "User Management",
                             }),
                         ],
                       }),
@@ -10789,7 +10785,7 @@ ${b}`));
                           tu(null);
                         }
                       },
-                      className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer border border-rose-200 mt-auto`,
+                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-rose-100 mt-auto`,
                       title: f ? "Sign Out" : void 0,
                       children: [
                         i.jsx(jK, { className: "w-4 h-4 shrink-0" }),
@@ -10980,69 +10976,58 @@ ${b}`));
                     ],
                   }),
                 i.jsxs("main", {
-                  className: `w-full min-w-0 p-1 sm:p-2 md:p-3 print:p-0 print:m-0 ${x ? "pb-20" : ""}`,
+                  className: `w-full min-w-0 p-2 sm:p-3 md:p-5 print:p-0 print:m-0 ${x ? "pb-20" : ""}`,
                   children: [
                     i.jsxs("div", {
-                      className: "mb-2.5 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2 print:hidden",
+                      className: "mb-3 bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2.5 shadow-sm flex flex-wrap items-center justify-between gap-2 print:hidden",
                       children: [
-                        i.jsxs("div", {
+                        i.jsx("div", {
                           className: "flex items-center gap-2 flex-wrap",
-                          children: [
-                            i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-blue-900 text-white px-2.5 py-1 rounded-lg text-xs font-black tracking-wide shadow-xs",
-                              children: [
-                                i.jsx(Pb, { className: "w-3.5 h-3.5 text-amber-400" }),
-                                i.jsx("span", { children: "SRI GAYATHRI AUTOMOTIVES" })
-                              ]
-                            }),
+                          children:
                             currentSystemUser?.isAdmin ? i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-amber-50 border border-amber-300 text-amber-950 px-2 py-0.5 rounded-lg text-xs font-semibold",
+                              className: "flex items-center gap-1.5 bg-amber-50 text-amber-900 px-2.5 py-1 rounded-full text-xs font-semibold",
                               children: [
-                                i.jsx("span", { className: "text-[11px] font-extrabold text-amber-900", children: e === "te" ? "బ్రాంచ్ వ్యూ:" : "Branch View:" }),
+                                i.jsx("span", { className: "text-[11px] font-extrabold", children: e === "te" ? "బ్రాంచ్:" : "Branch:" }),
                                 i.jsxs("select", {
                                   value: adminBranchFilter,
                                   onChange: (ev: any) => setAdminBranchFilter(ev.target.value),
-                                  className: "bg-white border border-amber-300 text-slate-900 text-xs font-bold rounded px-2 py-0.5 outline-none cursor-pointer",
+                                  className: "bg-transparent text-amber-950 text-xs font-bold outline-none cursor-pointer",
                                   children: [
-                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అన్ని బ్రాంచ్‌లు (మాస్టర్ డేటా)" : "🌐 All Branches (Master View)" }),
+                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అన్ని బ్రాంచ్‌లు" : "🌐 All Branches" }),
                                     systemBranches.map((br: string) => i.jsx("option", { value: br, children: `🏢 ${br}` }, br))
                                   ]
                                 })
                               ]
                             }) : i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 text-emerald-900 px-2.5 py-1 rounded-lg text-xs font-black",
+                              className: "flex items-center gap-1.5 bg-emerald-50 text-emerald-900 px-2.5 py-1 rounded-full text-xs font-black",
                               children: [
                                 i.jsx("span", { children: "🏢" }),
-                                i.jsxs("span", { children: [e === "te" ? "బ్రాంచ్: " : "Branch: ", currentSystemUser?.branch || "Branch"] })
+                                i.jsx("span", { children: currentSystemUser?.branch || "Branch" })
                               ]
                             })
-                          ]
                         }),
                         i.jsxs("div", {
                           className: "flex items-center gap-2 flex-wrap",
                           children: [
                             i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-slate-100 border border-slate-200 text-slate-800 px-2.5 py-1 rounded-lg text-xs",
+                              className: "flex items-center gap-1.5 bg-slate-100 text-slate-800 pl-1 pr-2.5 py-1 rounded-full text-xs",
                               children: [
-                                i.jsx("span", { className: "w-2 h-2 rounded-full bg-emerald-500 inline-block" }),
-                                i.jsx("span", { className: "font-black text-slate-900", children: currentSystemUser?.name || "User" }),
+                                i.jsx("span", { className: "w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[9px] font-black", children: (currentSystemUser?.name || "U").charAt(0).toUpperCase() }),
+                                i.jsx("span", { className: "font-bold text-slate-900", children: currentSystemUser?.name || "User" }),
                                 i.jsx("span", {
-                                  className: `text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${currentSystemUser?.isAdmin ? "bg-indigo-100 text-indigo-800" : "bg-slate-200 text-slate-700"}`,
+                                  className: `text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase ${currentSystemUser?.isAdmin ? "bg-indigo-100 text-indigo-800" : "bg-slate-200 text-slate-700"}`,
                                   children: currentSystemUser?.isAdmin ? (e === "te" ? "అడ్మిన్" : "Admin") : (currentSystemUser?.role || "Staff")
                                 })
                               ]
                             }),
-                            currentSystemUser?.isAdmin && i.jsxs("button", {
+                            currentSystemUser?.isAdmin && i.jsx("button", {
                               type: "button",
                               onClick: () => setIsUserManagementOpen(!0),
-                              className: "flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-lg shadow-xs transition-all cursor-pointer",
+                              className: "flex items-center justify-center w-8 h-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full transition-all cursor-pointer",
                               title: e === "te" ? "యూజర్లు & పర్మిషన్ల సెట్టింగ్స్" : "User Management & Permissions",
-                              children: [
-                                i.jsx(uf, { className: "w-3.5 h-3.5" }),
-                                i.jsx("span", { children: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "Users & Permissions" })
-                              ]
+                              children: i.jsx(uf, { className: "w-3.5 h-3.5" }),
                             }),
-                            i.jsxs("button", {
+                            i.jsx("button", {
                               type: "button",
                               onClick: async () => {
                                 try {
@@ -11057,12 +11042,9 @@ ${b}`));
                                   tu(null);
                                 }
                               },
-                              className: "flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-lg transition-all cursor-pointer",
+                              className: "flex items-center justify-center w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full transition-all cursor-pointer",
                               title: e === "te" ? "లాగ్ అవుట్" : "Sign Out",
-                              children: [
-                                i.jsx(jK, { className: "w-3.5 h-3.5" }),
-                                i.jsx("span", { children: e === "te" ? "లాగ్ అవుట్" : "Sign Out" })
-                              ]
+                              children: i.jsx(jK, { className: "w-3.5 h-3.5" }),
                             })
                           ]
                         })
@@ -11094,35 +11076,31 @@ ${b}`));
                             children: [
                               i.jsxs("div", {
                                 className:
-                                  "flex flex-col md:flex-row md:items-center justify-between gap-2.5 border-b border-slate-200 pb-3 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs",
+                                  "flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-3xl shadow-sm",
                                 children: [
                                   i.jsxs("div", {
+                                    className: "flex items-center gap-3",
                                     children: [
-                                      i.jsxs("h1", {
-                                        className:
-                                          "text-xl font-black text-slate-900 tracking-tight flex items-center gap-2",
-                                        children: [
-                                          i.jsx("span", { children: "📊" }),
-                                          " Business Dashboard & Executive KPIs",
-                                        ],
+                                      i.jsx("div", {
+                                        className: "w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-lg shrink-0 shadow-md shadow-blue-600/20",
+                                        children: "📊",
                                       }),
-                                      i.jsx("p", {
+                                      i.jsx("h1", {
                                         className:
-                                          "text-[11px] text-slate-500 font-medium",
-                                        children:
-                                          "Real-time attendance, job cards, telecalling, free service follow-ups, deliveries, and financial metrics.",
+                                          "text-lg font-black text-slate-900 tracking-tight",
+                                        children: "Dashboard",
                                       }),
                                     ],
                                   }),
                                   i.jsxs("div", {
                                     className:
-                                      "flex flex-wrap items-center gap-1.5",
+                                      "flex flex-wrap items-center gap-2",
                                     children: [
                                       i.jsxs("button", {
                                         type: "button",
                                         onClick: () => setShowCustomerSearchModal(true),
                                         className:
-                                          "px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] rounded-lg transition-colors border border-emerald-200 cursor-pointer flex items-center gap-1 shadow-2xs",
+                                          "px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-[12px] rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20",
                                         children: [
                                           i.jsx("span", { children: "🔍" }),
                                           " Find",
@@ -11139,7 +11117,7 @@ ${b}`));
                                             Vc(!0));
                                         },
                                         className:
-                                          "px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] rounded-lg transition-colors border border-indigo-200 cursor-pointer flex items-center gap-1 shadow-2xs",
+                                          "px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[12px] rounded-full transition-colors cursor-pointer flex items-center gap-1.5",
                                         children: [
                                           i.jsx(Xs, {
                                             className: "w-3.5 h-3.5",
@@ -11158,12 +11136,12 @@ ${b}`));
                                             Vc(!1));
                                         },
                                         className:
-                                          "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] rounded-lg transition-colors border border-slate-300 cursor-pointer flex items-center gap-1 shadow-2xs",
+                                          "px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[12px] rounded-full transition-colors cursor-pointer flex items-center gap-1.5",
                                         children: [
                                           i.jsx(bn, {
                                             className: "w-3.5 h-3.5",
                                           }),
-                                          " Minimize All",
+                                          " Minimize",
                                         ],
                                       }),
                                     ],
@@ -11172,18 +11150,8 @@ ${b}`));
                               }),
                               i.jsxs("div", {
                                 className:
-                                  "bg-slate-50 border border-slate-200 p-2 rounded-xl flex flex-wrap items-center gap-1.5 text-xs",
+                                  "bg-white p-2.5 rounded-2xl shadow-sm flex flex-wrap items-center gap-2 text-xs",
                                 children: [
-                                  i.jsxs("span", {
-                                    className:
-                                      "text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mr-1 flex items-center gap-1",
-                                    children: [
-                                      i.jsx(kx, {
-                                        className: "w-3 h-3 text-slate-500",
-                                      }),
-                                      " Widgets:",
-                                    ],
-                                  }),
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => {
@@ -11192,7 +11160,7 @@ ${b}`));
                                       Ai(!0);
                                     },
                                     className:
-                                      "px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 bg-indigo-600 text-white shadow-2xs hover:bg-indigo-700",
+                                      "px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm hover:bg-indigo-700",
                                     children: [
                                       i.jsx("span", {
                                         children: "📦 Deliveries",
@@ -11208,7 +11176,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => eo(!ga),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ga ? "bg-purple-600 text-white shadow-2xs" : "bg-white text-purple-700 border border-purple-200 hover:bg-purple-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ga ? "bg-purple-600 text-white shadow-sm" : "bg-slate-100 text-purple-700 hover:bg-purple-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "👥 Attendance",
@@ -11225,7 +11193,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => to(!Fo),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Fo ? "bg-amber-600 text-white shadow-2xs" : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Fo ? "bg-amber-600 text-white shadow-sm" : "bg-slate-100 text-amber-700 hover:bg-amber-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "⚠️ Complaints",
@@ -11242,7 +11210,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => Za(!ro),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ro ? "bg-blue-600 text-white shadow-2xs" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ro ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-blue-700 hover:bg-blue-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📄 Job Cards",
@@ -11259,7 +11227,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => cc(!so),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${so ? "bg-emerald-600 text-white shadow-2xs" : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${so ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-100 text-emerald-700 hover:bg-emerald-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📊 Financials",
@@ -11281,7 +11249,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => Vc(!Ti),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Ti ? "bg-teal-600 text-white shadow-2xs" : "bg-white text-teal-700 border border-teal-200 hover:bg-teal-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Ti ? "bg-teal-600 text-white shadow-sm" : "bg-slate-100 text-teal-700 hover:bg-teal-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📞 Telecalling",
@@ -22419,59 +22387,59 @@ ${b}`));
                               className: "w-full space-y-3",
                               children: [
                                 c === "customer_data" && i.jsxs("div", {
-                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-blue-950 via-blue-900 to-cyan-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-blue-800/60",
+                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-white p-3 md:p-4 rounded-3xl shadow-sm",
                                   children: [
-                                    i.jsx("div", {
-                                      className: "text-sm md:text-base font-black",
-                                      children: e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data"
-                                    }),
                                     i.jsxs("div", {
-                                      className: "flex items-center gap-2 text-xs",
+                                      className: "flex items-center gap-3",
                                       children: [
-                                        i.jsx("span", {
-                                          className: "text-[11px] font-bold text-blue-200 hidden md:inline-block",
-                                          children: e === "te" ? "⚡ ఎక్సెల్ మాదిరిగా నేరుగా ఎడిట్ మరియు ఫిల్టర్ చేయవచ్చు" : "⚡ Real-time Excel Spreadsheet & Interactive Records"
+                                        i.jsx("div", {
+                                          className: "w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-base shrink-0 shadow-md shadow-blue-600/20",
+                                          children: "👤"
                                         }),
-                                        i.jsxs("button", {
-                                          type: "button",
-                                          onClick: T,
-                                          className: "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer",
-                                          title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
-                                          children: [
-                                            i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsx("span", { children: e === "te" ? "+ కొత్త కస్టమర్" : "+ Add Customer" })
-                                          ]
-                                        })
+                                        i.jsx("div", {
+                                          className: "text-base font-black text-slate-900",
+                                          children: e === "te" ? "కస్టమర్ డేటా" : "Customer Data"
+                                        }),
+                                      ]
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      onClick: T,
+                                      className: "px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-full text-xs font-black flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer",
+                                      title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
+                                      children: [
+                                        i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
+                                        i.jsx("span", { children: e === "te" ? "కొత్త కస్టమర్" : "Add Customer" })
                                       ]
                                     })
                                   ]
                                 }),
                                 c === "job_cards_data" && i.jsxs("div", {
-                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-amber-950 via-orange-900 to-red-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-orange-800/60",
+                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-white p-3 md:p-4 rounded-3xl shadow-sm",
                                   children: [
-                                    i.jsx("div", {
-                                      className: "text-sm md:text-base font-black",
-                                      children: e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data"
-                                    }),
                                     i.jsxs("div", {
-                                      className: "flex items-center gap-2 text-xs",
+                                      className: "flex items-center gap-3",
                                       children: [
-                                        jobCardsChassisFilter && i.jsxs("div", {
-                                          className: "flex items-center gap-1.5 bg-amber-400/90 text-slate-950 font-black px-2.5 py-1 rounded-lg shadow-xs text-xs",
-                                          children: [
-                                            i.jsxs("span", { children: ["Chassis Filter: ", i.jsx("span", { className: "font-mono", children: jobCardsChassisFilter })] }),
-                                            i.jsx("button", {
-                                              type: "button",
-                                              onClick: () => setJobCardsChassisFilter(""),
-                                              className: "hover:text-rose-900 cursor-pointer p-0.5",
-                                              title: "Clear Chassis Filter",
-                                              children: i.jsx(Xs, { className: "w-3.5 h-3.5" })
-                                            })
-                                          ]
+                                        i.jsx("div", {
+                                          className: "w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-base shrink-0 shadow-md shadow-orange-600/20",
+                                          children: "🔧"
                                         }),
-                                        i.jsx("span", {
-                                          className: "text-[11px] font-bold text-orange-200 hidden md:inline-block",
-                                          children: e === "te" ? "⚡ ఎక్సెల్ మాదిరిగా నేరుగా ఎడిట్ మరియు ఫిల్టర్ చేయవచ్చు" : "⚡ Real-time Excel Spreadsheet & Interactive Records"
+                                        i.jsx("div", {
+                                          className: "text-base font-black text-slate-900",
+                                          children: e === "te" ? "జాబ్ కార్డ్ డేటా" : "Job Cards Data"
+                                        }),
+                                      ]
+                                    }),
+                                    jobCardsChassisFilter && i.jsxs("div", {
+                                      className: "flex items-center gap-1.5 bg-amber-100 text-amber-900 font-bold px-3 py-1.5 rounded-full text-xs",
+                                      children: [
+                                        i.jsxs("span", { children: ["Chassis: ", i.jsx("span", { className: "font-mono", children: jobCardsChassisFilter })] }),
+                                        i.jsx("button", {
+                                          type: "button",
+                                          onClick: () => setJobCardsChassisFilter(""),
+                                          className: "hover:text-rose-700 cursor-pointer p-0.5",
+                                          title: "Clear Chassis Filter",
+                                          children: i.jsx(Xs, { className: "w-3.5 h-3.5" })
                                         })
                                       ]
                                     })
