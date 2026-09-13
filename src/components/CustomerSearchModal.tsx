@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { X, Search } from "lucide-react";
 
 export function CustomerSearchModal({
@@ -17,8 +17,6 @@ export function CustomerSearchModal({
   language: string;
 }) {
   const [searchInput, setSearchInput] = useState("");
-  const [searchBy, setSearchBy] = useState<"chassis" | "name" | "mobile">("chassis");
-  const [searchResults, setSearchResults] = useState<any>(null);
 
   const normalizeText = (text: string) => {
     return text
@@ -29,51 +27,47 @@ export function CustomerSearchModal({
       || "";
   };
 
-  const handleSearch = () => {
+  const searchResults = useMemo(() => {
     if (!searchInput.trim()) {
-      setSearchResults(null);
-      return;
+      return null;
     }
 
     const query = normalizeText(searchInput);
     let foundCustomer = null;
 
-    // Search for customer
+    // Search across all fields (chassis, name, mobile)
     for (const customer of customers) {
-      let match = false;
+      const ch = normalizeText(
+        customer["Chassis no"] ||
+          customer.chassisNo ||
+          customer.chassis ||
+          ""
+      );
+      const nm = normalizeText(
+        customer["Customer Name"] ||
+          customer.custName ||
+          customer.customerName ||
+          ""
+      );
+      const ph = normalizeText(
+        customer["Mobile Number"] || customer.mobileNumber || customer.phone || ""
+      );
 
-      if (searchBy === "chassis") {
-        const ch = normalizeText(
-          customer["Chassis no"] ||
-            customer.chassisNo ||
-            customer.chassis ||
-            ""
-        );
-        match = ch.includes(query) || query.includes(ch);
-      } else if (searchBy === "name") {
-        const nm = normalizeText(
-          customer["Customer Name"] ||
-            customer.custName ||
-            customer.customerName ||
-            ""
-        );
-        match = nm.includes(query) || query.includes(nm);
-      } else if (searchBy === "mobile") {
-        const ph = normalizeText(
-          customer["Mobile Number"] || customer.mobileNumber || customer.phone || ""
-        );
-        match = ph.includes(query) || query.includes(ph);
-      }
-
-      if (match) {
+      if (
+        ch.includes(query) ||
+        query.includes(ch) ||
+        nm.includes(query) ||
+        query.includes(nm) ||
+        ph.includes(query) ||
+        query.includes(ph)
+      ) {
         foundCustomer = customer;
         break;
       }
     }
 
     if (!foundCustomer) {
-      setSearchResults({ found: false });
-      return;
+      return { found: false };
     }
 
     // Get customer's job cards
@@ -96,13 +90,13 @@ export function CustomerSearchModal({
       return compChassis.includes(chasisNo) || chasisNo.includes(compChassis);
     });
 
-    setSearchResults({
+    return {
       found: true,
       customer: foundCustomer,
       jobCards: custJobCards,
       complaints: custComplaints,
-    });
-  };
+    };
+  }, [searchInput, customers, jobCards, complaints]);
 
   if (!isOpen) return null;
 
@@ -126,45 +120,19 @@ export function CustomerSearchModal({
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Search Inputs */}
-          <div className="space-y-3">
-            <div className="flex gap-2">
-              <select
-                value={searchBy}
-                onChange={(e) => setSearchBy(e.target.value as any)}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
-              >
-                <option value="chassis">
-                  {language === "te" ? "చాసిస్ నంబర్" : "Chassis Number"}
-                </option>
-                <option value="name">
-                  {language === "te" ? "కస్టమర్ పేరు" : "Customer Name"}
-                </option>
-                <option value="mobile">
-                  {language === "te" ? "మొబైల్ నంబర్" : "Mobile Number"}
-                </option>
-              </select>
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                placeholder={
-                  language === "te"
-                    ? "ఇక్కడ టైప్ చేయండి..."
-                    : "Type here..."
-                }
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg text-sm"
-              />
-              <button
-                onClick={handleSearch}
-                className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <Search className="w-4 h-4" />
-                {language === "te" ? "సర్చ్" : "Search"}
-              </button>
-            </div>
-          </div>
+          {/* Search Input */}
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            autoFocus
+            placeholder={
+              language === "te"
+                ? "చాసిస్ నం, కస్టమర్ పేరు లేదా ఫోన్ నం..."
+                : "Chassis no, customer name, or phone..."
+            }
+            className="w-full px-4 py-2 border-2 border-slate-300 rounded-lg text-sm focus:border-blue-600 focus:outline-none"
+          />
 
           {/* Results */}
           {searchResults && !searchResults.found && (
