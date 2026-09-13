@@ -1554,7 +1554,7 @@ function gY() {
           if (Array.isArray(parsed) && parsed.length > 0) {
             const cleaned = parsed.filter((item: string) => item && item !== "customer_data");
             const expanded = cleaned.flatMap((item: string) =>
-              item === "customers_and_jobcards" ? ["saved_cards"] : [item]
+              (item === "customer_data" || item === "job_cards_data") ? [item] : [item]
             );
             const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
             const finalOrder = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
@@ -1601,7 +1601,7 @@ function gY() {
             if (Array.isArray(data.order) && data.order.length > 0) {
               const cleaned = data.order.filter((item: string) => item && item !== "customer_data");
               const expanded = cleaned.flatMap((item: string) =>
-                item === "customers_and_jobcards" ? ["saved_cards"] : [item]
+                (item === "customer_data" || item === "job_cards_data") ? [item] : [item]
               );
               const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
               const valid = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
@@ -10574,8 +10574,8 @@ ${b}`));
                     if (!menuKey || menuKey === "customer_data") return false;
                     if (!currentSystemUser || currentSystemUser.isAdmin) return true;
                     if (!currentSystemUser.allowedMenus || currentSystemUser.allowedMenus.length === 0) return true;
-                    if (menuKey === "customers_and_jobcards" || menuKey === "saved_cards") {
-                      return currentSystemUser.allowedMenus.includes("customers_and_jobcards") || currentSystemUser.allowedMenus.includes("saved_cards");
+                    if (menuKey === "customer_data" || menuKey === "job_cards_data" || menuKey === "saved_cards") {
+                      return currentSystemUser.allowedMenus.includes("customer_data") || currentSystemUser.allowedMenus.includes("job_cards_data") || currentSystemUser.allowedMenus.includes("saved_cards");
                     }
                     return currentSystemUser.allowedMenus.includes(menuKey);
                   }).map((d, b) => {
@@ -10601,12 +10601,12 @@ ${b}`));
                               children: e === "te" ? "ఎడిటింగ్" : "Editing",
                             })
                           : null));
-                    else if (d === "customers_and_jobcards" || d === "saved_cards" || d === "followup" || d === "customer_details") {
+                    else if (d === "customer_data" || d === "job_cards_data" || d === "saved_cards" || d === "followup" || d === "customer_details") {
                       v = n("customersAndJobCards") || (e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards");
                       j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
                       I = "bg-purple-900 text-white border-purple-900 shadow-sm";
                       N = i.jsxs("span", {
-                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "customers_and_jobcards" || c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "customer_data" || c === "job_cards_data" || c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
                         children: [`${_a.length} / ${hh.length} JC`]
                       });
                     } else if (d === "service_camp_planning") {
@@ -10855,7 +10855,7 @@ ${b}`));
                           label = e === "te" ? "అటెండెన్స్" : "Staff";
                           activeColor =
                             "bg-teal-700 text-white shadow-md ring-1 ring-teal-400";
-                        } else if (d === "customers_and_jobcards" || d === "customer_details" || d === "followup" || d === "saved_cards") {
+                        } else if (d === "customer_data" || d === "job_cards_data" || d === "customer_details" || d === "followup" || d === "saved_cards") {
                           icon = i.jsx(ql, { className: "w-4 h-4" });
                           label = e === "te" ? "కస్టమర్లు" : "Customers";
                           activeColor =
@@ -22377,43 +22377,44 @@ ${b}`));
                                 }),
                               ],
                             }),
-                          (c === "customers_and_jobcards" || c === "saved_cards" || c === "followup") &&
+                          (c === "customer_data" || c === "job_cards_data" || c === "saved_cards" || c === "followup") &&
                             i.jsxs("div", {
                               className: "w-full space-y-3",
                               children: [
-                                i.jsxs("div", {
-                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-purple-800/60",
+                                c === "customer_data" && i.jsxs("div", {
+                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-blue-950 via-blue-900 to-cyan-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-blue-800/60",
                                   children: [
+                                    i.jsx("div", {
+                                      className: "text-sm md:text-base font-black",
+                                      children: e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data"
+                                    }),
                                     i.jsxs("div", {
-                                      className: "flex items-center gap-1.5 bg-purple-950/80 p-1 rounded-xl border border-purple-800/80 shadow-inner flex-wrap",
+                                      className: "flex items-center gap-2 text-xs",
                                       children: [
-                                        i.jsxs("button", {
-                                          type: "button",
-                                          onClick: () => setCustomerJobCardsTab("customers"),
-                                          className: `px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                                            customerJobCardsTab === "customers"
-                                              ? "bg-white text-purple-950 shadow-md font-extrabold"
-                                              : "text-purple-200 hover:text-white hover:bg-purple-800/70"
-                                          }`,
-                                          children: [
-                                            i.jsx(ql, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsxs("span", { children: [e === "te" ? "కస్టమర్ మాస్టర్ ఎక్సెల్" : "Customer Master Excel", ` (${_a.length})`] })
-                                          ]
+                                        i.jsx("span", {
+                                          className: "text-[11px] font-bold text-blue-200 hidden md:inline-block",
+                                          children: e === "te" ? "⚡ ఎక్సెల్ మాదిరిగా నేరుగా ఎడిట్ మరియు ఫిల్టర్ చేయవచ్చు" : "⚡ Real-time Excel Spreadsheet & Interactive Records"
                                         }),
                                         i.jsxs("button", {
                                           type: "button",
-                                          onClick: () => setCustomerJobCardsTab("jobcards"),
-                                          className: `px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                                            customerJobCardsTab === "jobcards"
-                                              ? "bg-white text-purple-950 shadow-md font-extrabold"
-                                              : "text-purple-200 hover:text-white hover:bg-purple-800/70"
-                                          }`,
+                                          onClick: T,
+                                          className: "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer",
+                                          title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
                                           children: [
-                                            i.jsx(dd, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsxs("span", { children: [e === "te" ? "సేవ్ చేసిన జాబ్ కార్డులు" : "Saved Job Cards", ` (${hh.length})`] })
+                                            i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
+                                            i.jsx("span", { children: e === "te" ? "+ కొత్త కస్టమర్" : "+ Add Customer" })
                                           ]
                                         })
                                       ]
+                                    })
+                                  ]
+                                }),
+                                c === "job_cards_data" && i.jsxs("div", {
+                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-amber-950 via-orange-900 to-red-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-orange-800/60",
+                                  children: [
+                                    i.jsx("div", {
+                                      className: "text-sm md:text-base font-black",
+                                      children: e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data"
                                     }),
                                     i.jsxs("div", {
                                       className: "flex items-center gap-2 text-xs",
@@ -22432,24 +22433,14 @@ ${b}`));
                                           ]
                                         }),
                                         i.jsx("span", {
-                                          className: "text-[11px] font-bold text-purple-200 hidden md:inline-block",
+                                          className: "text-[11px] font-bold text-orange-200 hidden md:inline-block",
                                           children: e === "te" ? "⚡ ఎక్సెల్ మాదిరిగా నేరుగా ఎడిట్ మరియు ఫిల్టర్ చేయవచ్చు" : "⚡ Real-time Excel Spreadsheet & Interactive Records"
-                                        }),
-                                        i.jsxs("button", {
-                                          type: "button",
-                                          onClick: T,
-                                          className: "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer",
-                                          title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
-                                          children: [
-                                            i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsx("span", { children: e === "te" ? "+ కొత్త కస్టమర్" : "+ Add Customer" })
-                                          ]
                                         })
                                       ]
                                     })
                                   ]
                                 }),
-                                customerJobCardsTab === "customers" && i.jsx(MasterCustomerExcelTable, {
+                                c === "customer_data" && i.jsx(MasterCustomerExcelTable, {
                                   customers: _a,
                                   allCards: hh,
                                   language: e,
@@ -22473,10 +22464,10 @@ ${b}`));
                                   },
                                   onViewJobCardsForChassis: (chassisNo) => {
                                     setJobCardsChassisFilter(chassisNo);
-                                    setCustomerJobCardsTab("jobcards");
+                                    u("job_cards_data");
                                   }
                                 }),
-                                customerJobCardsTab === "jobcards" && i.jsx(SavedJobCardsExcelTable, {
+                                c === "job_cards_data" && i.jsx(SavedJobCardsExcelTable, {
                                   cards: hh,
                                   allCards: hh,
                                   language: e,
@@ -22628,7 +22619,8 @@ ${b}`));
                               allMenus: [
                                 { key: "dashboard", label: e === "te" ? "📊 డాష్‌బోర్డ్" : "📊 Dashboard" },
                                 { key: "new_entry", label: e === "te" ? "✍️ కొత్త జాబ్ కార్డ్" : "✍️ New Job Card Entry" },
-                                { key: "customers_and_jobcards", label: e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards" },
+                                { key: "customer_data", label: e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data" },
+                                { key: "job_cards_data", label: e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data" },
                                 { key: "service_camp_planning", label: e === "te" ? "⛺ సర్వీస్ క్యాంప్ ప్లానింగ్" : "⛺ Service Camp Planning" },
                                 { key: "free_service_followup", label: e === "te" ? "🛠️ ఉచిత సర్వీస్ ఫాలో-అప్" : "🛠️ Free Service Followup" },
                                 { key: "telecalling", label: e === "te" ? "📞 టెలి కాలింగ్ డెస్క్" : "📞 Tele Calling Desk" },
