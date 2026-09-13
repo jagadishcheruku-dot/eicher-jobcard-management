@@ -10582,7 +10582,7 @@ ${b}`));
                   className: "flex-1 p-2 md:p-3 space-y-2 overflow-y-auto",
                   children: [
                     w.filter((menuKey: string) => {
-                    if (!menuKey || menuKey === "customer_data") return false;
+                    if (!menuKey) return false;
                     if (!currentSystemUser || currentSystemUser.isAdmin) return true;
                     if (!currentSystemUser.allowedMenus || currentSystemUser.allowedMenus.length === 0) return true;
                     if (menuKey === "customer_data" || menuKey === "job_cards_data" || menuKey === "saved_cards") {
@@ -10612,12 +10612,28 @@ ${b}`));
                               children: e === "te" ? "ఎడిటింగ్" : "Editing",
                             })
                           : null));
-                    else if (d === "customer_data" || d === "job_cards_data" || d === "saved_cards" || d === "followup" || d === "customer_details") {
+                    else if (d === "customer_data") {
+                      v = e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data";
+                      j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
+                      I = c === "customer_data" ? "bg-blue-900 text-white border-blue-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
+                      N = i.jsx("span", {
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${c === "customer_data" ? "bg-blue-800 text-white" : "bg-blue-100 text-blue-900"}`,
+                        children: _a.length
+                      });
+                    } else if (d === "job_cards_data") {
+                      v = e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data";
+                      j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
+                      I = c === "job_cards_data" ? "bg-orange-900 text-white border-orange-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
+                      N = i.jsx("span", {
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${c === "job_cards_data" ? "bg-orange-800 text-white" : "bg-orange-100 text-orange-900"}`,
+                        children: hh.length
+                      });
+                    } else if (d === "saved_cards" || d === "followup" || d === "customer_details") {
                       v = n("customersAndJobCards") || (e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards");
                       j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
                       I = "bg-purple-900 text-white border-purple-900 shadow-sm";
                       N = i.jsxs("span", {
-                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "customer_data" || c === "job_cards_data" || c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
                         children: [`${_a.length} / ${hh.length} JC`]
                       });
                     } else if (d === "service_camp_planning") {
