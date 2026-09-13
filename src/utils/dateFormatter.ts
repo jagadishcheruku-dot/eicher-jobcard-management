@@ -200,17 +200,15 @@ export function formatDisplayDate(val: any, fallback = "—"): string {
 }
 
 /**
- * Preserves the exact imported delivery date text if present (e.g. "1/5/2025", "01/05/2025", "2025-05-01"),
- * or formats Excel numeric serial numbers cleanly.
+ * Normalizes any imported delivery date value (e.g. "1/5/2025", "01/05/2025", "2025-05-01",
+ * Excel numeric serial numbers) to the standard DD-MMM-YYYY display format, regardless of
+ * how it was originally uploaded, so every row shows a consistent format.
  */
 export function formatDeliveryDisplayDate(val: any, fallback = "—"): string {
   if (val == null || val === "") return fallback;
   const s = String(val).trim();
   if (!s || s === "—" || s === "-" || s === "null" || s === "undefined") return fallback;
-  if (s.includes("/") || s.includes("-") || s.includes(".")) {
-    return s;
-  }
-  return formatDisplayDate(val, fallback);
+  return formatDisplayDate(val, s);
 }
 
 /**

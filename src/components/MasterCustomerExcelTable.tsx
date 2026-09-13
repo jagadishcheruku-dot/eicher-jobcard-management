@@ -301,14 +301,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         "";
       if (!rawDel) return "";
       const rawStr = String(rawDel).trim();
-      // If already formatted like 1/5/2025, 01/05/2025, 12-05-2025, preserve original imported text
-      if (
-        rawStr.includes("/") ||
-        rawStr.includes("-") ||
-        rawStr.includes(".")
-      ) {
-        return rawStr;
-      }
+      // Always normalize to the standard DD-MMM-YYYY format regardless of how it was uploaded
       return formatDisplayDate(rawDel, rawStr);
     }
 
@@ -505,9 +498,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           "";
         if (!rawDel) return "";
         const rawDelStr = String(rawDel).trim();
-        if (rawDelStr.includes("/") || rawDelStr.includes("-") || rawDelStr.includes(".")) {
-          return rawDelStr;
-        }
+        // Always normalize to the standard DD-MMM-YYYY format regardless of how it was uploaded
         return formatDisplayDate(rawDel, rawDelStr);
       case "Customer Name":
       case "custName":
