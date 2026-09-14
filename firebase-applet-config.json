@@ -1,12 +1,11 @@
 {
-  "projectId": "inspiring-progress-q6shk",
-  "appId": "1:905170405655:web:5d6a05d5b84d16bd510f52",
-  "apiKey": "AIzaSyBnSF-T-ZKFkaSI3yf6mcks75qasX-SqD8",
-  "authDomain": "inspiring-progress-q6shk.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-newjobcardentry-770fa411-2eed-4762-a720-d623ec3d035d",
-  "storageBucket": "inspiring-progress-q6shk.firebasestorage.app",
-  "messagingSenderId": "905170405655",
-  "measurementId": "",
-  "oAuthClientId": "905170405655-6r5c1hqt71p993tmfd7kp4lnaplbsglj.apps.googleusercontent.com",
+  "projectId": "eicher-jobcard-management",
+  "appId": "1:470719498844:web:9117b16590d973d9ccf499",
+  "apiKey": "AIzaSyBcMIcHLwydy-Nyzt3RA-zUyUhdkzfSRo",
+  "authDomain": "eicher-jobcard-management.firebaseapp.com",
+  "storageBucket": "eicher-jobcard-management.firebasestorage.app",
+  "messagingSenderId": "470719498844",
+  "measurementId": "G-Q5W7DR1K0Y",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
