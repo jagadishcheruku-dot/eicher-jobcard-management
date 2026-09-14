@@ -747,6 +747,50 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
 
         return statusPart;
       }
+      case "Service Due Status":
+      case "serviceDueStatus": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return isTe ? "━━ డేటా లేదు" : "━━ No Data";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return isTe ? "━━ సేవ నేను" : "━━ No Service";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const lastDate = new Date(lastCard.jobDate || lastCard.date || "");
+        const today = new Date();
+        const daysSinceService = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Service reminder logic:
+        // - If < 15 days: Recently serviced (Green)
+        // - If 15-60 days: Normal (Gray)
+        // - If 60-180 days: Due soon (Yellow)
+        // - If > 180 days: Overdue (Red)
+        if (daysSinceService < 0) {
+          return isTe ? "📅 ఫ్యూచర్ డేట్" : "📅 Future Date";
+        } else if (daysSinceService <= 15) {
+          return isTe ? `✅ ${daysSinceService} రోజుల ముందు` : `✅ ${daysSinceService} days ago`;
+        } else if (daysSinceService <= 60) {
+          return isTe ? `📋 ${daysSinceService} రోజుల ముందు` : `📋 ${daysSinceService} days ago`;
+        } else if (daysSinceService <= 180) {
+          return isTe ? `⚠️ సేవ వద్దు! ${daysSinceService} రోజులు` : `⚠️ Due Soon! ${daysSinceService} days`;
+        } else {
+          return isTe ? `🔴 చెల్లిపోయిన! ${daysSinceService} రోజులు` : `🔴 Overdue! ${daysSinceService} days`;
+        }
+      }
       default: {
         const val = cust[colKey] !== undefined ? cust[colKey] : (fd && fd[colKey] !== undefined ? fd[colKey] : "");
         if (typeof colKey === "string" && (colKey.toLowerCase().includes("date") || colKey.toLowerCase().includes("del") || colKey.toLowerCase() === "dod")) {
@@ -973,6 +1017,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     { key: "Last Service Date", label: isTe ? "చివరి సేవ తేదీ" : "Last Service Date", width: "w-32 min-w-[130px]" },
     { key: "Last Service Hours", label: isTe ? "చివరి సేవ గంటలు" : "Last Service Hours", width: "w-28 min-w-[110px]" },
     { key: "Last Service Type", label: isTe ? "చివరి సేవ రకం" : "Last Service Type", width: "w-40 min-w-[160px]" },
+    { key: "Service Due Status", label: isTe ? "సేవ సమితి స్థితి" : "Service Due Status", width: "w-36 min-w-[140px]" },
     { key: "Distict", label: "Distict", width: "w-32 min-w-[130px]" },
     { key: "PIN CODE", label: "PIN CODE", width: "w-28 min-w-[110px]" },
     { key: "DSP Name", label: "DSP Name", width: "w-36 min-w-[140px]" },
