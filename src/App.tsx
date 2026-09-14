@@ -16082,7 +16082,7 @@ ${b}`));
                                             }),
                                             i.jsxs("div", {
                                               className:
-                                                "card-p1-body space-y-1.5 my-1",
+                                                "card-p1-body space-y-1.5",
                                               children: [
                                                 i.jsxs("div", {
                                                   className: "mb-0.5",

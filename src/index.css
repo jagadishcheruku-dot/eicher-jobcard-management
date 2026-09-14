@@ -63,7 +63,7 @@
     height: 276mm !important;
     min-height: 276mm !important;
     max-height: 276mm !important;
-    padding: 2mm 3.5mm !important;
+    padding: 2mm 3.5mm 1mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
     border: 2px solid #1e3a8a !important; /* solid blue-900 border */
@@ -144,20 +144,20 @@
     print-color-adjust: exact !important;
   }
 
-  /* Preserve vertical spacing identical to live preview */
+  /* Minimize vertical spacing to eliminate gaps at bottom of pages */
   .card-p1 [class*="space-y-1.5"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-1.5"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 6px !important;
+    margin-top: 2px !important;
     margin-bottom: 0 !important;
   }
   .card-p1 [class*="space-y-1"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-1"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 4px !important;
+    margin-top: 2px !important;
     margin-bottom: 0 !important;
   }
   .card-p1 [class*="space-y-0.5"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-0.5"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 2px !important;
+    margin-top: 1px !important;
     margin-bottom: 0 !important;
   }
 
