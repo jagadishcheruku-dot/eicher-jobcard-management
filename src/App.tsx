@@ -1713,7 +1713,9 @@ function gY() {
     },
     [ut, me] = ce.useState(!1),
     [ht, re] = ce.useState(!1),
-    [H, Q] = ce.useState(!1);
+    [H, Q] = ce.useState(!1),
+    [lookupSearchText, setLookupSearchText] = ce.useState(""),
+    [showLookupResults, setShowLookupResults] = ce.useState(!1);
   ce.useEffect(() => {
     typeof window < "u" && window.innerWidth < 768 && C(!0);
   }, []);
@@ -11355,29 +11357,88 @@ ${b}`));
                                         ],
                                       }),
                                       i.jsxs("div", {
-                                        onClick: sf,
                                         className:
-                                          "bg-red-50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                          "bg-red-50 border border-red-200 rounded-xl shadow-2xs transition-all" + (showLookupResults ? " p-3 space-y-2" : " p-2.5"),
                                         children: [
                                           i.jsxs("div", {
+                                            onClick: () => setShowLookupResults(!showLookupResults),
+                                            className:
+                                              "flex items-center justify-between cursor-pointer hover:bg-red-100 p-1 rounded transition-colors",
                                             children: [
-                                              i.jsx("div", {
-                                                className:
-                                                  "text-[10px] font-extrabold text-red-900 uppercase",
-                                                children:
-                                                  "Eicher Follow-up Lookup",
+                                              i.jsxs("div", {
+                                                children: [
+                                                  i.jsx("div", {
+                                                    className:
+                                                      "text-[10px] font-extrabold text-red-900 uppercase",
+                                                    children:
+                                                      "Eicher Follow-up Lookup",
+                                                  }),
+                                                  i.jsx("div", {
+                                                    className:
+                                                      "text-[9px] font-bold text-red-700 underline",
+                                                    children: "Quick Search →",
+                                                  }),
+                                                ],
                                               }),
                                               i.jsx("div", {
                                                 className:
-                                                  "text-[9px] font-bold text-red-700 underline",
-                                                children: "Quick Search →",
+                                                  "text-lg font-black text-red-600",
+                                                children: showLookupResults ? "🔽" : "📞",
                                               }),
                                             ],
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-lg font-black text-red-600",
-                                            children: "📞",
+                                          showLookupResults && i.jsxs(i.Fragment, {
+                                            children: [
+                                              i.jsx("input", {
+                                                type: "text",
+                                                placeholder: "Customer name / Mobile / Chassis...",
+                                                value: lookupSearchText,
+                                                onChange: (e) => setLookupSearchText(e.target.value),
+                                                className:
+                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-red-300 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-300 bg-white text-slate-900",
+                                              }),
+                                              lookupSearchText.trim() && i.jsx("div", {
+                                                className:
+                                                  "space-y-1 max-h-48 overflow-y-auto bg-white rounded border border-red-200 p-2",
+                                                children: a.filter((cust) => {
+                                                  const q = lookupSearchText.toLowerCase();
+                                                  const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
+                                                  const phone = (cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "").toString();
+                                                  const chassis = (cust.chassisNo || cust["Chassis no"] || "").toLowerCase();
+                                                  return name.includes(q) || phone.includes(q) || chassis.includes(q);
+                                                }).slice(0, 5).map((cust, idx) => {
+                                                  const custName = cust.customerName || cust["Customer Name"] || "Customer";
+                                                  const custPhone = cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "—";
+                                                  const custChassis = cust.chassisNo || cust["Chassis no"] || "—";
+                                                  return i.jsxs("div", {
+                                                    onClick: () => {
+                                                      setLookupSearchText("");
+                                                      setShowLookupResults(!1);
+                                                      sf();
+                                                    },
+                                                    className:
+                                                      "p-1.5 bg-red-50 hover:bg-red-100 rounded text-[8px] cursor-pointer border-l-2 border-red-500 transition-all",
+                                                    children: [
+                                                      i.jsx("div", {
+                                                        className:
+                                                          "font-bold text-red-900",
+                                                        children: custName,
+                                                      }),
+                                                      i.jsx("div", {
+                                                        className:
+                                                          "text-red-700",
+                                                        children: `📱 ${custPhone}`,
+                                                      }),
+                                                      i.jsx("div", {
+                                                        className:
+                                                          "text-red-600",
+                                                        children: `🚗 ${custChassis}`,
+                                                      }),
+                                                    ],
+                                                  }, idx);
+                                                }),
+                                              }),
+                                            ],
                                           }),
                                         ],
                                       }),
