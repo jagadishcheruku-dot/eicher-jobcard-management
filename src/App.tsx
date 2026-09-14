@@ -12158,7 +12158,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("free_service_followup"),
+                                          (u("telecalling"),
                                             Us("date_report"),
                                             Xa(ns),
                                             Vn(ns));
@@ -12191,7 +12191,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("free_service_followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("today"));
                                         },
@@ -12225,7 +12225,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("free_service_followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("overdue"));
                                         },
@@ -12259,7 +12259,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("free_service_followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("upcoming"));
                                         },
