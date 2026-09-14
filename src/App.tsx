@@ -17085,6 +17085,55 @@ ${b}`));
                                       }),
                                   ],
                                 }),
+                                i.jsxs("div", {
+                                  className:
+                                    "flex flex-wrap items-center justify-end gap-2 bg-white p-3 rounded-xl shadow-md border border-slate-200 print:hidden sticky bottom-2 z-20",
+                                  children: [
+                                    i.jsx("span", {
+                                      className: "text-[11px] font-bold text-slate-500 mr-auto",
+                                      children: ki
+                                        ? (e === "te" ? "ఈ జాబ్ కార్డ్‌ను సవరిస్తున్నారు" : "Editing this job card")
+                                        : (e === "te" ? "కొత్త జాబ్ కార్డ్ ఎంట్రీ" : "New job card entry"),
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      onClick: Cc,
+                                      className:
+                                        "py-2.5 px-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer",
+                                      children: [
+                                        i.jsx(WK, { className: "w-3.5 h-3.5" }),
+                                        " ",
+                                        e === "te" ? "ఫారం రీసెట్" : "Reset Form",
+                                      ],
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      disabled: isSavingJobCard,
+                                      onClick: () => tx({ shouldClear: true, silent: false }),
+                                      className: `py-2.5 px-5 ${isSavingJobCard ? "bg-emerald-400 cursor-not-allowed opacity-80" : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"} text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 shadow-xs`,
+                                      children: [
+                                        isSavingJobCard
+                                          ? i.jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" })
+                                          : i.jsx(cf, { className: "w-4 h-4" }),
+                                        " ",
+                                        ki
+                                          ? (e === "te" ? "జాబ్ కార్డ్ అప్‌డేట్" : "Update Job Card")
+                                          : (e === "te" ? "జాబ్ కార్డ్ సేవ్ చేయండి" : "Save to List"),
+                                      ],
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      onClick: handlePrintJobCard,
+                                      className:
+                                        "py-2.5 px-4 bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
+                                      children: [
+                                        i.jsx(Lb, { className: "w-4 h-4" }),
+                                        " ",
+                                        e === "te" ? "ప్రింట్ చేయండి" : "Print",
+                                      ],
+                                    }),
+                                  ],
+                                }),
                               ],
                             }),
                           c === "reports" &&
