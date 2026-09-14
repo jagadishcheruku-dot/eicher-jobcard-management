@@ -56,14 +56,11 @@
     break-inside: avoid !important;
   }
 
-  /* CARD PAGE 1 - Exact A4 Container matching Live Preview */
+  /* CARD PAGE 1 - A4 Container with flexible height to eliminate gaps */
   .card-p1 {
     width: 100% !important;
     max-width: 190mm !important;
-    height: 276mm !important;
-    min-height: 276mm !important;
-    max-height: 276mm !important;
-    padding: 2mm 3.5mm 1mm 3.5mm !important;
+    padding: 2mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
     border: 2px solid #1e3a8a !important; /* solid blue-900 border */
@@ -74,21 +71,17 @@
     justify-content: flex-start !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: auto !important;
-    break-after: auto !important;
-    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: page !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
 
-  /* CARD PAGE 2 - Exact A4 Container matching Live Preview */
+  /* CARD PAGE 2 - A4 Container with flexible height to eliminate gaps */
   .card-p2 {
     width: 100% !important;
     max-width: 190mm !important;
-    height: 276mm !important;
-    min-height: 276mm !important;
-    max-height: 276mm !important;
     padding: 2.5mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
@@ -100,7 +93,6 @@
     justify-content: flex-start !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    overflow: hidden !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
