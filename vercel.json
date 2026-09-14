@@ -2,6 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
+  "trailingSlash": false,
+  "cleanUrls": true,
   "env": {
     "NODE_ENV": "production"
   },
@@ -17,24 +19,11 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
+          "value": "public, max-age=3600, s-maxage=3600"
         },
         {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     }
