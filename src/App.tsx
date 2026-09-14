@@ -2386,12 +2386,11 @@ function gY() {
   }, [Br]);
 
   ce.useEffect(() => {
-    if (!ki && (!ho || ho.trim() === "")) {
+    if (!ki && (!lo || lo.trim() === "")) {
       const nextJc = getNextJobCardNumber();
-      Gm(nextJc);
       qd(nextJc);
     }
-  }, [ki, ho, getNextJobCardNumber]);
+  }, [ki, lo, getNextJobCardNumber]);
   ce.useEffect(() => {
     try {
       localStorage.setItem("sri_service_interval_days", Zu.toString());
@@ -5534,7 +5533,7 @@ function gY() {
         zs(""),
         Zd(""),
         wn(""),
-        Gm(nextJc),
+        Gm(""),
         Ks(""),
         Zc(""),
         eh(""),
@@ -5684,7 +5683,6 @@ function gY() {
         let jobCardNum = String(ho || lo || "").trim();
         if (!jobCardNum && !ki) {
           jobCardNum = getNextJobCardNumber();
-          Gm(jobCardNum);
           qd(jobCardNum);
         }
         const d = String(fs || "").trim(),
@@ -5723,9 +5721,9 @@ function gY() {
           Ee = {
             id: I,
             serviceLocation: Gn,
-            jobNo: b || lo,
+            jobNo: lo || b,
             complaintDate: Tl,
-            onlineJobCardNo: b || lo,
+            onlineJobCardNo: String(ho || "").trim(),
             jobDate: _l,
             branch: pg || currentSystemUser?.branch || (adminBranchFilter !== "All Branches (Master)" ? adminBranchFilter : "Tiruvuru"),
             historyFileNo: Jo,
