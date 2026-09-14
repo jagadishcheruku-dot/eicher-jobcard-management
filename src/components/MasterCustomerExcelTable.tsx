@@ -641,6 +641,84 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             fd.exchangeModels ||
             ""
         ).trim();
+      case "Last Service Date":
+      case "lastServiceDate": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const lastDate = lastCard.jobDate || lastCard.date || "";
+        return lastDate ? formatDisplayDate(lastDate, String(lastDate)) : "";
+      }
+      case "Last Service Hours":
+      case "lastServiceHours": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const hours = lastCard.hoursRun || lastCard.hourMeter || lastCard.hours || "";
+        return hours ? String(hours).trim() : "";
+      }
+      case "Last Service Type":
+      case "lastServiceType": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const serviceType = lastCard.serviceType || lastCard.service_type || "";
+        return serviceType ? String(serviceType).trim() : "";
+      }
       default: {
         const val = cust[colKey] !== undefined ? cust[colKey] : (fd && fd[colKey] !== undefined ? fd[colKey] : "");
         if (typeof colKey === "string" && (colKey.toLowerCase().includes("date") || colKey.toLowerCase().includes("del") || colKey.toLowerCase() === "dod")) {
@@ -864,6 +942,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     { key: "VILLAGE", label: "VILLAGE", width: "w-40 min-w-[160px]" },
     { key: "Mandal", label: "Mandal", width: "w-36 min-w-[140px]" },
     { key: "Mobile Number", label: "Mobile Number", width: "w-36 min-w-[140px]" },
+    { key: "Last Service Date", label: isTe ? "చివరి సేవ తేదీ" : "Last Service Date", width: "w-32 min-w-[130px]" },
+    { key: "Last Service Hours", label: isTe ? "చివరి సేవ గంటలు" : "Last Service Hours", width: "w-28 min-w-[110px]" },
+    { key: "Last Service Type", label: isTe ? "చివరి సేవ రకం" : "Last Service Type", width: "w-40 min-w-[160px]" },
     { key: "Distict", label: "Distict", width: "w-32 min-w-[130px]" },
     { key: "PIN CODE", label: "PIN CODE", width: "w-28 min-w-[110px]" },
     { key: "DSP Name", label: "DSP Name", width: "w-36 min-w-[140px]" },
