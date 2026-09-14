@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import './index.css';
+import './lib/clearLegacyCache';
 import './lib/migrateToSupabase';
 
 // Check whether an argument contains ignorable network/auth errors in preview sandbox

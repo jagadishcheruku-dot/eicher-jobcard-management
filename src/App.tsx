@@ -38,7 +38,14 @@ import {
   onAuthStateChanged as rH,
   User,
 } from "firebase/auth";
-import { auth as ey, db as kt } from "./firebase";
+import { auth as ey, db as firestoreDb } from "./firebase";
+import { isSupabaseConfigured } from "./lib/supabase";
+
+// Once Supabase holds the records, the direct Firestore reads and listeners in
+// this file would keep pushing the old copies into the UI alongside them. They
+// are all guarded by `kt`, so dropping it here silences every one of them.
+// authService keeps its own Firestore handle for the sign-in accounts.
+const kt = isSupabaseConfigured ? null : firestoreDb;
 import {
   collection as ci,
   doc as Qs,
@@ -2379,7 +2386,7 @@ function gY() {
 
   ce.useEffect(() => {
     try {
-      const unsubUsers = Gp(ci(kt, "system_users"), (snapshot) => {
+      const unsubUsers = Gp(ci(firestoreDb, "system_users"), (snapshot) => {
         if (!snapshot.empty) {
           const uList: any[] = [];
           snapshot.forEach((docSnap) => {
@@ -2402,7 +2409,7 @@ function gY() {
         console.warn("Firestore system_users listener error:", err);
       });
 
-      const unsubBranches = Gp(Qs(kt, "settings", "branches"), (docSnap) => {
+      const unsubBranches = Gp(Qs(firestoreDb, "settings", "branches"), (docSnap) => {
         if (docSnap.exists() && Array.isArray(docSnap.data()?.list)) {
           setSystemBranches(docSnap.data().list);
           setLocalBranches(docSnap.data().list);
