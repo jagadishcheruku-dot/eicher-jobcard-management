@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   getFirestore,
   collection,
@@ -23,7 +23,9 @@ const firebaseConfig = {
   measurementId: "G-Q5W7DR1K0Y",
 };
 
-const app = initializeApp(firebaseConfig);
+// Reuse the app initialized in src/firebase.ts — a second initializeApp() with a
+// different config throws app/duplicate-app at module load and blanks the page.
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 // Collection names
