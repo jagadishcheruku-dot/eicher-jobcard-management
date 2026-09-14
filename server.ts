@@ -243,6 +243,75 @@ async function ensureDbTables() {
 }
 ensureDbTables();
 
+// Initialize test data if empty
+async function initializeTestData() {
+  try {
+    const existingCards = localDb.getJobCards();
+    if (!existingCards || existingCards.length === 0) {
+      const testCards = [
+        {
+          id: '1',
+          job_no: 'JOB001',
+          online_job_card_no: 'OJOB001',
+          job_date: new Date().toISOString().split('T')[0],
+          cust_name: 'Sample Customer 1',
+          regd_no: 'TN01AB1234',
+          chassis_no: 'CH001',
+          model: 'Eicher Pro',
+          service_type: 'Free Service',
+          status: 'Completed',
+          bill_no: 'BILL001',
+          total_labour: '0',
+          warranty_material: '0',
+          non_warranty_material: '0',
+          g_total: '0'
+        },
+        {
+          id: '2',
+          job_no: 'JOB002',
+          online_job_card_no: 'OJOB002',
+          job_date: new Date().toISOString().split('T')[0],
+          cust_name: 'Sample Customer 2',
+          regd_no: 'TN02CD5678',
+          chassis_no: 'CH002',
+          model: 'Eicher Pro Truck',
+          service_type: 'Paid Service',
+          status: 'Pending',
+          bill_no: 'BILL002',
+          total_labour: '500',
+          warranty_material: '0',
+          non_warranty_material: '1000',
+          g_total: '1500'
+        },
+        {
+          id: '3',
+          job_no: 'JOB003',
+          online_job_card_no: 'OJOB003',
+          job_date: new Date().toISOString().split('T')[0],
+          cust_name: 'Sample Customer 3',
+          regd_no: 'TN03EF9012',
+          chassis_no: 'CH003',
+          model: 'Eicher 20.16',
+          service_type: 'Warranty',
+          status: 'Completed',
+          bill_no: 'BILL003',
+          total_labour: '200',
+          warranty_material: '2000',
+          non_warranty_material: '0',
+          g_total: '2200'
+        }
+      ];
+
+      localDb.bulkUpsertJobCards(testCards, true);
+      await syncJobCardsToFirestore(testCards);
+      console.log('✅ Initialized 3 test job cards');
+    }
+  } catch (err) {
+    console.warn('Test data initialization notice:', err);
+  }
+}
+initializeTestData();
+
 // Helper functions for normalization
 function normKey(str: any): string {
   return String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
