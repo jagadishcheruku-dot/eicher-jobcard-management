@@ -152,24 +152,27 @@ export function CustomerSearchModal({
           {searchResults?.found && (
             <div className="space-y-3">
               {/* Customer Details */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0">👤</span>
-                  <h3 className="font-black text-blue-950 text-[15px]">
-                    {field(searchResults.customer, "Customer Name", "custName")}
-                  </h3>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border-2 border-blue-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white flex items-center justify-center text-lg shrink-0 shadow-md">👤</span>
+                  <div>
+                    <h3 className="font-black text-blue-950 text-[16px] leading-tight">
+                      {field(searchResults.customer, "Customer Name", "custName")}
+                    </h3>
+                    <p className="text-xs text-blue-700 font-bold">{language === "te" ? "కస్టమర్ సమాచారం" : "Customer Information"}</p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {[
-                    [language === "te" ? "చాసిస్" : "Chassis", field(searchResults.customer, "Chassis no", "chassisNo")],
-                    [language === "te" ? "ఫోన్" : "Phone", field(searchResults.customer, "Mobile Number", "mobileNumber")],
-                    [language === "te" ? "మోడల్" : "Model", field(searchResults.customer, "Model", "model")],
-                    [language === "te" ? "డెలివరీ" : "Delivery", field(searchResults.customer, "Delivery Date", "deliveryDate")],
-                    [language === "te" ? "అడ్రెస్" : "Address", field(searchResults.customer, "Customer Address", "address")],
-                  ].map(([label, val], i) => (
-                    <div key={i} className={label === (language === "te" ? "అడ్రెస్" : "Address") ? "col-span-2 sm:col-span-3" : ""}>
-                      <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wide">{label}</p>
-                      <p className="text-slate-900 font-semibold truncate">{val}</p>
+                    [language === "te" ? "🚗 చాసిస్" : "🚗 Chassis", field(searchResults.customer, "Chassis no", "chassisNo"), "bg-red-100 text-red-800"],
+                    [language === "te" ? "📞 ఫోన్" : "📞 Phone", field(searchResults.customer, "Mobile Number", "mobileNumber"), "bg-emerald-100 text-emerald-800"],
+                    [language === "te" ? "🚜 మోడల్" : "🚜 Model", field(searchResults.customer, "Model", "model"), "bg-orange-100 text-orange-800"],
+                    [language === "te" ? "📅 డెలివరీ" : "📅 Delivery", field(searchResults.customer, "Delivery Date", "deliveryDate"), "bg-purple-100 text-purple-800"],
+                    [language === "te" ? "📍 అడ్రెస్" : "📍 Address", field(searchResults.customer, "Customer Address", "address"), "bg-teal-100 text-teal-800"],
+                  ].map(([label, val, bgClass], i) => (
+                    <div key={i} className={i === 4 ? "sm:col-span-2" : ""}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded inline-block ${bgClass} mb-1`}>{label}</p>
+                      <p className="text-slate-900 font-semibold text-sm break-words">{val}</p>
                     </div>
                   ))}
                 </div>
@@ -177,36 +180,41 @@ export function CustomerSearchModal({
 
               {/* Job Card History */}
               {searchResults.jobCards.length > 0 && (
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-xs shrink-0">🔧</span>
-                    <h3 className="font-black text-slate-900 text-[13px]">
-                      {language === "te" ? "జాబ్ కార్డ్ చరిత్ర" : "Job Card History"}
-                    </h3>
-                    <span className="text-[10px] font-black bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
-                      {searchResults.jobCards.length}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border-2 border-orange-200">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <span className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center text-lg shrink-0 shadow-md">🔧</span>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-[14px]">
+                        {language === "te" ? "సర్వీస్ చరిత్ర" : "Service History"}
+                      </h3>
+                      <p className="text-xs text-orange-700 font-bold">{language === "te" ? "జాబ్ కార్డుల రికార్డ్" : "Job Cards & Services"}</p>
+                    </div>
+                    <span className="text-[11px] font-black bg-orange-100 text-orange-800 px-3 py-1 rounded-full ml-auto">
+                      {searchResults.jobCards.length} {language === "te" ? "కార్డులు" : "Cards"}
                     </span>
                   </div>
-                  <div className="space-y-2 max-h-52 overflow-y-auto">
+                  <div className="space-y-2.5 max-h-52 overflow-y-auto">
                     {searchResults.jobCards.map((card: any, idx: number) => (
                       <div
                         key={idx}
-                        className="bg-orange-50/60 rounded-xl p-3 text-sm flex justify-between items-start gap-2"
+                        className="bg-orange-50/80 rounded-xl p-3.5 text-sm flex justify-between items-start gap-3 border border-orange-100"
                       >
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 truncate">
-                            {card.jobNumber || `#${idx + 1}`}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-black text-slate-900 text-[12px] bg-orange-100 px-2 py-1 rounded inline-block mb-1">
+                            {card.jobNumber || `Job #${idx + 1}`}
                           </p>
-                          <p className="text-slate-600 truncate">
+                          <p className="text-slate-700 font-semibold text-[11px] break-words mb-1">
                             {card.complaintDescription || card.jobDescription || "-"}
                           </p>
-                          <span className="inline-block mt-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-white text-orange-700">
-                            {card.status || "-"}
-                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-block text-[10px] font-black px-2 py-1 rounded-full bg-white text-orange-700 border border-orange-200">
+                              📊 {card.status || "-"}
+                            </span>
+                            <span className="text-[10px] text-slate-600 font-bold">
+                              📅 {card.createdAt || card.jobDate || card.jobOpenDate || "-"}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-medium shrink-0">
-                          {card.createdAt || card.jobDate || card.jobOpenDate || "-"}
-                        </span>
                       </div>
                     ))}
                   </div>
@@ -215,36 +223,41 @@ export function CustomerSearchModal({
 
               {/* Telecalling/Complaints */}
               {searchResults.complaints.length > 0 && (
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs shrink-0">📞</span>
-                    <h3 className="font-black text-slate-900 text-[13px]">
-                      {language === "te" ? "టెలీకాలింగ్ ఎంట్రీలు" : "Telecalling Entries"}
-                    </h3>
-                    <span className="text-[10px] font-black bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">
-                      {searchResults.complaints.length}
+                <div className="bg-white rounded-2xl p-5 shadow-sm border-2 border-purple-200">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <span className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 text-white flex items-center justify-center text-lg shrink-0 shadow-md">📞</span>
+                    <div>
+                      <h3 className="font-black text-slate-900 text-[14px]">
+                        {language === "te" ? "టెలీకాలింగ్ నమోదులు" : "Telecalling Records"}
+                      </h3>
+                      <p className="text-xs text-purple-700 font-bold">{language === "te" ? "ఫాలో-అప్ & కంప్లెయింట్లు" : "Follow-ups & Complaints"}</p>
+                    </div>
+                    <span className="text-[11px] font-black bg-purple-100 text-purple-800 px-3 py-1 rounded-full ml-auto">
+                      {searchResults.complaints.length} {language === "te" ? "ఎంట్రీలు" : "Entries"}
                     </span>
                   </div>
-                  <div className="space-y-2 max-h-52 overflow-y-auto">
+                  <div className="space-y-2.5 max-h-52 overflow-y-auto">
                     {searchResults.complaints.map((comp: any, idx: number) => (
                       <div
                         key={idx}
-                        className="bg-purple-50/60 rounded-xl p-3 text-sm flex justify-between items-start gap-2"
+                        className="bg-purple-50/80 rounded-xl p-3.5 text-sm flex justify-between items-start gap-3 border border-purple-100"
                       >
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900 truncate">
-                            {comp.type || comp.complaintType || "Complaint"}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-black text-slate-900 text-[12px] bg-purple-100 px-2 py-1 rounded inline-block mb-1">
+                            {comp.type || comp.complaintType || "Follow-up"}
                           </p>
-                          <p className="text-slate-600 truncate">
+                          <p className="text-slate-700 font-semibold text-[11px] break-words mb-1">
                             {comp.description || comp.complaintDescription || "-"}
                           </p>
-                          <span className="inline-block mt-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-white text-purple-700">
-                            {comp.status || "-"}
-                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-block text-[10px] font-black px-2 py-1 rounded-full bg-white text-purple-700 border border-purple-200">
+                              🎯 {comp.status || "-"}
+                            </span>
+                            <span className="text-[10px] text-slate-600 font-bold">
+                              📅 {comp.createdAt || comp.complaintDate || comp.date || "-"}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-medium shrink-0">
-                          {comp.createdAt || comp.complaintDate || comp.date || "-"}
-                        </span>
                       </div>
                     ))}
                   </div>

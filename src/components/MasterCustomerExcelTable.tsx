@@ -2748,60 +2748,87 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
               {/* Modal Content */}
               <div className="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
                 {/* 1. CUSTOMER & TRACTOR PROFILE BANNER */}
-                <div className="bg-purple-50/70 border border-purple-200 p-3.5 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Left: Supervisor & Branch */}
-                  <div className="space-y-1 border-b md:border-b-0 md:border-r border-purple-200/80 pb-2 md:pb-0 md:pr-3">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <Building2 className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "బ్రాంచ్ & సూపర్వైజర్" : "Branch & Supervisor"}</span>
+                  <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+                    <p className="font-black text-purple-950 uppercase tracking-widest text-[11px] bg-purple-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Building2 className="w-4 h-4 text-purple-700" />
+                      <span>{isTe ? "🏢 బ్రాంచ్" : "🏢 Branch"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Branch: <span className="text-purple-950 font-black">{getColDisplayValue(selectedCallCustomer, "BRANCH") || "Main Branch"}</span>
+                    <p className="text-sm">
+                      <span className="font-black text-purple-950 text-base">{getColDisplayValue(selectedCallCustomer, "BRANCH") || "Main Branch"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Supervisor: <span className="text-purple-950 font-black">{getColDisplayValue(selectedCallCustomer, "SUPERVISOR") || "Unassigned"}</span>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-amber-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <User className="w-4 h-4 text-amber-700" />
+                      <span>{isTe ? "👤 సూపర్" : "👤 Supervisor"}</span>
                     </p>
-                    <p className="text-slate-700">
-                      DSP: <span className="font-bold">{getColDisplayValue(selectedCallCustomer, "DSP Name") || "—"}</span>
+                    <p className="text-sm">
+                      <span className="font-black text-slate-900">{getColDisplayValue(selectedCallCustomer, "SUPERVISOR") || "Unassigned"}</span>
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-blue-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "👷 DSP" : "👷 DSP"}</span>
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-bold">{getColDisplayValue(selectedCallCustomer, "DSP Name") || "—"}</span>
                     </p>
                   </div>
 
                   {/* Center: Customer Name & Address */}
-                  <div className="space-y-1 border-b md:border-b-0 md:border-r border-purple-200/80 pb-2 md:pb-0 md:pr-3">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <User className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "కస్టమర్ & చిరునామా" : "Customer & Address"}</span>
+                  <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <User className="w-4 h-4 text-slate-700" />
+                      <span>{isTe ? "👤 నామం" : "👤 Name"}</span>
                     </p>
-                    <p className="font-black text-slate-900 text-sm">
+                    <p className="text-lg font-black text-slate-900 leading-tight">
                       {callCustName}
                     </p>
-                    <p className="text-slate-600 font-medium">
-                      S/o {getColDisplayValue(selectedCallCustomer, "FATHER NAME") || getColDisplayValue(selectedCallCustomer, "Father Name") || "—"}
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "👨 S/o" : "👨 Father"}</span>
                     </p>
-                    <p className="text-slate-700 font-semibold flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-purple-600 shrink-0" />
+                    <p className="text-sm font-bold">
+                      {getColDisplayValue(selectedCallCustomer, "FATHER NAME") || getColDisplayValue(selectedCallCustomer, "Father Name") || "—"}
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-teal-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <MapPin className="w-4 h-4 text-teal-700" />
+                      <span>{isTe ? "📍 చిరునామా" : "📍 Location"}</span>
+                    </p>
+                    <p className="text-sm font-semibold text-slate-800">
                       {getColDisplayValue(selectedCallCustomer, "VILLAGE") || getColDisplayValue(selectedCallCustomer, "Village")}, {getColDisplayValue(selectedCallCustomer, "Mandal")}
                     </p>
-                    <p className="text-slate-600 text-[11px]">
-                      Dist: {getColDisplayValue(selectedCallCustomer, "DISTRICT") || getColDisplayValue(selectedCallCustomer, "Distict") || "—"} | PIN: {getColDisplayValue(selectedCallCustomer, "Pin code") || "—"}
+                    <p className="text-xs text-slate-600 font-bold">
+                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">Dist: {getColDisplayValue(selectedCallCustomer, "DISTRICT") || getColDisplayValue(selectedCallCustomer, "Distict") || "—"}</span>
+                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded ml-1">PIN: {getColDisplayValue(selectedCallCustomer, "Pin code") || "—"}</span>
                     </p>
                   </div>
 
                   {/* Right: Tractor Details */}
-                  <div className="space-y-1">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <Wrench className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "ట్రాక్టర్ వివరాలు" : "Tractor Details"}</span>
+                  <div className="space-y-2.5">
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-orange-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Wrench className="w-4 h-4 text-orange-700" />
+                      <span>{isTe ? "🚜 మోడల్" : "🚜 Model"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Model: <span className="font-black text-purple-950">{callModel} ({getColDisplayValue(selectedCallCustomer, "MODEL TYPE")})</span>
+                    <p className="text-sm">
+                      <span className="font-black text-slate-900 text-base">{callModel}</span>
+                      <span className="text-xs text-slate-600 ml-1">({getColDisplayValue(selectedCallCustomer, "MODEL TYPE")})</span>
                     </p>
-                    <p className="font-mono text-slate-800 text-[11px]">
-                      Engine No: {getColDisplayValue(selectedCallCustomer, "Engine No:") || getColDisplayValue(selectedCallCustomer, "Engine no") || "—"}
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-pink-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "⚙️ ఇంజిన్" : "⚙️ Engine"}</span>
                     </p>
-                    <p className="font-bold text-slate-900 flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-purple-600" />
-                      Del Date: <span className="font-mono">{getColDisplayValue(selectedCallCustomer, "Date of del") || getColDisplayValue(selectedCallCustomer, "Date of Delivery") || "—"}</span>
+                    <p className="text-sm font-mono font-bold text-slate-800">
+                      {getColDisplayValue(selectedCallCustomer, "Engine No:") || getColDisplayValue(selectedCallCustomer, "Engine no") || "—"}
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-green-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Calendar className="w-4 h-4 text-green-700" />
+                      <span>{isTe ? "📅 డెలివరీ" : "📅 Delivery"}</span>
+                    </p>
+                    <p className="text-sm font-mono font-bold text-slate-800">
+                      {getColDisplayValue(selectedCallCustomer, "Date of del") || getColDisplayValue(selectedCallCustomer, "Date of Delivery") || "—"}
                     </p>
                   </div>
                 </div>
