@@ -59,7 +59,7 @@ export const TelecallingDeskView: React.FC<TelecallingDeskViewProps> = ({
   const todayStr = new Date().toISOString().split("T")[0];
 
   // Primary filter tabs
-  const [activeTab, setActiveTab] = useState<"due_today" | "overdue" | "upcoming" | "all_calls" | "all_customers">("due_today");
+  const [activeTab, setActiveTab] = useState<"due_today" | "overdue" | "upcoming" | "all_calls" | "all_customers">("all_calls");
   const [searchText, setSearchText] = useState<string>("");
   const [selectedVillage, setSelectedVillage] = useState<string>("all");
   const [selectedSupervisor, setSelectedSupervisor] = useState<string>("all");
@@ -242,7 +242,7 @@ export const TelecallingDeskView: React.FC<TelecallingDeskViewProps> = ({
 
   // Filtered List based on active tab and search criteria
   const filteredCustomers = useMemo(() => {
-    return enrichedCustomers.filter((c) => {
+    const result = enrichedCustomers.filter((c) => {
       // Tab matching
       if (activeTab === "due_today" && c.scheduledStatus !== "today") return false;
       if (activeTab === "overdue" && c.scheduledStatus !== "overdue") return false;
@@ -279,6 +279,19 @@ export const TelecallingDeskView: React.FC<TelecallingDeskViewProps> = ({
 
       return true;
     });
+
+    // In "All Calls" tab, show the most recently logged call first so a
+    // freshly entered remark is immediately visible at the top instead of
+    // being buried in the list.
+    if (activeTab === "all_calls") {
+      result.sort((a, b) => {
+        const tA = a.history?.[0]?.timestamp ? Date.parse(a.history[0].timestamp) : 0;
+        const tB = b.history?.[0]?.timestamp ? Date.parse(b.history[0].timestamp) : 0;
+        return (tB || 0) - (tA || 0);
+      });
+    }
+
+    return result;
   }, [
     enrichedCustomers,
     activeTab,
