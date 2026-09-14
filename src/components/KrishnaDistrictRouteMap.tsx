@@ -443,7 +443,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
       {/* ========================================================================= */}
       {/* 1. EXPLANATION BANNER: HOW DISTANCES ARE CALCULATED IN THE SYSTEM */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white p-4 md:p-6 rounded-2xl shadow-xl border border-blue-800/50">
+      <div className="bg-white text-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -451,13 +451,13 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 <Compass className="w-3.5 h-3.5" />
                 {isTe ? 'కృష్ణా & ఎన్టీఆర్ జిల్లా టెరిటరీ రూట్ మ్యాప్' : 'Krishna & NTR District Route Explorer'}
               </span>
-              <span className="text-xs text-blue-200 font-semibold hidden sm:inline">
+              <span className="text-xs text-blue-700 font-semibold hidden sm:inline">
                 • 8 Workshop Hubs & 600+ Village Network
               </span>
             </div>
 
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <MapPin className="w-6 h-6 text-amber-400 shrink-0" />
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-amber-500 shrink-0" />
               <span>
                 {isTe
                   ? 'సర్వీస్ క్యాంప్ ప్లానింగ్ & దూరాల కాలిక్యులేటర్'
@@ -465,16 +465,16 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
               </span>
             </h2>
 
-            <p className="text-xs text-slate-200 max-w-3xl leading-relaxed">
+            <p className="text-xs text-slate-700 max-w-3xl leading-relaxed">
               {isTe ? (
                 <>
-                  <strong className="text-amber-300">దూరం ఎక్కడ నుండి లెక్కించబడుతుంది? :</strong> మాస్టర్ ప్లానింగ్ సిస్టమ్‌లో
-                  ప్రతి గ్రామానికి దూరం (<span className="font-mono font-bold text-amber-300">DistanceKm</span>), ఆ గ్రామానికి సేవలందించే
-                  సంబంధిత <strong className="text-white underline">ఈచర్ డీలర్షిప్ వర్క్‌షాప్/బ్రాంచ్ హెడ్‌క్వార్టర్స్</strong> (ఉదా. గుడివాడ HQ, మచిలీపట్నం-21, పోరంకి, వుయ్యూరు, అవనిగడ్డ, నందిగామ, నూజివీడు, తిరువూరు) నుండి లెక్కించబడుతుంది.
+                  <strong className="text-amber-700">దూరం ఎక్కడ నుండి లెక్కించబడుతుంది? :</strong> మాస్టర్ ప్లానింగ్ సిస్టమ్‌లో
+                  ప్రతి గ్రామానికి దూరం (<span className="font-mono font-bold text-amber-700">DistanceKm</span>), ఆ గ్రామానికి సేవలందించే
+                  సంబంధిత <strong className="text-slate-900 underline">ఈచర్ డీలర్షిప్ వర్క్‌షాప్/బ్రాంచ్ హెడ్‌క్వార్టర్స్</strong> (ఉదా. గుడివాడ HQ, మచిలీపట్నం-21, పోరంకి, వుయ్యూరు, అవనిగడ్డ, నందిగామ, నూజివీడు, తిరువూరు) నుండి లెక్కించబడుతుంది.
                 </>
               ) : (
                 <>
-                  <strong className="text-amber-300">Where is distance calculated from? :</strong> In the Service Camp Directory, the distance (<span className="font-mono font-bold text-amber-300">DistanceKm</span>) for every village is measured directly from its respective <strong className="text-white underline">Assigned Dealership Workshop Branch HQ</strong> where technicians and mobile service vans are stationed.
+                  <strong className="text-amber-700">Where is distance calculated from? :</strong> In the Service Camp Directory, the distance (<span className="font-mono font-bold text-amber-700">DistanceKm</span>) for every village is measured directly from its respective <strong className="text-slate-900 underline">Assigned Dealership Workshop Branch HQ</strong> where technicians and mobile service vans are stationed.
                 </>
               )}
             </p>
@@ -482,13 +482,13 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
           {/* Quick Hub Badges */}
           <div className="flex flex-wrap lg:flex-col gap-2 shrink-0">
-            <div className="px-3 py-1.5 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-xs">
-              <div className="font-bold text-amber-300">4732 Hub (Krishna)</div>
-              <div className="text-[11px] text-slate-300">Gudivada, Machilipatnam, Poranki, Avanigadda</div>
+            <div className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs">
+              <div className="font-bold text-amber-700">4732 Hub (Krishna)</div>
+              <div className="text-[11px] text-slate-600">Gudivada, Machilipatnam, Poranki, Avanigadda</div>
             </div>
-            <div className="px-3 py-1.5 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-xs">
-              <div className="font-bold text-emerald-300">4731 Hub (NTR)</div>
-              <div className="text-[11px] text-slate-300">Nandigama, Nuzvidu, Tiruvuru, Jaggayyapeta</div>
+            <div className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs">
+              <div className="font-bold text-emerald-700">4731 Hub (NTR)</div>
+              <div className="text-[11px] text-slate-600">Nandigama, Nuzvidu, Tiruvuru, Jaggayyapeta</div>
             </div>
           </div>
         </div>
