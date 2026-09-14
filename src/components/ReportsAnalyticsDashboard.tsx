@@ -291,7 +291,7 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
                           title={`Open: ${day.jobsOpen}`}
                         />
                       </div>
-                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[0]}</span>
+                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[2] || day.date.split('-')[0]}</span>
                     </div>
                   );
                 })}
@@ -322,7 +322,7 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
                         style={{width: '10px', height: `${revenueHeight}%`, minHeight: day.revenue > 0 ? '4px' : '0'}}
                         title={`₹${Number(day.revenue).toLocaleString()}`}
                       />
-                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[0]}</span>
+                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[2] || day.date.split('-')[0]}</span>
                     </div>
                   );
                 })}
