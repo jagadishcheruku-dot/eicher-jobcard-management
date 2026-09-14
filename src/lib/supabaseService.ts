@@ -131,22 +131,43 @@ async function readAll(table: string): Promise<any[]> {
   return rows;
 }
 
-const WRITE_CHUNK = 500;
+// Job card and customer rows carry the whole Excel record, so a large batch
+// can exceed the request size limit and take the rest of the upload down with
+// it. Smaller batches cost a few more round trips and upload the lot.
+const WRITE_CHUNK = 200;
+const WRITE_ATTEMPTS = 3;
 
-async function upsertRows(table: string, rows: any[]): Promise<boolean> {
-  try {
-    for (let start = 0; start < rows.length; start += WRITE_CHUNK) {
-      const { error } = await supabase
-        .from(table)
-        .upsert(rows.slice(start, start + WRITE_CHUNK), { onConflict: 'id' });
-      if (error) throw error;
+async function upsertBatch(table: string, batch: any[]): Promise<string | null> {
+  let lastError = 'unknown error';
+  for (let attempt = 1; attempt <= WRITE_ATTEMPTS; attempt++) {
+    const { error } = await supabase.from(table).upsert(batch, { onConflict: 'id' });
+    if (!error) return null;
+    lastError = error.message;
+    if (attempt < WRITE_ATTEMPTS) {
+      await new Promise((r) => setTimeout(r, 400 * attempt));
     }
-    readCache.delete(table);
-    return true;
-  } catch (err) {
-    console.warn(`Supabase write (${table}) failed:`, err);
-    return false;
   }
+  return lastError;
+}
+
+// Reports how many rows actually landed, so a partial upload is visible rather
+// than looking like a smaller file.
+async function upsertRows(table: string, rows: any[]): Promise<{ written: number; error?: string }> {
+  let written = 0;
+  for (let start = 0; start < rows.length; start += WRITE_CHUNK) {
+    const batch = rows.slice(start, start + WRITE_CHUNK);
+    const error = await upsertBatch(table, batch);
+    if (error) {
+      readCache.delete(table);
+      console.error(
+        `Supabase write (${table}): stopped after ${written} of ${rows.length} rows — ${error}`
+      );
+      return { written, error };
+    }
+    written += batch.length;
+  }
+  readCache.delete(table);
+  return { written };
 }
 
 async function deleteIds(table: string, rowIds: string[]): Promise<boolean> {
@@ -189,15 +210,16 @@ async function save(table: TableName, records: any[], replaceAll = false) {
   const rows = records.map((record) => toRow(table, record));
   const existing = replaceAll ? (await readAll(table)).map((r) => r.id) : [];
 
-  if (!(await upsertRows(table, rows))) {
-    return fail(`Could not save to Supabase (${table})`);
+  const { written, error } = await upsertRows(table, rows);
+  if (error) {
+    return fail(`Saved ${written} of ${rows.length} ${table} rows, then failed: ${error}`);
   }
 
   if (replaceAll) {
     const keep = new Set(rows.map((r) => r.id));
     await deleteIds(table, existing.filter((id) => !keep.has(id)));
   }
-  return ok(records.length);
+  return ok(written);
 }
 
 const removeOne = async (table: TableName, id: string) => {
@@ -297,10 +319,10 @@ export const supabaseApi = {
 
   saveAttendance: async (date: string, records: any) => {
     if (!date) return fail('Attendance needs a date');
-    const saved = await upsertRows('attendance', [
+    const { error } = await upsertRows('attendance', [
       { id: date, records: records ?? {}, updated_at: new Date().toISOString() },
     ]);
-    return saved ? ok(1) : fail('Could not save attendance');
+    return error ? fail(`Could not save attendance: ${error}`) : ok(1);
   },
 
   // App settings — one row per key, returned as { [key]: value }.
@@ -315,10 +337,10 @@ export const supabaseApi = {
 
   saveSettings: async (key: string, value: string) => {
     if (!key) return fail('Setting needs a key');
-    const saved = await upsertRows('app_settings', [
+    const { error } = await upsertRows('app_settings', [
       { id: key, value, updated_at: new Date().toISOString() },
     ]);
-    return saved ? ok(1) : fail('Could not save setting');
+    return error ? fail(`Could not save setting: ${error}`) : ok(1);
   },
 
   // Service camps
