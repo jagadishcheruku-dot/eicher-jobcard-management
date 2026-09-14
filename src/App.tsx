@@ -10985,7 +10985,7 @@ ${b}`));
                           activeColor =
                             "bg-teal-700 text-white shadow-md ring-1 ring-teal-400";
                         } else if (d === "customer_data") {
-                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          icon = i.jsx(Users, { className: "w-4 h-4" });
                           label = e === "te" ? "కస్టమర్లు" : "Customers";
                           activeColor =
                             "bg-blue-700 text-white shadow-md ring-1 ring-blue-400";
@@ -10995,7 +10995,7 @@ ${b}`));
                             children: _a.length,
                           });
                         } else if (d === "job_cards_data") {
-                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          icon = i.jsx(FileText, { className: "w-4 h-4" });
                           label = e === "te" ? "జాబ్ కార్డులు" : "Job Cards";
                           activeColor =
                             "bg-orange-700 text-white shadow-md ring-1 ring-orange-400";
@@ -11005,7 +11005,7 @@ ${b}`));
                             children: hh.length,
                           });
                         } else if (d === "customer_details" || d === "followup" || d === "saved_cards") {
-                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          icon = i.jsx(Users, { className: "w-4 h-4" });
                           label = e === "te" ? "కస్టమర్లు" : "Customers";
                           activeColor =
                             "bg-purple-800 text-white shadow-md ring-1 ring-purple-400";
