@@ -11852,7 +11852,7 @@ ${b}`));
                                               S.filter === "rep_cust" ||
                                               S.filter === "nonrep_cust"
                                             ) {
-                                              u("followup");
+                                              u("customer_data");
                                               setCustomerJobCardsTab("customers");
                                               if (S.filter === "rep_cust") {
                                                 je("reporting");
@@ -22205,7 +22205,7 @@ ${b}`));
                                 }),
                               ],
                             }),
-                          (c === "customer_data" || c === "job_cards_data" || c === "saved_cards" || c === "followup") &&
+                          (c === "customer_data" || c === "job_cards_data" || c === "saved_cards") &&
                             i.jsxs("div", {
                               className: "w-full space-y-3",
                               children: [
