@@ -246,6 +246,62 @@ ensureDbTables();
 // Initialize test data if empty
 async function initializeTestData() {
   try {
+    // Initialize test customers
+    const existingCustomers = localDb.getCustomers();
+    if (!existingCustomers || existingCustomers.length === 0) {
+      const testCustomers = [
+        {
+          chassis_key: 'ch001',
+          chassis_no: 'CH001',
+          cust_name: 'Sample Customer 1',
+          father_name: 'Father Name 1',
+          cust_addr: 'Address 1',
+          village: 'Village 1',
+          mandal: 'Mandal 1',
+          owner_mob: '9876543210',
+          driver_mob: '9876543211',
+          regd_no: 'TN01AB1234',
+          engine_no: 'ENG001',
+          tractor_model: 'Eicher Pro',
+          date_of_delivery: '2023-01-15'
+        },
+        {
+          chassis_key: 'ch002',
+          chassis_no: 'CH002',
+          cust_name: 'Sample Customer 2',
+          father_name: 'Father Name 2',
+          cust_addr: 'Address 2',
+          village: 'Village 2',
+          mandal: 'Mandal 2',
+          owner_mob: '8765432109',
+          driver_mob: '8765432108',
+          regd_no: 'TN02CD5678',
+          engine_no: 'ENG002',
+          tractor_model: 'Eicher Pro Truck',
+          date_of_delivery: '2023-02-20'
+        },
+        {
+          chassis_key: 'ch003',
+          chassis_no: 'CH003',
+          cust_name: 'Sample Customer 3',
+          father_name: 'Father Name 3',
+          cust_addr: 'Address 3',
+          village: 'Village 3',
+          mandal: 'Mandal 3',
+          owner_mob: '7654321098',
+          driver_mob: '7654321097',
+          regd_no: 'TN03EF9012',
+          engine_no: 'ENG003',
+          tractor_model: 'Eicher 20.16',
+          date_of_delivery: '2023-03-10'
+        }
+      ];
+      localDb.bulkUpsertCustomers(testCustomers as any, true);
+      await syncCustomersToFirestore(testCustomers);
+      console.log('✅ Initialized 3 test customers');
+    }
+
+    // Initialize test job cards
     const existingCards = localDb.getJobCards();
     if (!existingCards || existingCards.length === 0) {
       const testCards = [
