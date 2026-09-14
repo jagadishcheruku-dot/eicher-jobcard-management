@@ -41,15 +41,40 @@ const docId = (raw: any, fallback: string) => {
 // Firestore rejects undefined; a JSON round-trip drops those keys.
 const plain = (row: any) => JSON.parse(JSON.stringify(row ?? {}));
 
+// A row with no business key still needs a stable id, or re-uploading the same
+// file would append a fresh copy of it every time.
+const contentId = (row: any) => {
+  const text = JSON.stringify(row ?? {});
+  let hash = 5381;
+  for (let i = 0; i < text.length; i++) hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+  return `row_${(hash >>> 0).toString(36)}`;
+};
+
+// Several parts of the app ask for the same collection while the page is
+// loading. Firestore bills per document, and a full job-card read is well over
+// a thousand documents, so identical reads share one round trip instead of
+// each paying for the whole collection again.
+const READ_CACHE_MS = 60_000;
+const readCache = new Map<string, { at: number; rows: Promise<any[]> }>();
+
 async function readAll(collectionName: string): Promise<any[]> {
-  try {
-    if (!db) return [];
-    const snapshot = await getDocs(collection(db, collectionName));
-    return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-  } catch (err) {
-    console.warn(`Firestore read (${collectionName}) failed:`, err);
-    return [];
-  }
+  const cached = readCache.get(collectionName);
+  if (cached && Date.now() - cached.at < READ_CACHE_MS) return cached.rows;
+
+  const rows = (async () => {
+    try {
+      if (!db) return [];
+      const snapshot = await getDocs(collection(db, collectionName));
+      return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+    } catch (err) {
+      readCache.delete(collectionName);
+      console.warn(`Firestore read (${collectionName}) failed:`, err);
+      return [];
+    }
+  })();
+
+  readCache.set(collectionName, { at: Date.now(), rows });
+  return rows;
 }
 
 async function upsertAll(
@@ -66,12 +91,13 @@ async function upsertAll(
     for (let start = 0; start < rows.length; start += 400) {
       const batch = writeBatch(db);
       rows.slice(start, start + 400).forEach((row, offset) => {
-        const id = docId(idOf(row), `row_${start + offset}_${Date.now()}`);
+        const id = docId(idOf(row), contentId(row));
         written.push(id);
         batch.set(doc(ref, id), plain(row), { merge: true });
       });
       await batch.commit();
     }
+    readCache.delete(collectionName);
     return written;
   } catch (err) {
     console.warn(`Firestore write (${collectionName}) failed:`, err);
@@ -88,6 +114,7 @@ async function deleteIds(collectionName: string, ids: string[]): Promise<boolean
       ids.slice(start, start + 400).forEach((id) => batch.delete(doc(ref, id)));
       await batch.commit();
     }
+    readCache.delete(collectionName);
     return true;
   } catch (err) {
     console.warn(`Firestore delete (${collectionName}) failed:`, err);
@@ -193,6 +220,7 @@ export const sqlApi = {
       }
       const keep = new Set(Array.from({ length: totalChunks }, (_, i) => `chunk_${i}`));
       await deleteIds(COLLECTIONS.spares, existing.filter((id) => !keep.has(id)));
+      readCache.delete(COLLECTIONS.spares);
       return ok(list.length);
     } catch (err) {
       console.warn('Firestore write (spares) failed:', err);
