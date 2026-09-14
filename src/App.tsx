@@ -15760,9 +15760,30 @@ ${b}`));
                                                       children: [
                                                         i.jsx("div", {
                                                           className:
+                                                            "inline-block bg-red-600 px-4 py-2 rounded-lg mb-3 border-2 border-red-700",
+                                                          children: i.jsxs("div", {
+                                                            className:
+                                                              "flex items-center gap-2",
+                                                            children: [
+                                                              i.jsx("span", {
+                                                                className:
+                                                                  "text-2xl text-green-400",
+                                                                children: "🔧",
+                                                              }),
+                                                              i.jsx("span", {
+                                                                className:
+                                                                  "text-lg font-black text-green-400 tracking-tight",
+                                                                children:
+                                                                  "SRI GAYATHRI",
+                                                              }),
+                                                            ],
+                                                          }),
+                                                        }),
+                                                        i.jsx("div", {
+                                                          className:
                                                             "text-xl md:text-2xl font-black text-blue-900 tracking-tight leading-none mb-0.5",
                                                           children:
-                                                            "SRI GAYATHRI AUTOMOTIVES",
+                                                            "AUTOMOTIVES",
                                                         }),
                                                         i.jsx("div", {
                                                           className:
