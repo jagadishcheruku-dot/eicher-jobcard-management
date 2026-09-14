@@ -15762,8 +15762,8 @@ ${b}`));
                                                           className: "flex items-center gap-3 mb-2",
                                                           children: [
                                                             i.jsx("svg", {
-                                                              width: "48",
-                                                              height: "48",
+                                                              width: "52",
+                                                              height: "52",
                                                               viewBox: "0 0 100 100",
                                                               className: "flex-shrink-0",
                                                               children: [
