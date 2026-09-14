@@ -11358,76 +11358,19 @@ ${b}`));
                                         ],
                                       }),
                                       i.jsxs("div", {
+                                        onClick: () => setShowLookupResults(!0),
                                         className:
-                                          "bg-white border border-slate-200 rounded-xl shadow-2xs transition-all" + (showLookupResults ? " p-2.5 space-y-2" : " p-2"),
+                                          "bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsxs("div", {
-                                            onClick: () => setShowLookupResults(!showLookupResults),
+                                          i.jsx("div", {
                                             className:
-                                              "flex items-center justify-between cursor-pointer hover:bg-slate-50 px-1.5 py-0.5 rounded transition-colors",
-                                            children: [
-                                              i.jsx("div", {
-                                                className:
-                                                  "text-[10px] font-extrabold text-slate-700 uppercase",
-                                                children: "Search Customer",
-                                              }),
-                                              i.jsx("div", {
-                                                className:
-                                                  "text-indigo-600 font-bold text-xs flex items-center gap-1",
-                                                children: showLookupResults ? "🔽 Close" : "🔍 Search",
-                                              }),
-                                            ],
+                                              "text-[10px] font-extrabold text-slate-700 uppercase",
+                                            children: "Search Customer",
                                           }),
-                                          showLookupResults && i.jsxs(i.Fragment, {
-                                            children: [
-                                              i.jsx("input", {
-                                                type: "text",
-                                                placeholder: "Customer name / Mobile / Chassis...",
-                                                value: lookupSearchText,
-                                                onChange: (e) => setLookupSearchText(e.target.value),
-                                                className:
-                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-300 bg-white text-slate-900",
-                                              }),
-                                              lookupSearchText.trim() && i.jsx("div", {
-                                                className:
-                                                  "space-y-1 max-h-48 overflow-y-auto bg-slate-50 rounded border border-slate-200 p-2",
-                                                children: _a.filter((cust) => {
-                                                  const q = lookupSearchText.toLowerCase();
-                                                  const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
-                                                  const phone = (cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "").toString();
-                                                  const chassis = (cust.chassisNo || cust["Chassis no"] || "").toLowerCase();
-                                                  return name.includes(q) || phone.includes(q) || chassis.includes(q);
-                                                }).slice(0, 5).map((cust, idx) => {
-                                                  const custName = cust.customerName || cust["Customer Name"] || "Customer";
-                                                  const custPhone = cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "—";
-                                                  const custChassis = cust.chassisNo || cust["Chassis no"] || "—";
-                                                  return i.jsxs("div", {
-                                                    onClick: () => {
-                                                      setLookupSelectedCustomer(cust);
-                                                    },
-                                                    className:
-                                                      "p-1.5 bg-white hover:bg-indigo-50 rounded text-[8px] cursor-pointer border-l-2 border-indigo-500 border-t border-r border-b border-slate-200 transition-all",
-                                                    children: [
-                                                      i.jsx("div", {
-                                                        className:
-                                                          "font-bold text-slate-900",
-                                                        children: custName,
-                                                      }),
-                                                      i.jsx("div", {
-                                                        className:
-                                                          "text-slate-600",
-                                                        children: `📱 ${custPhone}`,
-                                                      }),
-                                                      i.jsx("div", {
-                                                        className:
-                                                          "text-slate-500",
-                                                        children: `🚗 ${custChassis}`,
-                                                      }),
-                                                    ],
-                                                  }, idx);
-                                                }),
-                                              }),
-                                            ],
+                                          i.jsx("div", {
+                                            className:
+                                              "text-indigo-600 font-bold text-xs flex items-center gap-1",
+                                            children: "🔍 Search",
                                           }),
                                         ],
                                       }),
@@ -11460,6 +11403,83 @@ ${b}`));
                                     ],
                                   }),
                             ],
+                          }),
+                          showLookupResults && i.jsx("div", {
+                            className: "fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-start justify-center p-4 pt-20 z-50 overflow-y-auto",
+                            onClick: () => setShowLookupResults(!1),
+                            children: i.jsxs("div", {
+                              onClick: (e) => e.stopPropagation(),
+                              className: "bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150",
+                              children: [
+                                i.jsxs("div", {
+                                  className: "bg-white border-b border-slate-200 p-3 flex justify-between items-center shrink-0",
+                                  children: [
+                                    i.jsx("h3", {
+                                      className: "font-extrabold text-sm text-slate-800",
+                                      children: "🔍 Search Customer"
+                                    }),
+                                    i.jsx("button", {
+                                      type: "button",
+                                      onClick: () => setShowLookupResults(!1),
+                                      className: "p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors cursor-pointer",
+                                      children: "✕"
+                                    })
+                                  ]
+                                }),
+                                i.jsxs("div", {
+                                  className: "p-3 space-y-2",
+                                  children: [
+                                    i.jsx("input", {
+                                      type: "text",
+                                      autoFocus: !0,
+                                      placeholder: "Customer name / Mobile / Chassis...",
+                                      value: lookupSearchText,
+                                      onChange: (e) => setLookupSearchText(e.target.value),
+                                      className:
+                                        "w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-300 bg-white text-slate-900",
+                                    }),
+                                    lookupSearchText.trim() && i.jsx("div", {
+                                      className:
+                                        "space-y-1 max-h-64 overflow-y-auto bg-slate-50 rounded border border-slate-200 p-2",
+                                      children: _a.filter((cust) => {
+                                        const q = lookupSearchText.toLowerCase();
+                                        const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
+                                        const phone = (cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "").toString();
+                                        const chassis = (cust.chassisNo || cust["Chassis no"] || "").toLowerCase();
+                                        return name.includes(q) || phone.includes(q) || chassis.includes(q);
+                                      }).slice(0, 8).map((cust, idx) => {
+                                        const custName = cust.customerName || cust["Customer Name"] || "Customer";
+                                        const custPhone = cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "—";
+                                        const custChassis = cust.chassisNo || cust["Chassis no"] || "—";
+                                        return i.jsxs("div", {
+                                          onClick: () => {
+                                            setLookupSelectedCustomer(cust);
+                                            setShowLookupResults(!1);
+                                            setLookupSearchText("");
+                                          },
+                                          className:
+                                            "p-2 bg-white hover:bg-indigo-50 rounded text-[11px] cursor-pointer border-l-2 border-indigo-500 border-t border-r border-b border-slate-200 transition-all",
+                                          children: [
+                                            i.jsx("div", {
+                                              className: "font-bold text-slate-900",
+                                              children: custName,
+                                            }),
+                                            i.jsx("div", {
+                                              className: "text-slate-600",
+                                              children: `📱 ${custPhone}`,
+                                            }),
+                                            i.jsx("div", {
+                                              className: "text-slate-500",
+                                              children: `🚗 ${custChassis}`,
+                                            }),
+                                          ],
+                                        }, idx);
+                                      }),
+                                    }),
+                                  ]
+                                })
+                              ]
+                            })
                           }),
                           lookupSelectedCustomer && i.jsx("div", {
                             className: "fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto",
@@ -11606,8 +11626,9 @@ ${b}`));
                                         i.jsx("button", {
                                           type: "button",
                                           onClick: () => {
+                                            const custToOpen = lookupSelectedCustomer;
                                             setLookupSelectedCustomer(null);
-                                            sf();
+                                            zg(custToOpen);
                                           },
                                           className: "flex-1 px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all cursor-pointer",
                                           children: "View Full Details"
