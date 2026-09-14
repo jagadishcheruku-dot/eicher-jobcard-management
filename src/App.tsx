@@ -12118,7 +12118,7 @@ ${b}`));
                               Ti
                                 ? i.jsxs("div", {
                                     className:
-                                      "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2",
+                                      "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2",
                                     children: [
                                       i.jsxs("div", {
                                         onClick: () =>
@@ -12288,6 +12288,35 @@ ${b}`));
                                                 S.scheduledStatus ===
                                                 "upcoming",
                                             ).length,
+                                          }),
+                                        ],
+                                      }),
+                                      i.jsxs("div", {
+                                        onClick: () => {
+                                          (u("telecalling"),
+                                            Us("reports"));
+                                        },
+                                        className:
+                                          "bg-gradient-to-br from-violet-50 to-violet-100/50 border border-violet-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                        children: [
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-violet-900 uppercase",
+                                                children: "Tele calling Reports",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-violet-700 underline",
+                                                children: "View reports",
+                                              }),
+                                            ],
+                                          }),
+                                          i.jsx("div", {
+                                            className:
+                                              "text-lg font-black text-violet-950",
+                                            children: Rn.length,
                                           }),
                                         ],
                                       }),
