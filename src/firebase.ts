@@ -1,5 +1,12 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeFirestore, getFirestore, memoryLocalCache, setLogLevel } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  getFirestore,
+  memoryLocalCache,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  setLogLevel,
+} from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import firebaseConfigJson from '../firebase-applet-config.json';
 
@@ -16,20 +23,33 @@ const firebaseConfig = {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Using memoryLocalCache with force long polling to avoid IndexedDB lock closure errors in preview sandboxes
-const databaseId = (firebaseConfigJson as any).firestoreDatabaseId || 'ai-studio-newjobcardentry-770fa411-2eed-4762-a720-d623ec3d035d';
+const databaseId = (firebaseConfigJson as any).firestoreDatabaseId || '(default)';
 
+// The workshop's job card collection runs to thousands of documents and
+// Firestore bills per document read. An in-memory cache is discarded on every
+// reload, so each visit re-downloaded the whole collection and the project
+// burned through its daily read quota in a handful of page opens. Persisting
+// the cache in IndexedDB means a revisit reads from disk and only changed
+// documents come over the network.
 let firestoreDb: any;
 try {
   firestoreDb = initializeFirestore(app, {
-    localCache: memoryLocalCache(),
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
     experimentalAutoDetectLongPolling: true,
   }, databaseId);
 } catch {
+  // Private browsing and blocked site data leave IndexedDB unavailable.
   try {
-    firestoreDb = getFirestore(app, databaseId);
-  } catch (e) {
-    console.warn('Firestore fallback warning:', e);
+    firestoreDb = initializeFirestore(app, {
+      localCache: memoryLocalCache(),
+      experimentalAutoDetectLongPolling: true,
+    }, databaseId);
+  } catch {
+    try {
+      firestoreDb = getFirestore(app, databaseId);
+    } catch (e) {
+      console.warn('Firestore fallback warning:', e);
+    }
   }
 }
 

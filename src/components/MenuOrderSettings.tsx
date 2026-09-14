@@ -37,14 +37,15 @@ export interface MenuOrderSettingsProps {
 
 export const DEFAULT_MENU_ORDER = [
   "dashboard",
+  "complaints",
   "new_entry",
-  "saved_cards",
-  "service_camp_planning",
+  "customer_data",
+  "job_cards_data",
   "free_service_followup",
   "telecalling",
-  "complaints",
   "attendance",
   "reports",
+  "service_camp_planning",
   "databases",
 ];
 
@@ -89,6 +90,26 @@ const MENU_ITEMS_META: Record<string, MenuItemMeta> = {
     icon: <Users className="w-4 h-4 text-purple-700" />,
     accentColor: "border-purple-500 text-purple-900",
     bgLight: "bg-purple-50",
+  },
+  customer_data: {
+    key: "customer_data",
+    nameTe: "👤 కస్టమర్ డేటా",
+    nameEn: "Customer Data",
+    descTe: "పూర్తి కస్టమర్ మాస్టర్ డేటా, ప్రింట్ & ఎక్సెల్ ఫిల్టర్స్",
+    descEn: "Master records of tractor owners & customer details",
+    icon: <Users className="w-4 h-4 text-blue-700" />,
+    accentColor: "border-blue-500 text-blue-900",
+    bgLight: "bg-blue-50",
+  },
+  job_cards_data: {
+    key: "job_cards_data",
+    nameTe: "🔧 జాబ్ కార్డ్ డేటా",
+    nameEn: "Job Cards Data",
+    descTe: "సేవ్ చేసిన జాబ్ కార్డులు, ప్రింట్ & ఎక్సెల్ ఫిల్టర్స్",
+    descEn: "All saved job cards, service history & Excel spreadsheet",
+    icon: <Users className="w-4 h-4 text-orange-700" />,
+    accentColor: "border-orange-500 text-orange-900",
+    bgLight: "bg-orange-50",
   },
   customers_and_jobcards: {
     key: "customers_and_jobcards",
@@ -187,10 +208,10 @@ export const MenuOrderSettings: React.FC<MenuOrderSettingsProps> = ({
 
   // Ensure all defined menus are present in current order
   const fullOrder = React.useMemo(() => {
-    // If menuOrder contains legacy 'customers_and_jobcards', expand it into 'saved_cards' (single unified master view)
-    const cleanOrder = (Array.isArray(menuOrder) ? menuOrder : []).filter((key) => key && key !== "customer_data");
+    // Legacy combined menu keys expand into the two separate modern menu items
+    const cleanOrder = (Array.isArray(menuOrder) ? menuOrder : []).filter(Boolean);
     const expandedOrder = cleanOrder.flatMap((key) => {
-      if (key === "customers_and_jobcards") return ["saved_cards"];
+      if (key === "customers_and_jobcards" || key === "saved_cards") return ["customer_data", "job_cards_data"];
       return [key];
     });
     const missing = defaultOrder.filter((key) => !expandedOrder.includes(key));
@@ -478,7 +499,8 @@ export const MenuOrderSettings: React.FC<MenuOrderSettingsProps> = ({
                 onClick={() =>
                   applyPreset(
                     [
-                      "saved_cards",
+                      "customer_data",
+                      "job_cards_data",
                       "new_entry",
                       "free_service_followup",
                       "telecalling",
@@ -506,7 +528,8 @@ export const MenuOrderSettings: React.FC<MenuOrderSettingsProps> = ({
                       "dashboard",
                       "reports",
                       "new_entry",
-                      "saved_cards",
+                      "customer_data",
+                      "job_cards_data",
                       "service_camp_planning",
                       "free_service_followup",
                       "telecalling",

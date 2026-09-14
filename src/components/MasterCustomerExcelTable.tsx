@@ -301,14 +301,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         "";
       if (!rawDel) return "";
       const rawStr = String(rawDel).trim();
-      // If already formatted like 1/5/2025, 01/05/2025, 12-05-2025, preserve original imported text
-      if (
-        rawStr.includes("/") ||
-        rawStr.includes("-") ||
-        rawStr.includes(".")
-      ) {
-        return rawStr;
-      }
+      // Always normalize to the standard DD-MMM-YYYY format regardless of how it was uploaded
       return formatDisplayDate(rawDel, rawStr);
     }
 
@@ -505,9 +498,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           "";
         if (!rawDel) return "";
         const rawDelStr = String(rawDel).trim();
-        if (rawDelStr.includes("/") || rawDelStr.includes("-") || rawDelStr.includes(".")) {
-          return rawDelStr;
-        }
+        // Always normalize to the standard DD-MMM-YYYY format regardless of how it was uploaded
         return formatDisplayDate(rawDel, rawDelStr);
       case "Customer Name":
       case "custName":
@@ -743,36 +734,51 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     return Array.from(set);
   };
 
+  // Fast chassis -> job card index, built once per allCards change instead of
+  // re-scanning every card for every customer (was O(customers * cards), froze
+  // the browser tab once real data volume hit a few thousand records).
+  const cardChassisIndex = useMemo(() => {
+    const byVariant = new Map<string, any[]>();
+    const byDigits5 = new Map<string, any[]>();
+    (allCards || []).forEach((card) => {
+      const variants = getCardChassisVariants(card);
+      variants.forEach((v) => {
+        if (!byVariant.has(v)) byVariant.set(v, []);
+        byVariant.get(v)!.push(card);
+        const digits = v.replace(/\D/g, "");
+        if (digits.length >= 5) {
+          const key = digits.slice(-5);
+          if (!byDigits5.has(key)) byDigits5.set(key, []);
+          byDigits5.get(key)!.push(card);
+        }
+      });
+    });
+    return { byVariant, byDigits5 };
+  }, [allCards]);
+
   // Helper to get matching job cards for a customer strictly matched by chassis number
   const getCustomerJobCards = (cust: any) => {
     if (!cust || !allCards || allCards.length === 0) return [];
     const custChassisList = getCustChassisVariants(cust);
     if (custChassisList.length === 0) return [];
 
-    return allCards.filter((card) => {
-      const cardChassisList = getCardChassisVariants(card);
-      if (cardChassisList.length === 0) return false;
-
-      for (const cCh of custChassisList) {
-        for (const kCh of cardChassisList) {
-          if (cCh === kCh) return true;
-          // Match standard chassis / VIN suffix (last 6 or 7 characters)
-          if (cCh.length >= 6 && kCh.length >= 6 && cCh.slice(-6) === kCh.slice(-6)) {
-            return true;
-          }
-          if (cCh.length >= 5 && kCh.length >= 5 && (cCh.includes(kCh) || kCh.includes(cCh))) {
-            return true;
-          }
-          // Pure digits match if length >= 5
-          const cDig = cCh.replace(/\D/g, "");
-          const kDig = kCh.replace(/\D/g, "");
-          if (cDig.length >= 5 && kDig.length >= 5 && (cDig === kDig || cDig.slice(-5) === kDig.slice(-5))) {
-            return true;
-          }
-        }
+    const { byVariant, byDigits5 } = cardChassisIndex;
+    const seen = new Set<any>();
+    const result: any[] = [];
+    const add = (card: any) => {
+      if (!seen.has(card)) {
+        seen.add(card);
+        result.push(card);
       }
-      return false;
+    };
+    custChassisList.forEach((cCh) => {
+      (byVariant.get(cCh) || []).forEach(add);
+      const digits = cCh.replace(/\D/g, "");
+      if (digits.length >= 5) {
+        (byDigits5.get(digits.slice(-5)) || []).forEach(add);
+      }
     });
+    return result;
   };
 
   // Pre-calculate Duplicates set
@@ -1494,7 +1500,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   }, [selectedChassisModal, selectedChassisCustomer, allCards]);
 
   return (
-    <div className="w-full space-y-2.5 bg-white border border-slate-200 shadow-sm p-2.5 md:p-3 rounded-2xl print:p-0 print:border-none print:shadow-none">
+    <div className="w-full space-y-3 bg-white shadow-sm p-3 md:p-4 rounded-3xl print:p-0 print:border-none print:shadow-none">
       {/* Toast message popup */}
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-50 bg-slate-900/95 backdrop-blur text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 flex items-center gap-2 animate-bounce">
@@ -1504,7 +1510,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       )}
 
       {/* 1. TOP COMPACT METRICS BAR (5 Value Boxes: ~1cm x 2cm proportions) */}
-      <div className="w-full flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50/90 p-1.5 sm:p-2 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="w-full flex items-center gap-1.5 sm:gap-2 flex-wrap bg-slate-50 p-1.5 sm:p-2 rounded-2xl">
         {/* Box 1: Total Deliveries */}
         <button
           type="button"
@@ -1512,9 +1518,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("all");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "all"
-              ? "bg-blue-600 text-white border-blue-600 shadow-xs ring-2 ring-blue-300"
+              ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/30"
               : "bg-blue-50/90 hover:bg-blue-100/80 border-blue-200 text-blue-950"
           }`}
           title="Click to show All Customer Deliveries"
@@ -1537,9 +1543,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("reporting");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "reporting"
-              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs ring-2 ring-emerald-300"
+              ? "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-600/30"
               : "bg-emerald-50/90 hover:bg-emerald-100/80 border-emerald-200 text-emerald-950"
           }`}
           title="Click to filter Reporting Customers (≥1 Job Card)"
@@ -1562,9 +1568,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("not_reporting");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "not_reporting"
-              ? "bg-rose-600 text-white border-rose-600 shadow-xs ring-2 ring-rose-300"
+              ? "bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-600/30"
               : "bg-rose-50/90 hover:bg-rose-100/80 border-rose-200 text-rose-950"
           }`}
           title="Click to filter Not Reporting Customers (0 Job Cards)"
@@ -1587,9 +1593,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("duplicate");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[220px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[220px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "duplicate"
-              ? "bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-300"
+              ? "bg-amber-600 text-white border-amber-600 shadow-lg shadow-amber-600/30"
               : "bg-amber-50/90 hover:bg-amber-100/80 border-amber-200 text-amber-950"
           }`}
           title="Click to filter Duplicate Chassis / Customers"
@@ -1630,9 +1636,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("out_of_wty");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[145px] max-w-[230px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[145px] max-w-[230px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "out_of_wty"
-              ? "bg-red-600 text-white border-red-600 shadow-xs ring-2 ring-red-300"
+              ? "bg-red-600 text-white border-red-600 shadow-lg shadow-red-600/30"
               : "bg-red-50/95 hover:bg-red-100 border-red-300 text-red-950"
           }`}
           title={isTe ? "వారంటీ ముగిసిన కస్టమర్లు (> 2 సంవత్సరాలు) - క్లిక్ చేయండి" : "Click to filter Out of Warranty (> 2 Years)"}
@@ -1655,9 +1661,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             setQuickFilter("in_wty");
             setCurrentPage(1);
           }}
-          className={`flex-1 min-w-[130px] max-w-[200px] h-9 px-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between text-left ${
+          className={`flex-1 min-w-[130px] max-w-[200px] h-10 px-3 rounded-2xl transition-all cursor-pointer flex items-center justify-between text-left ${
             quickFilter === "in_wty"
-              ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-2 ring-slate-400"
+              ? "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-600/30"
               : "bg-slate-100/90 hover:bg-slate-200/80 border-slate-300 text-slate-900"
           }`}
           title={isTe ? "వారంటీ లో ఉన్న కస్టమర్లు (≤ 2 సంవత్సరాలు) - క్లిక్ చేయండి" : "Click to filter In Warranty (≤ 2 Years)"}
@@ -1696,10 +1702,10 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                     ? "కస్టమర్ పేరు, ఛాసిస్ నెం, మొబైల్, గ్రామం, మోడల్ ద్వారా వెతకండి..."
                     : "Search customer, chassis, mobile, village, model...")
               }
-              className={`w-full pl-8 pr-7 py-1.5 text-xs font-semibold rounded-lg outline-none transition-all placeholder:text-slate-400 ${
+              className={`w-full pl-8 pr-7 py-2 text-xs font-semibold rounded-full outline-none transition-all placeholder:text-slate-400 ${
                 isFiltersLocked
                   ? "bg-slate-100 text-slate-500 border border-slate-300 cursor-not-allowed"
-                  : "bg-slate-50 hover:bg-white focus:bg-white text-slate-900 border border-slate-300 focus:border-purple-600 focus:ring-1 focus:ring-purple-600"
+                  : "bg-slate-100 hover:bg-slate-100 focus:bg-white text-slate-900 focus:ring-2 focus:ring-purple-500/40"
               }`}
             />
             {searchQuery && !isFiltersLocked && (
@@ -1714,7 +1720,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           </div>
 
           {/* Branch Filter Dropdown */}
-          <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-2xs">
+          <div className="flex items-center gap-1.5 bg-slate-100 rounded-full px-3 py-1.5">
             <Building2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
             <select
               value={selectedBranchFilter}
@@ -1736,7 +1742,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           </div>
 
           {/* Supervisor Filter Dropdown */}
-          <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-2xs">
+          <div className="flex items-center gap-1.5 bg-slate-100 rounded-full px-3 py-1.5">
             <UserCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <select
               value={selectedSupervisorFilter}
@@ -1911,62 +1917,11 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         </div>
       </div>
 
-      {/* Warranty Status & Chronological Sorting Legend */}
-      <div className="w-full flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 bg-gradient-to-r from-slate-100 via-white to-slate-100 border border-slate-200/90 rounded-xl shadow-2xs text-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-purple-600" />
-            {isTe ? "వారంటీ స్థితి సూచిక:" : "Warranty Status Legend:"}
-          </span>
-          {/* Out of Warranty Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              setQuickFilter(quickFilter === "out_of_wty" ? "all" : "out_of_wty");
-              setCurrentPage(1);
-            }}
-            className="inline-flex items-center gap-1.5 font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-2xs"
-            title={isTe ? "డెలివరీ అయి 2 సంవత్సరాలు దాటిన కస్టమర్లు (వారంటీ ముగిసింది)" : "Click to view customers out of 2-year warranty"}
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0" />
-            <span className="font-extrabold">{isTe ? "ఎరుపు రంగు (Red):" : "Red Color:"}</span>
-            <span>{isTe ? "2 ఏళ్లు దాటినవి (Out of Warranty)" : "> 2 Years from Delivery (Out of Warranty)"}</span>
-            <span className="bg-red-200/80 text-red-900 text-[10px] font-mono px-1.5 py-0.2 rounded font-black">
-              {metrics.outOfWtyCount}
-            </span>
-          </button>
-          {/* In Warranty Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              setQuickFilter(quickFilter === "in_wty" ? "all" : "in_wty");
-              setCurrentPage(1);
-            }}
-            className="inline-flex items-center gap-1.5 font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-2xs"
-            title={isTe ? "డెలివరీ అయి 2 సంవత్సరాల లోపు ఉన్న కస్టమర్లు (వారంటీ పరిధిలో)" : "Click to view customers in warranty (within 2 years)"}
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-900 shrink-0" />
-            <span className="font-extrabold">{isTe ? "నలుపు రంగు (Black):" : "Black Color:"}</span>
-            <span>{isTe ? "2 ఏళ్ల లోపువి (In Warranty)" : "≤ 2 Years (In Warranty)"}</span>
-            <span className="bg-slate-200 text-slate-800 text-[10px] font-mono px-1.5 py-0.2 rounded font-black">
-              {metrics.inWtyCount}
-            </span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 text-[11px] text-slate-600 font-bold ml-auto">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-900 rounded">
-            <span>📅</span>
-            <span>{isTe ? "డెలివరీ క్రమం: తాజా డెలివరీల నుండి పాత తేదీల వైపు (Recent → Oldest)" : "Delivery Sorting: Recent Deliveries First"}</span>
-          </span>
-        </div>
-      </div>
-
       {/* 3. MAIN SPREADSHEET TABLE (Excel Style with Sticky Headers and Action Column) */}
       <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
         <table className="w-full border-collapse text-left text-slate-900 min-w-[2800px] text-xs">
           {/* Header Row */}
-          <thead className="bg-purple-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
+          <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
             <tr>
               <th className="py-2 px-2 text-center w-12 min-w-[48px] border-r border-purple-800 bg-purple-950 font-mono text-[11px]">
                 #
@@ -2742,60 +2697,87 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
               {/* Modal Content */}
               <div className="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
                 {/* 1. CUSTOMER & TRACTOR PROFILE BANNER */}
-                <div className="bg-purple-50/70 border border-purple-200 p-3.5 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Left: Supervisor & Branch */}
-                  <div className="space-y-1 border-b md:border-b-0 md:border-r border-purple-200/80 pb-2 md:pb-0 md:pr-3">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <Building2 className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "బ్రాంచ్ & సూపర్వైజర్" : "Branch & Supervisor"}</span>
+                  <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+                    <p className="font-black text-purple-950 uppercase tracking-widest text-[11px] bg-purple-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Building2 className="w-4 h-4 text-purple-700" />
+                      <span>{isTe ? "🏢 బ్రాంచ్" : "🏢 Branch"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Branch: <span className="text-purple-950 font-black">{getColDisplayValue(selectedCallCustomer, "BRANCH") || "Main Branch"}</span>
+                    <p className="text-sm">
+                      <span className="font-black text-purple-950 text-base">{getColDisplayValue(selectedCallCustomer, "BRANCH") || "Main Branch"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Supervisor: <span className="text-purple-950 font-black">{getColDisplayValue(selectedCallCustomer, "SUPERVISOR") || "Unassigned"}</span>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-amber-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <User className="w-4 h-4 text-amber-700" />
+                      <span>{isTe ? "👤 సూపర్" : "👤 Supervisor"}</span>
                     </p>
-                    <p className="text-slate-700">
-                      DSP: <span className="font-bold">{getColDisplayValue(selectedCallCustomer, "DSP Name") || "—"}</span>
+                    <p className="text-sm">
+                      <span className="font-black text-slate-900">{getColDisplayValue(selectedCallCustomer, "SUPERVISOR") || "Unassigned"}</span>
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-blue-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "👷 DSP" : "👷 DSP"}</span>
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-bold">{getColDisplayValue(selectedCallCustomer, "DSP Name") || "—"}</span>
                     </p>
                   </div>
 
                   {/* Center: Customer Name & Address */}
-                  <div className="space-y-1 border-b md:border-b-0 md:border-r border-purple-200/80 pb-2 md:pb-0 md:pr-3">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <User className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "కస్టమర్ & చిరునామా" : "Customer & Address"}</span>
+                  <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <User className="w-4 h-4 text-slate-700" />
+                      <span>{isTe ? "👤 నామం" : "👤 Name"}</span>
                     </p>
-                    <p className="font-black text-slate-900 text-sm">
+                    <p className="text-lg font-black text-slate-900 leading-tight">
                       {callCustName}
                     </p>
-                    <p className="text-slate-600 font-medium">
-                      S/o {getColDisplayValue(selectedCallCustomer, "FATHER NAME") || getColDisplayValue(selectedCallCustomer, "Father Name") || "—"}
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "👨 S/o" : "👨 Father"}</span>
                     </p>
-                    <p className="text-slate-700 font-semibold flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-purple-600 shrink-0" />
+                    <p className="text-sm font-bold">
+                      {getColDisplayValue(selectedCallCustomer, "FATHER NAME") || getColDisplayValue(selectedCallCustomer, "Father Name") || "—"}
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-teal-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <MapPin className="w-4 h-4 text-teal-700" />
+                      <span>{isTe ? "📍 చిరునామా" : "📍 Location"}</span>
+                    </p>
+                    <p className="text-sm font-semibold text-slate-800">
                       {getColDisplayValue(selectedCallCustomer, "VILLAGE") || getColDisplayValue(selectedCallCustomer, "Village")}, {getColDisplayValue(selectedCallCustomer, "Mandal")}
                     </p>
-                    <p className="text-slate-600 text-[11px]">
-                      Dist: {getColDisplayValue(selectedCallCustomer, "DISTRICT") || getColDisplayValue(selectedCallCustomer, "Distict") || "—"} | PIN: {getColDisplayValue(selectedCallCustomer, "Pin code") || "—"}
+                    <p className="text-xs text-slate-600 font-bold">
+                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">Dist: {getColDisplayValue(selectedCallCustomer, "DISTRICT") || getColDisplayValue(selectedCallCustomer, "Distict") || "—"}</span>
+                      <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded ml-1">PIN: {getColDisplayValue(selectedCallCustomer, "Pin code") || "—"}</span>
                     </p>
                   </div>
 
                   {/* Right: Tractor Details */}
-                  <div className="space-y-1">
-                    <p className="font-black text-purple-950 uppercase tracking-wider text-[10px] flex items-center gap-1">
-                      <Wrench className="w-3 h-3 text-purple-700" />
-                      <span>{isTe ? "ట్రాక్టర్ వివరాలు" : "Tractor Details"}</span>
+                  <div className="space-y-2.5">
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-orange-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Wrench className="w-4 h-4 text-orange-700" />
+                      <span>{isTe ? "🚜 మోడల్" : "🚜 Model"}</span>
                     </p>
-                    <p className="font-bold text-slate-900">
-                      Model: <span className="font-black text-purple-950">{callModel} ({getColDisplayValue(selectedCallCustomer, "MODEL TYPE")})</span>
+                    <p className="text-sm">
+                      <span className="font-black text-slate-900 text-base">{callModel}</span>
+                      <span className="text-xs text-slate-600 ml-1">({getColDisplayValue(selectedCallCustomer, "MODEL TYPE")})</span>
                     </p>
-                    <p className="font-mono text-slate-800 text-[11px]">
-                      Engine No: {getColDisplayValue(selectedCallCustomer, "Engine No:") || getColDisplayValue(selectedCallCustomer, "Engine no") || "—"}
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-pink-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <span>{isTe ? "⚙️ ఇంజిన్" : "⚙️ Engine"}</span>
                     </p>
-                    <p className="font-bold text-slate-900 flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-purple-600" />
-                      Del Date: <span className="font-mono">{getColDisplayValue(selectedCallCustomer, "Date of del") || getColDisplayValue(selectedCallCustomer, "Date of Delivery") || "—"}</span>
+                    <p className="text-sm font-mono font-bold text-slate-800">
+                      {getColDisplayValue(selectedCallCustomer, "Engine No:") || getColDisplayValue(selectedCallCustomer, "Engine no") || "—"}
+                    </p>
+
+                    <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-green-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                      <Calendar className="w-4 h-4 text-green-700" />
+                      <span>{isTe ? "📅 డెలివరీ" : "📅 Delivery"}</span>
+                    </p>
+                    <p className="text-sm font-mono font-bold text-slate-800">
+                      {getColDisplayValue(selectedCallCustomer, "Date of del") || getColDisplayValue(selectedCallCustomer, "Date of Delivery") || "—"}
                     </p>
                   </div>
                 </div>

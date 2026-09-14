@@ -440,121 +440,101 @@ export const TelecallingDeskView: React.FC<TelecallingDeskViewProps> = ({
           {/* Due Today */}
           <div
             onClick={() => setActiveTab("due_today")}
-            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
               activeTab === "due_today"
                 ? "bg-red-50 border-red-400 ring-2 ring-red-400 shadow-sm"
                 : "bg-red-50/40 border-red-200 hover:bg-red-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase text-red-800 tracking-wider">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase text-red-800 tracking-wider">
                 {isTe ? "ఈరోజే కాల్ చేయాలి" : "Due Today"}
-              </span>
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping" />
+              </div>
+              <div className="text-[9px] font-extrabold text-red-600 underline">
+                {isTe ? "లిస్ట్ చూడండి →" : "View calls →"}
+              </div>
             </div>
-            <div className="my-1.5">
-              <div className="text-2xl font-black text-red-950">{stats.todayCount}</div>
-              <div className="text-[10px] text-red-700 font-bold">{isTe ? "కాల్స్ షెడ్యూల్ అయ్యాయి" : "calls must be made today"}</div>
-            </div>
-            <div className="text-[10px] font-extrabold text-red-600 underline">
-              {isTe ? "లిస్ట్ చూడండి →" : "View calls →"}
-            </div>
+            <div className="text-lg font-black text-red-950">{stats.todayCount}</div>
           </div>
 
           {/* Overdue */}
           <div
             onClick={() => setActiveTab("overdue")}
-            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
               activeTab === "overdue"
                 ? "bg-orange-50 border-orange-400 ring-2 ring-orange-400 shadow-sm"
                 : "bg-orange-50/40 border-orange-200 hover:bg-orange-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase text-orange-800 tracking-wider">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase text-orange-800 tracking-wider">
                 {isTe ? "గడువు దాటినవి (Overdue)" : "Overdue Calls"}
-              </span>
-              <AlertCircle className="w-4 h-4 text-orange-600" />
+              </div>
+              <div className="text-[9px] font-extrabold text-orange-600 underline">
+                {isTe ? "లిస్ట్ చూడండి →" : "View overdue →"}
+              </div>
             </div>
-            <div className="my-1.5">
-              <div className="text-2xl font-black text-orange-950">{stats.overdueCount}</div>
-              <div className="text-[10px] text-orange-700 font-bold">{isTe ? "గత తేదీల కాల్స్ పెండింగ్" : "past scheduled dates"}</div>
-            </div>
-            <div className="text-[10px] font-extrabold text-orange-600 underline">
-              {isTe ? "లిస్ట్ చూడండి →" : "View overdue →"}
-            </div>
+            <div className="text-lg font-black text-orange-950">{stats.overdueCount}</div>
           </div>
 
           {/* Upcoming */}
           <div
             onClick={() => setActiveTab("upcoming")}
-            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
               activeTab === "upcoming"
                 ? "bg-blue-50 border-blue-400 ring-2 ring-blue-400 shadow-sm"
                 : "bg-blue-50/40 border-blue-200 hover:bg-blue-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase text-blue-800 tracking-wider">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase text-blue-800 tracking-wider">
                 {isTe ? "రాబోయే కాల్స్" : "Upcoming Calls"}
-              </span>
-              <Calendar className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="text-[9px] font-extrabold text-blue-600 underline">
+                {isTe ? "లిస్ట్ చూడండి →" : "View upcoming →"}
+              </div>
             </div>
-            <div className="my-1.5">
-              <div className="text-2xl font-black text-blue-950">{stats.upcomingCount}</div>
-              <div className="text-[10px] text-blue-700 font-bold">{isTe ? "భవిష్యత్ తేదీల కోసం" : "scheduled in coming days"}</div>
-            </div>
-            <div className="text-[10px] font-extrabold text-blue-600 underline">
-              {isTe ? "లిస్ట్ చూడండి →" : "View upcoming →"}
-            </div>
+            <div className="text-lg font-black text-blue-950">{stats.upcomingCount}</div>
           </div>
 
           {/* Logged Calls */}
           <div
             onClick={() => setActiveTab("all_calls")}
-            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
               activeTab === "all_calls"
                 ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400 shadow-sm"
                 : "bg-amber-50/40 border-amber-200 hover:bg-amber-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase text-amber-900 tracking-wider">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase text-amber-900 tracking-wider">
                 {isTe ? "పూర్తయిన కాల్స్" : "Call History Log"}
-              </span>
-              <History className="w-4 h-4 text-amber-700" />
+              </div>
+              <div className="text-[9px] font-extrabold text-amber-700 underline">
+                {isTe ? "చరిత్ర చూడండి →" : "View logs →"}
+              </div>
             </div>
-            <div className="my-1.5">
-              <div className="text-2xl font-black text-amber-950">{stats.totalWithHistory}</div>
-              <div className="text-[10px] text-amber-800 font-bold">{isTe ? "కస్టమర్లకు రిమార్క్స్ ఉన్నాయి" : "customers with logs"}</div>
-            </div>
-            <div className="text-[10px] font-extrabold text-amber-700 underline">
-              {isTe ? "చరిత్ర చూడండి →" : "View logs →"}
-            </div>
+            <div className="text-lg font-black text-amber-950">{stats.totalWithHistory}</div>
           </div>
 
           {/* All Customers */}
           <div
             onClick={() => setActiveTab("all_customers")}
-            className={`p-3 rounded-xl border transition-all cursor-pointer select-none flex flex-col justify-between ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between ${
               activeTab === "all_customers"
                 ? "bg-purple-50 border-purple-400 ring-2 ring-purple-400 shadow-sm"
                 : "bg-purple-50/40 border-purple-200 hover:bg-purple-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold uppercase text-purple-900 tracking-wider">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase text-purple-900 tracking-wider">
                 {isTe ? "మొత్తం కస్టమర్లు" : "All Master Directory"}
-              </span>
-              <User className="w-4 h-4 text-purple-700" />
+              </div>
+              <div className="text-[9px] font-extrabold text-purple-700 underline">
+                {isTe ? "అందరికీ కాల్ చేయండి →" : "Browse directory →"}
+              </div>
             </div>
-            <div className="my-1.5">
-              <div className="text-2xl font-black text-purple-950">{stats.totalCustomers}</div>
-              <div className="text-[10px] text-purple-800 font-bold">{isTe ? "అన్ని వాహనాలు" : "total customers"}</div>
-            </div>
-            <div className="text-[10px] font-extrabold text-purple-700 underline">
-              {isTe ? "అందరికీ కాల్ చేయండి →" : "Browse directory →"}
-            </div>
+            <div className="text-lg font-black text-purple-950">{stats.totalCustomers}</div>
           </div>
         </div>
       </div>

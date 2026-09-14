@@ -443,7 +443,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
       {/* ========================================================================= */}
       {/* 1. EXPLANATION BANNER: HOW DISTANCES ARE CALCULATED IN THE SYSTEM */}
       {/* ========================================================================= */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white p-4 md:p-6 rounded-2xl shadow-xl border border-blue-800/50">
+      <div className="bg-white text-slate-900 p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -451,13 +451,13 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 <Compass className="w-3.5 h-3.5" />
                 {isTe ? 'కృష్ణా & ఎన్టీఆర్ జిల్లా టెరిటరీ రూట్ మ్యాప్' : 'Krishna & NTR District Route Explorer'}
               </span>
-              <span className="text-xs text-blue-200 font-semibold hidden sm:inline">
+              <span className="text-xs text-blue-700 font-semibold hidden sm:inline">
                 • 8 Workshop Hubs & 600+ Village Network
               </span>
             </div>
 
-            <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-              <MapPin className="w-6 h-6 text-amber-400 shrink-0" />
+            <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-amber-500 shrink-0" />
               <span>
                 {isTe
                   ? 'సర్వీస్ క్యాంప్ ప్లానింగ్ & దూరాల కాలిక్యులేటర్'
@@ -465,16 +465,16 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
               </span>
             </h2>
 
-            <p className="text-xs text-slate-200 max-w-3xl leading-relaxed">
+            <p className="text-xs text-slate-700 max-w-3xl leading-relaxed">
               {isTe ? (
                 <>
-                  <strong className="text-amber-300">దూరం ఎక్కడ నుండి లెక్కించబడుతుంది? :</strong> మాస్టర్ ప్లానింగ్ సిస్టమ్‌లో
-                  ప్రతి గ్రామానికి దూరం (<span className="font-mono font-bold text-amber-300">DistanceKm</span>), ఆ గ్రామానికి సేవలందించే
-                  సంబంధిత <strong className="text-white underline">ఈచర్ డీలర్షిప్ వర్క్‌షాప్/బ్రాంచ్ హెడ్‌క్వార్టర్స్</strong> (ఉదా. గుడివాడ HQ, మచిలీపట్నం-21, పోరంకి, వుయ్యూరు, అవనిగడ్డ, నందిగామ, నూజివీడు, తిరువూరు) నుండి లెక్కించబడుతుంది.
+                  <strong className="text-amber-700">దూరం ఎక్కడ నుండి లెక్కించబడుతుంది? :</strong> మాస్టర్ ప్లానింగ్ సిస్టమ్‌లో
+                  ప్రతి గ్రామానికి దూరం (<span className="font-mono font-bold text-amber-700">DistanceKm</span>), ఆ గ్రామానికి సేవలందించే
+                  సంబంధిత <strong className="text-slate-900 underline">ఈచర్ డీలర్షిప్ వర్క్‌షాప్/బ్రాంచ్ హెడ్‌క్వార్టర్స్</strong> (ఉదా. గుడివాడ HQ, మచిలీపట్నం-21, పోరంకి, వుయ్యూరు, అవనిగడ్డ, నందిగామ, నూజివీడు, తిరువూరు) నుండి లెక్కించబడుతుంది.
                 </>
               ) : (
                 <>
-                  <strong className="text-amber-300">Where is distance calculated from? :</strong> In the Service Camp Directory, the distance (<span className="font-mono font-bold text-amber-300">DistanceKm</span>) for every village is measured directly from its respective <strong className="text-white underline">Assigned Dealership Workshop Branch HQ</strong> where technicians and mobile service vans are stationed.
+                  <strong className="text-amber-700">Where is distance calculated from? :</strong> In the Service Camp Directory, the distance (<span className="font-mono font-bold text-amber-700">DistanceKm</span>) for every village is measured directly from its respective <strong className="text-slate-900 underline">Assigned Dealership Workshop Branch HQ</strong> where technicians and mobile service vans are stationed.
                 </>
               )}
             </p>
@@ -482,13 +482,13 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
           {/* Quick Hub Badges */}
           <div className="flex flex-wrap lg:flex-col gap-2 shrink-0">
-            <div className="px-3 py-1.5 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-xs">
-              <div className="font-bold text-amber-300">4732 Hub (Krishna)</div>
-              <div className="text-[11px] text-slate-300">Gudivada, Machilipatnam, Poranki, Avanigadda</div>
+            <div className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs">
+              <div className="font-bold text-amber-700">4732 Hub (Krishna)</div>
+              <div className="text-[11px] text-slate-600">Gudivada, Machilipatnam, Poranki, Avanigadda</div>
             </div>
-            <div className="px-3 py-1.5 bg-white/10 hover:bg-white/15 backdrop-blur-md rounded-xl border border-white/20 text-xs">
-              <div className="font-bold text-emerald-300">4731 Hub (NTR)</div>
-              <div className="text-[11px] text-slate-300">Nandigama, Nuzvidu, Tiruvuru, Jaggayyapeta</div>
+            <div className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs">
+              <div className="font-bold text-emerald-700">4731 Hub (NTR)</div>
+              <div className="text-[11px] text-slate-600">Nandigama, Nuzvidu, Tiruvuru, Jaggayyapeta</div>
             </div>
           </div>
         </div>
@@ -923,17 +923,17 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
           {/* DEDICATED MULTI-VEHICLE LOGISTICS & FUEL COMPARISON DETAIL CONTAINER */}
           {showVehicleBreakdown && (
-            <div className="p-4 bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl shadow-md border border-slate-700/60 space-y-3">
+            <div className="p-4 bg-white text-slate-900 rounded-2xl shadow-sm border border-slate-200 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <Fuel className="w-4 h-4 text-amber-400" />
-                  <h4 className="text-xs md:text-sm font-black text-white">
+                  <Fuel className="w-4 h-4 text-amber-500" />
+                  <h4 className="text-xs md:text-sm font-black text-slate-900">
                     {isTe
                       ? 'వాహనాల వారీగా ప్రయాణ & ఇంధన ఖర్చుల పోలిక (Vehicle Fuel & Logistics Comparison)'
                       : 'Vehicle Fuel & Travel Comparison (Van vs Bike vs Tractor vs Car)'}
                   </h4>
                 </div>
-                <span className="text-[11px] font-mono text-amber-300">
+                <span className="text-[11px] font-mono text-amber-700">
                   {isRoundTrip ? (isTe ? 'మొత్తం దూరం: ' : 'Total Distance: ') : (isTe ? 'వన్-వే దూరం: ' : 'One-Way Distance: ')}
                   <strong>{routeMetrics.distanceKm} km</strong>
                 </span>
@@ -941,168 +941,168 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* 1. Mobile Service Van Card */}
-                <div className="p-3 bg-slate-800/90 rounded-xl border border-emerald-500/40 hover:border-emerald-400 transition space-y-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-emerald-200 hover:border-emerald-400 transition space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-emerald-300 flex items-center gap-1.5">
+                    <span className="font-black text-xs text-emerald-700 flex items-center gap-1.5">
                       <span>🚐</span>
                       <span>{isTe ? 'మొబైల్ సర్వీస్ వ్యాన్' : 'Mobile Service Van'}</span>
                     </span>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 rounded">
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 rounded">
                       డీజిల్ @ ₹98/L
                     </span>
                   </div>
 
-                  <div className="flex items-baseline justify-between bg-slate-900/80 p-2 rounded-lg border border-slate-700">
+                  <div className="flex items-baseline justify-between bg-white p-2 rounded-lg border border-slate-200">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
-                      <div className="text-lg font-black text-emerald-400 font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
+                      <div className="text-lg font-black text-emerald-600 font-mono">
                         ~₹{routeMetrics.vehicles.van.costInr.toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
-                      <div className="text-sm font-black text-white font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
+                      <div className="text-sm font-black text-slate-900 font-mono">
                         {routeMetrics.vehicles.van.liters} <span className="text-xs font-normal">Litres</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] space-y-1 text-slate-300">
+                  <div className="text-[11px] space-y-1 text-slate-600">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
-                      <span className="font-bold text-white">~12 km/L</span>
+                      <span className="text-slate-500">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
+                      <span className="font-bold text-slate-900">~12 km/L</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
-                      <span className="font-bold text-amber-300">{routeMetrics.vehicles.van.travelTime} (~35 km/h)</span>
+                      <span className="text-slate-500">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
+                      <span className="font-bold text-amber-700">{routeMetrics.vehicles.van.travelTime} (~35 km/h)</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-700">
+                    <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                       {isTe ? 'టూల్స్, కంప్రెషర్, ఆయిల్ & స్పేర్ పార్ట్స్ లోడ్' : 'Loaded with tools, oil drums & compressor'}
                     </div>
                   </div>
                 </div>
 
                 {/* 2. Technician Bike Card */}
-                <div className="p-3 bg-slate-800/90 rounded-xl border border-purple-500/40 hover:border-purple-400 transition space-y-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-purple-200 hover:border-purple-400 transition space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-purple-300 flex items-center gap-1.5">
+                    <span className="font-black text-xs text-purple-700 flex items-center gap-1.5">
                       <span>🏍️</span>
                       <span>{isTe ? 'టెక్నీషియన్ బైక్' : 'Technician Bike'}</span>
                     </span>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-700 rounded">
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-100 text-purple-800 border border-purple-300 rounded">
                       పెట్రోల్ @ ₹108/L
                     </span>
                   </div>
 
-                  <div className="flex items-baseline justify-between bg-slate-900/80 p-2 rounded-lg border border-slate-700">
+                  <div className="flex items-baseline justify-between bg-white p-2 rounded-lg border border-slate-200">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
-                      <div className="text-lg font-black text-purple-400 font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
+                      <div className="text-lg font-black text-purple-600 font-mono">
                         ~₹{routeMetrics.vehicles.bike.costInr.toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'పెట్రోల్ మొత్తం' : 'Petrol Vol.'}</div>
-                      <div className="text-sm font-black text-white font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'పెట్రోల్ మొత్తం' : 'Petrol Vol.'}</div>
+                      <div className="text-sm font-black text-slate-900 font-mono">
                         {routeMetrics.vehicles.bike.liters} <span className="text-xs font-normal">Litres</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] space-y-1 text-slate-300">
+                  <div className="text-[11px] space-y-1 text-slate-600">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
-                      <span className="font-bold text-white">~48 km/L</span>
+                      <span className="text-slate-500">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
+                      <span className="font-bold text-slate-900">~48 km/L</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
-                      <span className="font-bold text-amber-300">{routeMetrics.vehicles.bike.travelTime} (~42 km/h)</span>
+                      <span className="text-slate-500">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
+                      <span className="font-bold text-amber-700">{routeMetrics.vehicles.bike.travelTime} (~42 km/h)</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-700">
+                    <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                       {isTe ? 'ఎమర్జెన్సీ విజిట్స్ & చిన్న రిపేర్లు' : 'Quick breakdown visits & minor services'}
                     </div>
                   </div>
                 </div>
 
                 {/* 3. Eicher Tractor Road Transit Card */}
-                <div className="p-3 bg-slate-800/90 rounded-xl border border-amber-500/40 hover:border-amber-400 transition space-y-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-amber-200 hover:border-amber-400 transition space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-amber-300 flex items-center gap-1.5">
+                    <span className="font-black text-xs text-amber-700 flex items-center gap-1.5">
                       <span>🚜</span>
                       <span>{isTe ? 'ట్రాక్టర్ రోడ్డు ప్రయాణం' : 'Eicher Tractor Transit'}</span>
                     </span>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-950 text-amber-300 border border-amber-700 rounded">
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300 rounded">
                       డీజిల్ @ ₹98/L
                     </span>
                   </div>
 
-                  <div className="flex items-baseline justify-between bg-slate-900/80 p-2 rounded-lg border border-slate-700">
+                  <div className="flex items-baseline justify-between bg-white p-2 rounded-lg border border-slate-200">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
-                      <div className="text-lg font-black text-amber-400 font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
+                      <div className="text-lg font-black text-amber-600 font-mono">
                         ~₹{routeMetrics.vehicles.tractor.costInr.toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
-                      <div className="text-sm font-black text-white font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
+                      <div className="text-sm font-black text-slate-900 font-mono">
                         {routeMetrics.vehicles.tractor.liters} <span className="text-xs font-normal">Litres</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] space-y-1 text-slate-300">
+                  <div className="text-[11px] space-y-1 text-slate-600">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
-                      <span className="font-bold text-white">~6 km/L (~3.5L/hr)</span>
+                      <span className="text-slate-500">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
+                      <span className="font-bold text-slate-900">~6 km/L (~3.5L/hr)</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
-                      <span className="font-bold text-amber-300">{routeMetrics.vehicles.tractor.travelTime} (~22 km/h)</span>
+                      <span className="text-slate-500">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
+                      <span className="font-bold text-amber-700">{routeMetrics.vehicles.tractor.travelTime} (~22 km/h)</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-700">
+                    <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                       {isTe ? 'రైతు ట్రాక్టర్‌ను వర్క్‌షాప్‌కి తేవడం/డెలివరీ' : 'Tractor driving to workshop / camp point'}
                     </div>
                   </div>
                 </div>
 
                 {/* 4. Field Officer Car Card */}
-                <div className="p-3 bg-slate-800/90 rounded-xl border border-blue-500/40 hover:border-blue-400 transition space-y-2">
+                <div className="p-3 bg-slate-50 rounded-xl border border-blue-200 hover:border-blue-400 transition space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-black text-xs text-blue-300 flex items-center gap-1.5">
+                    <span className="font-black text-xs text-blue-700 flex items-center gap-1.5">
                       <span>🚗</span>
                       <span>{isTe ? 'ఫీల్డ్ ఆఫీసర్ కారు' : 'Field Officer Car'}</span>
                     </span>
-                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-950 text-blue-300 border border-blue-700 rounded">
+                    <span className="px-1.5 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-800 border border-blue-300 rounded">
                       డీజిల్ @ ₹98/L
                     </span>
                   </div>
 
-                  <div className="flex items-baseline justify-between bg-slate-900/80 p-2 rounded-lg border border-slate-700">
+                  <div className="flex items-baseline justify-between bg-white p-2 rounded-lg border border-slate-200">
                     <div>
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
-                      <div className="text-lg font-black text-blue-400 font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'ఇంధన ఖర్చు' : 'Fuel Cost'}</div>
+                      <div className="text-lg font-black text-blue-600 font-mono">
                         ~₹{routeMetrics.vehicles.car.costInr.toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[10px] text-slate-400 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
-                      <div className="text-sm font-black text-white font-mono">
+                      <div className="text-[10px] text-slate-500 uppercase font-bold">{isTe ? 'డీజిల్ మొత్తం' : 'Diesel Vol.'}</div>
+                      <div className="text-sm font-black text-slate-900 font-mono">
                         {routeMetrics.vehicles.car.liters} <span className="text-xs font-normal">Litres</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="text-[11px] space-y-1 text-slate-300">
+                  <div className="text-[11px] space-y-1 text-slate-600">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
-                      <span className="font-bold text-white">~16 km/L</span>
+                      <span className="text-slate-500">{isTe ? 'సగటు మైలేజ్:' : 'Avg. Mileage:'}</span>
+                      <span className="font-bold text-slate-900">~16 km/L</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
-                      <span className="font-bold text-amber-300">{routeMetrics.vehicles.car.travelTime} (~52 km/h)</span>
+                      <span className="text-slate-500">{isTe ? 'ప్రయాణ సమయం:' : 'Travel Time:'}</span>
+                      <span className="font-bold text-amber-700">{routeMetrics.vehicles.car.travelTime} (~52 km/h)</span>
                     </div>
-                    <div className="text-[10px] text-slate-400 pt-1 border-t border-slate-700">
+                    <div className="text-[10px] text-slate-500 pt-1 border-t border-slate-200">
                       {isTe ? 'బ్రాంచ్ మేనేజర్ / డీలర్‌షిప్ ఆఫీసర్ విజిట్' : 'Dealership branch manager / officer visit'}
                     </div>
                   </div>
@@ -1155,14 +1155,14 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
       {/* ========================================================================= */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Map Header & Mode Switcher */}
-        <div className="p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3">
+        <div className="p-4 bg-slate-50 text-slate-900 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <MapIcon className="w-5 h-5 text-amber-400" />
+            <MapIcon className="w-5 h-5 text-amber-500" />
             <div>
               <h3 className="text-sm md:text-base font-black">
                 {isTe ? 'కృష్ణా & ఎన్టీఆర్ జిల్లా ఇంటరాక్టివ్ నెట్‌వర్క్ మ్యాప్' : 'Krishna & NTR District Territory Map'}
               </h3>
-              <p className="text-[11px] text-slate-300">
+              <p className="text-[11px] text-slate-600">
                 {isTe
                   ? 'వర్క్‌షాప్ బ్రాంచ్‌లు, కవరేజ్ రింగ్స్ (10, 20, 30 km), మరియు రూట్ లైన్స్'
                   : 'Dealership branches, coverage radius rings, and live connecting routes.'}
@@ -1172,12 +1172,12 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
           <div className="flex items-center gap-2">
             {/* Toggle Mode: Visual vs Google Embed */}
-            <div className="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+            <div className="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
               <button
                 type="button"
                 onClick={() => setMapMode('visual')}
                 className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer flex items-center gap-1 ${
-                  mapMode === 'visual' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  mapMode === 'visual' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -1187,7 +1187,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 type="button"
                 onClick={() => setMapMode('google_embed')}
                 className={`px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer flex items-center gap-1 ${
-                  mapMode === 'google_embed' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                  mapMode === 'google_embed' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -1202,7 +1202,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 className={`px-3 py-1 text-xs font-bold rounded-lg border transition cursor-pointer flex items-center gap-1 ${
                   showRadiusRings
                     ? 'bg-amber-400 text-slate-950 border-amber-500'
-                    : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
                 }`}
               >
                 <span>{showRadiusRings ? '⭕ Rings ON' : '⭕ Rings OFF'}</span>
@@ -1213,7 +1213,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
 
         {/* MAP CONTENT CANVAS */}
         {mapMode === 'visual' ? (
-          <div className="relative bg-slate-950 overflow-hidden select-none" style={{ minHeight: '520px' }}>
+          <div className="relative bg-blue-50 overflow-hidden select-none" style={{ minHeight: '520px' }}>
             {/* SVG Interactive Canvas */}
             <svg
               viewBox={`0 0 ${mapSvgBounds.width} ${mapSvgBounds.height}`}
@@ -1239,15 +1239,15 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
               </defs>
 
               {/* District Outline / Grid Background */}
-              <rect x="0" y="0" width={mapSvgBounds.width} height={mapSvgBounds.height} fill="#0b1329" />
+              <rect x="0" y="0" width={mapSvgBounds.width} height={mapSvgBounds.height} fill="#eff6ff" />
 
               {/* Bay of Bengal Water Area representation (South / East of Krishna) */}
               <path
                 d="M 520,600 Q 600,450 750,420 L 800,420 L 800,600 Z"
-                fill="#082f49"
+                fill="#bae6fd"
                 opacity="0.6"
               />
-              <text x="640" y="520" fill="#38bdf8" fontSize="12" fontWeight="bold" opacity="0.5">
+              <text x="640" y="520" fill="#0369a1" fontSize="12" fontWeight="bold" opacity="0.7">
                 BAY OF BENGAL
               </text>
 
@@ -1259,12 +1259,12 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 strokeWidth="5"
                 opacity="0.4"
               />
-              <text x="180" y="270" fill="#38bdf8" fontSize="10" opacity="0.6" transform="rotate(10 180 270)">
+              <text x="180" y="270" fill="#0369a1" fontSize="10" opacity="0.8" transform="rotate(10 180 270)">
                 ~ Krishna River ~
               </text>
 
               {/* Major Highway connecting lines between branches */}
-              <g opacity="0.3" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,3">
+              <g opacity="0.4" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3,3">
                 {/* Gudivada to Machilipatnam */}
                 <line x1={gpsToSvg(16.441, 80.9926).x} y1={gpsToSvg(16.441, 80.9926).y} x2={gpsToSvg(16.1875, 81.1389).x} y2={gpsToSvg(16.1875, 81.1389).y} />
                 {/* Gudivada to Poranki / Vijayawada */}
@@ -1311,15 +1311,15 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                       className="cursor-pointer hover:opacity-100"
                       onClick={() => handleSelectTo(m)}
                     >
-                      <circle cx={pt.x} cy={pt.y} r="3" fill="#94a3b8" opacity="0.7" />
+                      <circle cx={pt.x} cy={pt.y} r="3" fill="#64748b" opacity="0.8" />
                       <text
                         x={pt.x}
                         y={pt.y - 6}
-                        fill="#cbd5e1"
+                        fill="#475569"
                         fontSize="8"
                         textAnchor="middle"
                         fontWeight="500"
-                        opacity="0.8"
+                        opacity="0.9"
                       >
                         {m.name}
                       </text>
@@ -1369,14 +1369,14 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                             width="64"
                             height="24"
                             rx="12"
-                            fill="#0f172a"
+                            fill="#ffffff"
                             stroke="#fbbf24"
                             strokeWidth="1.5"
                           />
                           <text
                             x="0"
                             y="4"
-                            fill="#ffffff"
+                            fill="#78350f"
                             fontSize="10"
                             fontWeight="bold"
                             textAnchor="middle"
@@ -1440,15 +1440,15 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                         width="60"
                         height="16"
                         rx="4"
-                        fill="#0f172a"
+                        fill="#ffffff"
                         stroke={color}
-                        strokeWidth="1"
-                        opacity="0.95"
+                        strokeWidth="1.2"
+                        opacity="0.97"
                       />
                       <text
                         x={pt.x}
                         y={pt.y + 24}
-                        fill="#ffffff"
+                        fill="#1e293b"
                         fontSize="9"
                         fontWeight="bold"
                         textAnchor="middle"
@@ -1462,22 +1462,22 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
             </svg>
 
             {/* Floating Zoom & Pan Controls */}
-            <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-xl border border-slate-700 shadow-xl">
+            <div className="absolute top-4 right-4 flex flex-col gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-200 shadow-xl">
               <button
                 type="button"
                 onClick={() => setZoomLevel(prev => Math.min(2.5, prev + 0.25))}
-                className="p-2 text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                 title="Zoom In (+)"
               >
-                <ZoomIn className="w-4 h-4 text-blue-400" />
+                <ZoomIn className="w-4 h-4 text-blue-600" />
               </button>
               <button
                 type="button"
                 onClick={() => setZoomLevel(prev => Math.max(0.75, prev - 0.25))}
-                className="p-2 text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                 title="Zoom Out (-)"
               >
-                <ZoomOut className="w-4 h-4 text-blue-400" />
+                <ZoomOut className="w-4 h-4 text-blue-600" />
               </button>
               <button
                 type="button"
@@ -1485,16 +1485,16 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                   setZoomLevel(1);
                   setMapCenter({ x: 0, y: 0 });
                 }}
-                className="p-2 text-white hover:bg-white/20 rounded-lg transition cursor-pointer"
+                className="p-2 text-slate-700 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                 title="Reset View"
               >
-                <RotateCcw className="w-4 h-4 text-amber-400" />
+                <RotateCcw className="w-4 h-4 text-amber-600" />
               </button>
             </div>
 
             {/* Map Legend */}
-            <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700 text-[11px] text-white space-y-1.5 shadow-xl">
-              <div className="font-bold text-amber-300 text-xs border-b border-slate-700 pb-1">
+            <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md p-3 rounded-xl border border-slate-200 text-[11px] text-slate-800 space-y-1.5 shadow-xl">
+              <div className="font-bold text-amber-700 text-xs border-b border-slate-200 pb-1">
                 {isTe ? 'మ్యాప్ సంకేతాలు (Legend)' : 'Map Legend'}
               </div>
               <div className="flex items-center gap-2">
@@ -1509,7 +1509,7 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
                 <span className="w-3 h-3 rounded-full bg-rose-500 border border-white"></span>
                 <span>To Destination Point</span>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-slate-400">
+              <div className="flex items-center gap-2 text-[10px] text-slate-500">
                 <span>⭕ Rings: 10km (Blue), 20km (Gold), 30km (Red)</span>
               </div>
             </div>
@@ -1553,10 +1553,10 @@ export const KrishnaDistrictRouteMap: React.FC<KrishnaDistrictRouteMapProps> = (
         <div className="p-4 md:p-6 overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-blue-950 text-white font-bold">
-                <th className="p-2.5 border border-blue-900">{isTe ? 'బ్రాంచ్ నుండి ➔' : 'From / To ➔'}</th>
+              <tr className="bg-blue-50 text-blue-900 font-bold">
+                <th className="p-2.5 border border-blue-200">{isTe ? 'బ్రాంచ్ నుండి ➔' : 'From / To ➔'}</th>
                 {BRANCH_LOCATIONS.map(b => (
-                  <th key={`head-${b.id}`} className="p-2.5 text-center border border-blue-900 whitespace-nowrap">
+                  <th key={`head-${b.id}`} className="p-2.5 text-center border border-blue-200 whitespace-nowrap">
                     {b.name.split(' (')[0]}
                   </th>
                 ))}

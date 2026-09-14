@@ -10,7 +10,9 @@ import {
   Trash2,
   Eye,
   Printer,
-  History
+  History,
+  ChevronLeft,
+  MoreVertical
 } from "lucide-react";
 
 export interface RowActionButtonsProps {
@@ -38,6 +40,8 @@ export interface RowActionButtonsProps {
 }
 
 export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
+  isExpanded = false,
+  onToggleExpand,
   language = "te",
   onCall,
   onNewJobCard,
@@ -59,8 +63,28 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
 }) => {
   const isTe = language === "te";
 
+  // Collapsed: show only a small toggle button. Clicking it reveals the
+  // full action row to its left; clicking again collapses it back.
+  if (!isExpanded && onToggleExpand) {
+    return (
+      <div className="flex items-center justify-end shrink-0 py-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className="w-7 h-7 p-1.5 bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white rounded-lg border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title={isTe ? "చర్యలు చూపించు" : "Show actions"}
+        >
+          <MoreVertical className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-center gap-0.5 flex-nowrap overflow-x-auto max-w-[130px] mx-auto py-0.5 shrink-0 scrollbar-none">
+    <div className="flex items-center justify-end gap-1 flex-nowrap overflow-x-auto max-w-full py-1 shrink-0 scrollbar-none">
       {/* 1. View */}
       {onView && (
         <button
@@ -69,10 +93,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onView();
           }}
-          className="w-4 h-4 p-0 bg-slate-100 hover:bg-slate-700 text-slate-700 hover:text-white rounded border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-slate-100 hover:bg-slate-700 text-slate-700 hover:text-white rounded-lg border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "వివరాలు చూడండి" : "View Details"}
         >
-          <Eye className="w-2.5 h-2.5" />
+          <Eye className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -84,10 +108,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onEdit();
           }}
-          className="w-4 h-4 p-0 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded border border-blue-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-lg border border-blue-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "సవరించు" : "Edit"}
         >
-          <PenLine className="w-2.5 h-2.5" />
+          <PenLine className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -99,10 +123,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onPrint();
           }}
-          className="w-4 h-4 p-0 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded border border-indigo-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded-lg border border-indigo-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "ప్రింట్" : "Print"}
         >
-          <Printer className="w-2.5 h-2.5" />
+          <Printer className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -114,14 +138,14 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onNewJobCard();
           }}
-          className="w-4 h-4 p-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={jobCardLabel || (isTe ? "జాబ్ కార్డ్" : "New Job Card")}
         >
-          <Plus className="w-2.5 h-2.5 stroke-[2.5]" />
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
         </button>
       )}
 
-      {/* 5. Call */}
+      {/* 5. Call - HIGHLIGHTED */}
       {onCall && (
         <button
           type="button"
@@ -129,10 +153,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onCall();
           }}
-          className="w-4 h-4 p-0 bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-white rounded border border-amber-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "కాల్ లాగ్" : "Log Call"}
+          className="w-8 h-8 p-1.5 bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white rounded-lg border border-amber-600 transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-md shadow-amber-500/30 font-bold"
+          title={isTe ? "📞 కాల్ లాగ్ & టెలీకాలింగ్" : "📞 Log Call & Information"}
         >
-          <PhoneCall className="w-2.5 h-2.5" />
+          <PhoneCall className="w-4 h-4" />
         </button>
       )}
 
@@ -144,10 +168,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onHistory();
           }}
-          className="w-4 h-4 p-0 bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white rounded border border-sky-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white rounded-lg border border-sky-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "చరిత్ర" : "History"}
         >
-          <History className="w-2.5 h-2.5" />
+          <History className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -159,10 +183,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onWhatsApp();
           }}
-          className="w-4 h-4 p-0 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded border border-emerald-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg border border-emerald-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title="WhatsApp"
         >
-          <MessageCircle className="w-2.5 h-2.5" />
+          <MessageCircle className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -174,10 +198,10 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onRegisterComplaint();
           }}
-          className="w-4 h-4 p-0 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded border border-rose-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded-lg border border-rose-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "కంప్లైంట్" : "Complaint"}
         >
-          <AlertCircle className="w-2.5 h-2.5" />
+          <AlertCircle className="w-3.5 h-3.5" />
         </button>
       )}
 
@@ -190,14 +214,14 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             onSave();
           }}
           disabled={isSaving}
-          className={`w-4 h-4 p-0 rounded transition-all flex items-center justify-center shrink-0 cursor-pointer border ${
+          className={`w-7 h-7 p-1.5 rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer border ${
             isSaved
               ? "bg-emerald-600 text-white border-emerald-700"
               : "bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border-purple-200"
           }`}
           title={isSaved ? "Saved!" : "Save"}
         >
-          {isSaved ? <Check className="w-2.5 h-2.5 stroke-[2.5]" /> : <Save className="w-2.5 h-2.5" />}
+          {isSaved ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : <Save className="w-3.5 h-3.5" />}
         </button>
       )}
 
@@ -209,10 +233,25 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
             e.stopPropagation();
             onDelete();
           }}
-          className="w-4 h-4 p-0 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded border border-red-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          className="w-7 h-7 p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg border border-red-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title={isTe ? "తొలగించు" : "Delete"}
         >
-          <Trash2 className="w-2.5 h-2.5" />
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Collapse back to the compact toggle */}
+      {onToggleExpand && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className="w-7 h-7 p-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title={isTe ? "మూసివేయి" : "Collapse"}
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
         </button>
       )}
     </div>

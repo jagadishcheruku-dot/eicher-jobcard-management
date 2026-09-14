@@ -42,7 +42,7 @@ import {
   VillageInfo
 } from '../data/dealershipData';
 import { Language } from '../translations';
-import { apiSaveServiceCamp, apiDeleteServiceCamp } from '../api';
+import { sqlService } from '../lib/sqlService';
 import { VillageCustomerInline } from './VillageCustomerInline';
 import { BroadcastQueueModal } from './BroadcastQueueModal';
 import { KrishnaDistrictRouteMap } from './KrishnaDistrictRouteMap';
@@ -811,7 +811,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
     };
 
     try {
-      await apiSaveServiceCamp(campToSave);
+      await sqlService.saveServiceCamp(campToSave);
 
       const existingIdx = serviceCamps.findIndex(c => c.id === campToSave.id);
       let updated: ServiceCamp[];
@@ -837,7 +837,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
       return;
     }
     try {
-      await apiDeleteServiceCamp(id);
+      await sqlService.deleteServiceCamp(id);
       const updated = serviceCamps.filter(c => c.id !== id);
       onUpdateServiceCamps(updated);
     } catch (err) {
@@ -1011,17 +1011,17 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
       {/* 2. THE COMPACT HORIZONTAL SELECTOR / FILTER BAR ("ADDA BOX") */}
       {/* Single Horizontal Strip with cascading dropdowns: Hub ▾ Branch ▾ Mandal ▾ Search */}
       {/* ========================================================================= */}
-      <div className="bg-slate-900 text-white rounded-xl p-2.5 md:p-3 shadow-sm border border-slate-800">
+      <div className="bg-white text-slate-900 rounded-xl p-2.5 md:p-3 shadow-sm border border-slate-200">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
           {/* Left: Cascading Dropdowns in a single horizontal row */}
           <div className="flex flex-wrap items-center gap-2 flex-1">
             {/* Primary View Switcher: Planning vs Scheduled vs District Route Map */}
-            <div className="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+            <div className="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
               <button
                 type="button"
                 onClick={() => setActiveTab('planning')}
                 className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'planning' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                  activeTab === 'planning' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <GitFork className="w-3.5 h-3.5" />
@@ -1031,7 +1031,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                 type="button"
                 onClick={() => setActiveTab('camps_list')}
                 className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'camps_list' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                  activeTab === 'camps_list' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
@@ -1044,7 +1044,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                 type="button"
                 onClick={() => setActiveTab('district_map')}
                 className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'district_map' ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'text-slate-300 hover:text-white'
+                  activeTab === 'district_map' ? 'bg-amber-400 text-slate-950 font-black shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <MapPin className="w-3.5 h-3.5 text-rose-500" />
@@ -1054,7 +1054,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                 type="button"
                 onClick={() => setActiveTab('setup')}
                 className={`px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'setup' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                  activeTab === 'setup' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />
@@ -1062,15 +1062,15 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
               </button>
             </div>
 
-            <div className="h-5 w-px bg-slate-700 hidden sm:block" />
+            <div className="h-5 w-px bg-slate-300 hidden sm:block" />
 
             {/* Dropdown 1: Dealership Hub */}
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-bold text-slate-400 hidden xl:inline">{isTe ? 'హబ్:' : 'Hub:'}</span>
+              <span className="text-[11px] font-bold text-slate-500 hidden xl:inline">{isTe ? 'హబ్:' : 'Hub:'}</span>
               <select
                 value={selectedHub}
                 onChange={e => handleHubChange(e.target.value as any)}
-                className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-white text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer"
+                className="bg-white border border-slate-300 hover:border-slate-400 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer"
               >
                 <option value="all">{isTe ? '🏢 అన్నీ (All Hubs)' : '🏢 All Hubs (4731 & 4732)'}</option>
                 <option value="4731">4731 Hub (Tiruvuru, Nuzvidu, Nandigama)</option>
@@ -1080,11 +1080,11 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
 
             {/* Dropdown 2: Branch */}
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-bold text-slate-400 hidden xl:inline">{isTe ? 'బ్రాంచ్:' : 'Branch:'}</span>
+              <span className="text-[11px] font-bold text-slate-500 hidden xl:inline">{isTe ? 'బ్రాంచ్:' : 'Branch:'}</span>
               <select
                 value={selectedBranch}
                 onChange={e => handleBranchChange(e.target.value)}
-                className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-white text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer"
+                className="bg-white border border-slate-300 hover:border-slate-400 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer"
               >
                 <option value="all">{isTe ? '🏬 అన్ని బ్రాంచ్‌లు (All Branches)' : '🏬 All Branches'}</option>
                 {availableBranches.map(b => (
@@ -1097,7 +1097,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
 
             {/* Dropdown 3: Mandal */}
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-bold text-slate-400 hidden xl:inline">{isTe ? 'మండలం:' : 'Mandal:'}</span>
+              <span className="text-[11px] font-bold text-slate-500 hidden xl:inline">{isTe ? 'మండలం:' : 'Mandal:'}</span>
               <select
                 value={selectedMandal}
                 onChange={e => {
@@ -1109,7 +1109,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                     if (mKey) setExpandedMandals(prev => ({ ...prev, [mKey]: true }));
                   }
                 }}
-                className="bg-slate-800 border border-slate-700 hover:border-slate-600 text-white text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer max-w-[170px]"
+                className="bg-white border border-slate-300 hover:border-slate-400 text-slate-900 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none cursor-pointer max-w-[170px]"
               >
                 <option value="all">{isTe ? '📁 అన్ని మండలాలు (All Mandals)' : '📁 All Mandals'}</option>
                 {availableMandals.map(m => (
@@ -1131,13 +1131,13 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                   setTablePage(1);
                 }}
                 placeholder={isTe ? 'గ్రామం / మండలం వెతకండి...' : 'Search village / mandal...'}
-                className="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-lg pl-8 pr-7 py-1.5 outline-none focus:border-blue-500 placeholder:text-slate-400 font-medium"
+                className="w-full bg-white border border-slate-300 text-slate-900 text-xs rounded-lg pl-8 pr-7 py-1.5 outline-none focus:border-blue-500 placeholder:text-slate-400 font-medium"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -1149,12 +1149,12 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
           {activeTab === 'planning' && (
             <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
               {/* View Style Switcher (Tree 🌳 vs Table 📋) */}
-              <div className="inline-flex rounded-lg bg-slate-800 p-0.5 border border-slate-700">
+              <div className="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setViewStyle('tree')}
                   className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
-                    viewStyle === 'tree' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                    viewStyle === 'tree' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                   }`}
                   title={isTe ? 'ట్రీ వ్యూ (Tree View)' : 'Tree View'}
                 >
@@ -1165,7 +1165,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                   type="button"
                   onClick={() => setViewStyle('table')}
                   className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
-                    viewStyle === 'table' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                    viewStyle === 'table' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900'
                   }`}
                   title={isTe ? 'టేబుల్ వ్యూ (Table View)' : 'Table View'}
                 >
@@ -1180,7 +1180,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                   <button
                     type="button"
                     onClick={expandAll}
-                    className="px-2 py-1 text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition cursor-pointer"
+                    className="px-2 py-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 transition cursor-pointer"
                     title={isTe ? 'అన్నీ తెరవండి' : 'Expand All'}
                   >
                     + {isTe ? 'అన్నీ' : 'All'}
@@ -1188,7 +1188,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                   <button
                     type="button"
                     onClick={collapseAll}
-                    className="px-2 py-1 text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition cursor-pointer"
+                    className="px-2 py-1 text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded border border-slate-200 transition cursor-pointer"
                     title={isTe ? 'అన్నీ మూసివేయండి' : 'Collapse All'}
                   >
                     - {isTe ? 'మూయి' : 'Close'}
@@ -1199,10 +1199,10 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
               <button
                 type="button"
                 onClick={exportServiceCampsExcel}
-                className="p-1.5 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition cursor-pointer"
+                className="p-1.5 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg border border-slate-200 transition cursor-pointer"
                 title="Export Scheduled Camps to CSV"
               >
-                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <Download className="w-3.5 h-3.5 text-emerald-600" />
               </button>
             </div>
           )}
@@ -1217,14 +1217,14 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
           {/* LEFT COLUMN: MANDALS & VILLAGES TREE DIRECTORY (COMPACT OKA PAKKANA) */}
           <div className="lg:col-span-5 xl:col-span-5 flex flex-col space-y-2">
             <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden flex flex-col">
-              <div className="p-2.5 bg-slate-900 text-white flex items-center justify-between">
+              <div className="p-2.5 bg-slate-50 text-slate-900 border-b border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <GitFork className="w-4 h-4 text-amber-400" />
+                  <GitFork className="w-4 h-4 text-amber-500" />
                   <span className="font-black text-xs">
                     {isTe ? '🌳 మండలాలు & గ్రామాల ట్రీ' : '🌳 Mandals & Villages Tree'}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-300">
+                <span className="text-[10px] text-slate-500">
                   {filteredDealerships.reduce((acc, h) => acc + h.branches.reduce((bAcc, b) => bAcc + b.mandals.reduce((mAcc, m) => mAcc + m.villages.length, 0), 0), 0)} {isTe ? 'గ్రామాలు' : 'Villages'}
                 </span>
               </div>
@@ -1272,12 +1272,12 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                     {/* LEVEL 1: HUB COMPACT ROW */}
                     <div
                       onClick={() => toggleHub(hub.code)}
-                      className={`px-3 py-2 flex items-center justify-between cursor-pointer select-none transition border-b border-slate-200 ${
-                        is4731 ? 'bg-blue-950 text-white' : 'bg-slate-900 text-white'
+                      className={`px-3 py-2 flex items-center justify-between cursor-pointer select-none transition border-b ${
+                        is4731 ? 'bg-blue-50 text-blue-950 border-blue-200' : 'bg-slate-100 text-slate-900 border-slate-200'
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="p-1 rounded bg-white/10 hover:bg-white/20">
+                        <span className="p-1 rounded bg-slate-900/5 hover:bg-slate-900/10">
                           {isHubExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
                         </span>
                         <span className="px-1.5 py-0.2 bg-amber-400 text-slate-950 font-mono font-black text-[10px] rounded uppercase">
@@ -1289,10 +1289,10 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-300 font-semibold hidden sm:inline">
+                        <span className="text-[11px] text-slate-600 font-semibold hidden sm:inline">
                           {hub.branches.length} {isTe ? 'బ్రాంచ్‌లు' : 'Branches'} • {hubVillagesCount} {isTe ? 'గ్రామాలు' : 'Villages'}
                         </span>
-                        <span className="px-2 py-0.5 bg-white/20 rounded text-[11px] font-mono font-black text-amber-300">
+                        <span className="px-2 py-0.5 bg-amber-100 rounded text-[11px] font-mono font-black text-amber-800">
                           🚜 {hubTractors}
                         </span>
                         <button
@@ -1534,27 +1534,27 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
               {activeVillageDetails ? (
                 <div className="flex-1 flex flex-col h-full overflow-hidden">
                   {/* Top Bar of Pedda Box */}
-                  <div className="bg-slate-900 text-white px-3.5 py-2.5 border-b border-slate-800 shrink-0 flex flex-wrap items-center justify-between gap-2">
+                  <div className="bg-slate-50 text-slate-900 px-3.5 py-2.5 border-b border-slate-200 shrink-0 flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="p-1.5 bg-blue-600 text-white rounded-lg">
                         <Users className="w-4 h-4" />
                       </span>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h2 className="text-sm md:text-base font-black text-white">
+                          <h2 className="text-sm md:text-base font-black text-slate-900">
                             {activeVillageDetails.villageName} {activeVillageDetails.villageTelugu ? `(${activeVillageDetails.villageTelugu})` : ''}
                           </h2>
-                          <span className="px-1.5 py-0.5 bg-blue-800 text-blue-100 rounded text-[10px] font-bold">
+                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold">
                             {activeVillageDetails.mandalName} Mandal
                           </span>
-                          <span className="px-1.5 py-0.5 bg-slate-800 text-amber-300 rounded text-[10px] font-bold">
+                          <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold">
                             {activeVillageDetails.branchName} ({activeVillageDetails.hubCode} Hub)
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-400 font-medium flex items-center gap-2 mt-0.5">
+                        <div className="text-[11px] text-slate-500 font-medium flex items-center gap-2 mt-0.5">
                           <span>📍 {activeVillageDetails.distanceKm} km ({activeVillageDetails.approxTravelTime || '20 min'})</span>
                           <span>•</span>
-                          <span className="font-bold text-amber-400 font-mono">
+                          <span className="font-bold text-amber-600 font-mono">
                             🚜 {getCustomersForVillage(activeVillageDetails.villageName, activeVillageDetails.mandalName).length} {isTe ? 'కస్టమర్ ట్రాక్టర్లు' : 'Customers'}
                           </span>
                         </div>
@@ -1566,7 +1566,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
                         href={getGoogleMapsDirectionsUrl(activeVillageDetails.branchName, activeVillageDetails.villageName, activeVillageDetails.mandalName)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-2 py-1 text-[11px] font-bold text-blue-300 bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                        className="px-2 py-1 text-[11px] font-bold text-blue-700 bg-white hover:bg-slate-100 rounded border border-slate-300 transition flex items-center gap-1 cursor-pointer"
                         title="Google Maps"
                       >
                         <MapIcon className="w-3 h-3" />
@@ -2080,13 +2080,13 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
 
       {/* Floating Toast Notification */}
       {toastMsg && (
-        <div className="fixed bottom-5 right-5 z-60 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 border border-slate-700 animate-in fade-in slide-in-from-bottom-3 duration-200 text-xs font-semibold">
-          <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed bottom-5 right-5 z-60 bg-white text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 border border-slate-200 animate-in fade-in slide-in-from-bottom-3 duration-200 text-xs font-semibold">
+          <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{toastMsg}</span>
           <button
             type="button"
             onClick={() => setToastMsg(null)}
-            className="ml-2 text-slate-400 hover:text-white p-0.5 rounded cursor-pointer"
+            className="ml-2 text-slate-400 hover:text-slate-900 p-0.5 rounded cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -2100,7 +2100,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 md:p-6 bg-slate-950/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
             {/* Form Header */}
-            <div className="p-4 md:p-5 bg-blue-950 text-white flex items-center justify-between">
+            <div className="p-4 md:p-5 bg-blue-50 text-blue-950 border-b border-blue-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="p-1.5 bg-amber-400 text-slate-950 rounded-md">
                   <Calendar className="w-4 h-4" />
@@ -2115,7 +2115,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCampModalOpen(false)}
-                className="p-1.5 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-lg transition"
+                className="p-1.5 text-blue-700 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 rounded-lg transition"
               >
                 <X className="w-5 h-5" />
               </button>

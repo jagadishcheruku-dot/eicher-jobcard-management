@@ -38,7 +38,15 @@ import {
   onAuthStateChanged as rH,
   User,
 } from "firebase/auth";
-import { auth as ey, db as kt } from "./firebase";
+import { auth as ey, db as firestoreDb } from "./firebase";
+import { isSupabaseConfigured } from "./lib/supabase";
+import { liveCollection, onLiveSnapshot } from "./lib/liveSync";
+
+// Once Supabase holds the records, the direct Firestore reads and listeners in
+// this file would keep pushing the old copies into the UI alongside them. They
+// are all guarded by `kt`, so dropping it here silences every one of them.
+// authService keeps its own Firestore handle for the sign-in accounts.
+const kt = isSupabaseConfigured ? null : firestoreDb;
 import {
   collection as ci,
   doc as Qs,
@@ -84,9 +92,9 @@ import { MasterCustomerExcelTable } from "./components/MasterCustomerExcelTable"
 import { JobCardViewModal } from "./components/JobCardViewModal";
 import { formatDisplayDate, getCustomerDeliveryTimestamp, isDeliveryOutOfWarranty } from "./utils/dateFormatter";
 import { LanguageSelectionModal } from "./components/LanguageSelectionModal";
-import { MenuOrderSettings, DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
+import { CustomerSearchModal } from "./components/CustomerSearchModal";
+import { DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
 import BranchLoginView from "./components/BranchLoginView";
-import UserManagementModal from "./components/UserManagementModal";
 import {
   DEFAULT_USERS,
   DEFAULT_BRANCHES,
@@ -1531,6 +1539,7 @@ function gY() {
       } catch {}
     },
     [showLanguageModal, setShowLanguageModal] = ce.useState(false),
+    [showCustomerSearchModal, setShowCustomerSearchModal] = ce.useState(false),
     [isOnline, setIsOnline] = ce.useState<boolean>(() => typeof navigator !== "undefined" ? navigator.onLine : true),
     [isFastSyncing, setIsFastSyncing] = ce.useState<boolean>(false),
     n = (d) => WW(d, e),
@@ -1546,27 +1555,7 @@ function gY() {
         return false;
       }
     }),
-    [w, setMenuOrder] = ce.useState<string[]>(() => {
-      try {
-        const saved = typeof localStorage !== "undefined" ? localStorage.getItem("app_sidebar_menu_order") : null;
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const cleaned = parsed.filter((item: string) => item && item !== "customer_data");
-            const expanded = cleaned.flatMap((item: string) =>
-              item === "customers_and_jobcards" ? ["saved_cards"] : [item]
-            );
-            const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
-            const finalOrder = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
-            try {
-              localStorage.setItem("app_sidebar_menu_order", JSON.stringify(finalOrder));
-            } catch {}
-            return finalOrder;
-          }
-        }
-      } catch {}
-      return DEFAULT_MENU_ORDER;
-    }),
+    [w, setMenuOrder] = ce.useState<string[]>(DEFAULT_MENU_ORDER),
     [E, O] = ce.useState(!1);
 
     const saveMenuOrderToCloud = async (newOrder: string[], locked: boolean) => {
@@ -1599,9 +1588,9 @@ function gY() {
           if (snap.exists()) {
             const data = snap.data();
             if (Array.isArray(data.order) && data.order.length > 0) {
-              const cleaned = data.order.filter((item: string) => item && item !== "customer_data");
+              const cleaned = data.order.filter(Boolean);
               const expanded = cleaned.flatMap((item: string) =>
-                item === "customers_and_jobcards" ? ["saved_cards"] : [item]
+                (item === "customers_and_jobcards" || item === "saved_cards") ? ["customer_data", "job_cards_data"] : [item]
               );
               const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
               const valid = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
@@ -2338,7 +2327,6 @@ function gY() {
     [customUsers, setCustomUsers] = ce.useState(() => getLocalUsers()),
     [systemBranches, setSystemBranches] = ce.useState(() => getLocalBranches()),
     [adminBranchFilter, setAdminBranchFilter] = ce.useState("All Branches (Master)"),
-    [isUserManagementOpen, setIsUserManagementOpen] = ce.useState(!1),
     [Yu, xc] = ce.useState(!1),
     [w1, N1] = ce.useState("login"),
     [F0, dp] = ce.useState(""),
@@ -2386,12 +2374,11 @@ function gY() {
   }, [Br]);
 
   ce.useEffect(() => {
-    if (!ki && (!ho || ho.trim() === "")) {
+    if (!ki && (!lo || lo.trim() === "")) {
       const nextJc = getNextJobCardNumber();
-      Gm(nextJc);
       qd(nextJc);
     }
-  }, [ki, ho, getNextJobCardNumber]);
+  }, [ki, lo, getNextJobCardNumber]);
   ce.useEffect(() => {
     try {
       localStorage.setItem("sri_service_interval_days", Zu.toString());
@@ -2400,7 +2387,7 @@ function gY() {
 
   ce.useEffect(() => {
     try {
-      const unsubUsers = Gp(ci(kt, "system_users"), (snapshot) => {
+      const unsubUsers = Gp(ci(firestoreDb, "system_users"), (snapshot) => {
         if (!snapshot.empty) {
           const uList: any[] = [];
           snapshot.forEach((docSnap) => {
@@ -2423,7 +2410,7 @@ function gY() {
         console.warn("Firestore system_users listener error:", err);
       });
 
-      const unsubBranches = Gp(Qs(kt, "settings", "branches"), (docSnap) => {
+      const unsubBranches = Gp(Qs(firestoreDb, "settings", "branches"), (docSnap) => {
         if (docSnap.exists() && Array.isArray(docSnap.data()?.list)) {
           setSystemBranches(docSnap.data().list);
           setLocalBranches(docSnap.data().list);
@@ -3113,10 +3100,10 @@ function gY() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "jobcards"),
-            b = Gp(
+          const d = liveCollection("job_cards"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j: any[] = [];
@@ -3170,10 +3157,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "complaints"),
-            b = Gp(
+          const d = liveCollection("complaints"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = [];
@@ -3218,10 +3205,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "staff"),
-            b = Gp(
+          const d = liveCollection("staff"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = [];
@@ -3267,10 +3254,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "attendance"),
-            b = Gp(
+          const d = liveCollection("attendance"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = {};
@@ -3304,10 +3291,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "customers_master"),
-            b = Gp(
+          const d = liveCollection("customers"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 if (v.empty) {
@@ -3349,10 +3336,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "spares_master"),
-            b = Gp(
+          const d = liveCollection("spares"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 if (!v.empty) {
@@ -3561,6 +3548,111 @@ function gY() {
       } finally {
         jo(!1);
       }
+    },
+    restoreFullBackupFromFile = (evt: any) => {
+      const file = evt.target.files && evt.target.files[0];
+      if (!file) return;
+      if (
+        !window.confirm(
+          "⚠️ WARNING: This will REPLACE all current Job Cards, Complaints, Staff, Customers, and Spares data with the contents of this backup file. This cannot be undone. Continue?",
+        )
+      ) {
+        if (evt.target) evt.target.value = "";
+        return;
+      }
+      bc({ text: "⏳ Restoring full backup...", isSuccess: !1 });
+      const reader = new FileReader();
+      reader.onload = async (e: any) => {
+        try {
+          const wb = jh(e.target?.result, { type: "array" });
+          const getSheet = (name: string) => {
+            const ws = wb.Sheets[name];
+            return ws ? lr.sheet_to_json(ws, { defval: "" }) : [];
+          };
+          const jobCardsRows = getSheet("JobCards").map(j1);
+          const complaintsRows = getSheet("Complaints");
+          const staffRows = getSheet("Staff");
+          const customersRows = getSheet("Customers");
+          const sparesRows = getSheet("Spares");
+          const settingsRows = getSheet("AppSettings");
+          const attendanceRows = getSheet("StaffAttendance");
+
+          if (jobCardsRows.length > 0) {
+            Oa(jobCardsRows);
+            await bo(jobCardsRows);
+          }
+          if (complaintsRows.length > 0) {
+            Ga(complaintsRows);
+            try {
+              localStorage.setItem("sri_backup_complaints", JSON.stringify(complaintsRows));
+            } catch {}
+          }
+          if (staffRows.length > 0) {
+            qo(staffRows);
+            try {
+              localStorage.setItem("sri_backup_staff", JSON.stringify(staffRows));
+            } catch {}
+          }
+          if (customersRows.length > 0) {
+            const map: any = {};
+            customersRows.forEach((row: any) => {
+              const key = Ct(row["Chassis no"] || row.chassisNo || "");
+              if (key) {
+                let followupHistory = row.followupHistory || [];
+                if (typeof followupHistory === "string") {
+                  try {
+                    followupHistory = JSON.parse(followupHistory);
+                  } catch {
+                    followupHistory = [];
+                  }
+                }
+                map[key] = { ...row, followupHistory };
+              }
+            });
+            Pi(map);
+            await ui(Dc, map);
+          }
+          if (sparesRows.length > 0) {
+            const map: any = {};
+            sparesRows.forEach((row: any) => {
+              const key = Ct(row.partNo || row["Part No"] || "");
+              if (key) map[key] = row;
+            });
+            gc(map);
+            await ui(hf, map);
+          }
+          if (settingsRows.length > 0) {
+            settingsRows.forEach((row: any) => {
+              if (row.key === "MenuOrder" && row.value) {
+                try {
+                  setMenuOrder(JSON.parse(row.value));
+                } catch {}
+              }
+              if (row.key === "ServiceInterval" && row.value) {
+                const parsed = parseInt(row.value, 10);
+                if (!isNaN(parsed)) M0(parsed);
+              }
+            });
+          }
+          if (attendanceRows.length > 0) {
+            const att: any = {};
+            attendanceRows.forEach((row: any) => {
+              if (!row.date || !row.staffId) return;
+              att[row.date] = att[row.date] || {};
+              att[row.date][row.staffId] = { status: row.status || "", remarks: row.remarks || "" };
+            });
+            U(att);
+          }
+          bc({ text: "✅ Backup restored successfully! Reloading...", isSuccess: !0 });
+          setTimeout(() => window.location.reload(), 900);
+        } catch (err) {
+          console.error("Restore error:", err);
+          bc({ text: "❌ Failed to restore backup. Check file format.", isSuccess: !1 });
+        } finally {
+          if (evt.target) evt.target.value = "";
+        }
+      };
+      reader.readAsArrayBuffer(file);
     },
     yg = async (d) => {
       const v = (await Tx(d, "JobCards", ty)).map(j1),
@@ -4183,50 +4275,6 @@ function gY() {
           });
           savedCount = Object.keys(fullMap).length;
         }
-        if (kt && Array.isArray(fresh) && fresh.length > 0) {
-          try {
-            const b = await ud(ci(kt, "customers_master"));
-            if (!b.empty) {
-              const N = Bu(kt);
-              (b.docs.forEach((R) => N.delete(R.ref)), await N.commit());
-            }
-            const v = fresh.map((N) => {
-                const R = {};
-                return (
-                  N &&
-                    typeof N == "object" &&
-                    Object.keys(N).forEach((S) => {
-                      R[S] = Bs(N[S]);
-                    }),
-                  R
-                );
-              }),
-              j = 250,
-              I = Math.ceil(v.length / j);
-            for (let N = 0; N < I; N++) {
-              const R = v.slice(N * j, (N + 1) * j),
-                S = Qs(kt, "customers_master", `chunk_${N}`);
-              await xu(S, {
-                chunkIndex: N,
-                totalChunks: I,
-                uploadedAt: new Date().toISOString(),
-                rows: R,
-              });
-            }
-            await xu(
-              Qs(kt, "app_master_data", "customers_meta"),
-              {
-                totalRows: v.length,
-                totalChunks: I,
-                uploadedAt: new Date().toISOString(),
-                uploadedBy: ($t == null ? void 0 : $t.email) || "user",
-              },
-              { merge: !0 },
-            );
-          } catch (e) {
-            console.warn("Firestore customer chunk sync:", e);
-          }
-        }
         let msg = `✅ ${savedCount} unique customer record(s) active & synced in Cloud Database.`;
         if (
           typeof newAddedCount === "number" &&
@@ -4249,57 +4297,18 @@ function gY() {
           text: "⏳ Syncing spares records to cloud database...",
           isSuccess: !1,
         });
-        try {
-          await Rs.saveSparesBulk(d, !1);
-          const res = await fetch("/api/spares");
-          const json = await res.json();
-          if (json.success && json.data) {
-            d = json.data.map((x) => JSON.parse(x.full_data || "{}"));
-          }
-        } catch (b) {
-          console.warn("Cloud SQL spares sync:", b);
-        }
-        if (kt) {
-          const b = await ud(ci(kt, "spares_master"));
-          if (!b.empty) {
-            const N = Bu(kt);
-            (b.docs.forEach((R) => N.delete(R.ref)), await N.commit());
-          }
-          if (d.length === 0) return;
-          const v = d.map((N) => {
-              const R = {};
-              return (
-                N &&
-                  typeof N == "object" &&
-                  Object.keys(N).forEach((S) => {
-                    R[S] = Bs(N[S]);
-                  }),
-                R
-              );
-            }),
-            j = 300,
-            I = Math.ceil(v.length / j);
-          for (let N = 0; N < I; N++) {
-            const R = v.slice(N * j, (N + 1) * j),
-              S = Qs(kt, "spares_master", `chunk_${N}`);
-            await xu(S, {
-              chunkIndex: N,
-              totalChunks: I,
-              uploadedAt: new Date().toISOString(),
-              rows: R,
-            });
-          }
-          await xu(
-            Qs(kt, "app_master_data", "spares_meta"),
-            {
-              totalRows: v.length,
-              totalChunks: I,
-              uploadedAt: new Date().toISOString(),
-              uploadedBy: ($t == null ? void 0 : $t.email) || "user",
-            },
-            { merge: !0 },
+        const sanitized = d.map((N) => {
+          const R = {};
+          return (
+            N &&
+              typeof N == "object" &&
+              Object.keys(N).forEach((S) => {
+                R[S] = Bs(N[S]);
+              }),
+            R
           );
-        }
+        });
+        await Rs.saveSparesBulk(sanitized);
         Ol({
           text: `✅ ${d.length} spare part(s) synced to Cloud SQL & cloud database successfully.`,
           isSuccess: !0,
@@ -4326,19 +4335,25 @@ function gY() {
           R.SheetNames.forEach((shName) => {
             const sheet = R.Sheets[shName];
             if (sheet) {
-              const rows = lr
-                .sheet_to_json(sheet, { raw: !1, defval: "" })
-                .map((Ne) => {
-                  const xe = {};
-                  return (
-                    Ne &&
-                      typeof Ne == "object" &&
-                      Object.keys(Ne).forEach((Ue) => {
-                        xe[Ue] = Bs(Ne[Ue]);
-                      }),
-                    xe
-                  );
-                });
+              // Excel date cells are read twice: `raw:false` gives text formatted using the
+              // workbook's own number format (e.g. a US "mm-dd-yy" cell format renders as
+              // "12/05/15"), which the app's DD/MM parser then misreads as day-first and
+              // silently swaps day/month. `raw:true` returns the underlying Excel serial
+              // number instead, which dateFormatter's own serial-number parsing decodes
+              // unambiguously, so date columns use that value instead of the formatted text.
+              const rowsFormatted = lr.sheet_to_json(sheet, { raw: !1, defval: "" });
+              const rowsRaw = lr.sheet_to_json(sheet, { raw: !0, defval: "" });
+              const rows = rowsFormatted.map((Ne, rowIdx) => {
+                const xe = {};
+                const rawRow = rowsRaw[rowIdx] || {};
+                Ne &&
+                  typeof Ne == "object" &&
+                  Object.keys(Ne).forEach((Ue) => {
+                    const isDateCol = Ct(Ue).includes("date") || Ct(Ue) === "dod";
+                    xe[Ue] = Bs(isDateCol ? rawRow[Ue] : Ne[Ue]);
+                  });
+                return xe;
+              });
               le.push(...rows);
             }
           });
@@ -5423,7 +5438,7 @@ function gY() {
         zs(""),
         Zd(""),
         wn(""),
-        Gm(nextJc),
+        Gm(""),
         Ks(""),
         Zc(""),
         eh(""),
@@ -5573,7 +5588,6 @@ function gY() {
         let jobCardNum = String(ho || lo || "").trim();
         if (!jobCardNum && !ki) {
           jobCardNum = getNextJobCardNumber();
-          Gm(jobCardNum);
           qd(jobCardNum);
         }
         const d = String(fs || "").trim(),
@@ -5612,9 +5626,9 @@ function gY() {
           Ee = {
             id: I,
             serviceLocation: Gn,
-            jobNo: b || lo,
+            jobNo: lo || b,
             complaintDate: Tl,
-            onlineJobCardNo: b || lo,
+            onlineJobCardNo: String(ho || "").trim(),
             jobDate: _l,
             branch: pg || currentSystemUser?.branch || (adminBranchFilter !== "All Branches (Master)" ? adminBranchFilter : "Tiruvuru"),
             historyFileNo: Jo,
@@ -5762,13 +5776,6 @@ function gY() {
       }
     },
     handlePrintJobCard = async () => {
-      const d = String(fs || "").trim(),
-        b = String(ho || "").trim(),
-        v = String(lo || "").trim(),
-        j = String(Fa || "").trim();
-      if (d || b || v || j) {
-        await tx({ shouldClear: false, silent: true });
-      }
       u("new_entry");
       const ch =
           String(fs || "")
@@ -7970,13 +7977,6 @@ ${b}`));
     Ko = va.reduce((d, b) => d + (parseFloat(b.charge) || 0), 0),
     Ml = ri.reduce((d, b) => d + (parseFloat(b.amount) || 0), 0),
     ax = async () => {
-      const d = String(fs || "").trim(),
-        b = String(ho || "").trim(),
-        v = String(lo || "").trim(),
-        j = String(Fa || "").trim();
-      if (d || b || v || j) {
-        await tx({ shouldClear: false, silent: true });
-      }
       const ch =
           String(fs || "")
             .trim()
@@ -8190,7 +8190,8 @@ ${b}`));
       const filtered = Br.filter(Boolean).filter((card) => {
         const cardBranch = card.branch || card.BRANCH || card.dealershipBranch || "";
         const cardCreatedBy = card.createdBy || card.supervisor || card.advisorName || "";
-        return isRecordVisibleForUser(cardBranch, cardCreatedBy, currentSystemUser, adminBranchFilter);
+        const cardSupervisor = card.supervisor || card.wsIncharge || card.supervisorName || card.wsInchargeName || "";
+        return isRecordVisibleForUser(cardBranch, cardCreatedBy, currentSystemUser, adminBranchFilter, cardSupervisor);
       });
       filtered.sort((a: any, b: any) => {
         const getTs = (c: any) => {
@@ -8220,7 +8221,8 @@ ${b}`));
     }, [Br, currentSystemUser, adminBranchFilter]),
     visibleFs = ce.useMemo(() => {
       return Fs.filter(Boolean).filter((comp) => {
-        return isRecordVisibleForUser(comp.branch || comp.location, comp.createdBy, currentSystemUser, adminBranchFilter);
+        const compSupervisor = comp.supervisor || comp.wsIncharge || comp.supervisorName || comp.createdBy || "";
+        return isRecordVisibleForUser(comp.branch || comp.location, comp.createdBy, currentSystemUser, adminBranchFilter, compSupervisor);
       });
     }, [Fs, currentSystemUser, adminBranchFilter]),
     uu = ce.useMemo(() => {
@@ -8269,7 +8271,8 @@ ${b}`));
         if (!v) return;
         const custBranch = v.BRANCH || v.branch || "";
         const custCreatedBy = v.createdBy || "";
-        if (isRecordVisibleForUser(custBranch, custCreatedBy, currentSystemUser, adminBranchFilter)) {
+        const custSupervisor = v.supervisor || v.wsIncharge || v.supervisorName || v.createdBy || "";
+        if (isRecordVisibleForUser(custBranch, custCreatedBy, currentSystemUser, adminBranchFilter, custSupervisor)) {
           const ch = (v["Chassis no"] || v.__chassisDisplay || be(v, "chassis") || v.chassisNo || v.chassis || "").toString().trim();
           const phone = (v["Mobile Number"] || v.__custPhoneDisplay || be(v, "custPhone") || v.mobileNumber || v.phone || "").toString().trim();
           const name = (v["Customer Name"] || v.__custNameDisplay || be(v, "custName") || v.custName || v.customerName || "").toString().trim();
@@ -10208,7 +10211,7 @@ ${b}`));
         d.chassis ||
         "";
       (Ai(!1),
-        u("saved_cards"),
+        u("job_cards_data"),
         _0(b),
         _n(1),
         Hc("all"),
@@ -10293,6 +10296,15 @@ ${b}`));
             setShowLanguageModal(false);
           },
         }),
+      showCustomerSearchModal &&
+        i.jsx(CustomerSearchModal, {
+          isOpen: showCustomerSearchModal,
+          onClose: () => setShowCustomerSearchModal(false),
+          customers: _a,
+          jobCards: hh,
+          complaints: visibleFs,
+          language: e,
+        }),
       Yu
         ? i.jsx("div", {
         className:
@@ -10319,7 +10331,7 @@ ${b}`));
     : ($t
       ? i.jsxs("div", {
           className:
-            "min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col md:flex-row print:block",
+            "min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-blue-50/40 text-slate-800 font-sans flex flex-col md:flex-row print:block",
           children: [
             i.jsxs("div", {
               className:
@@ -10451,21 +10463,21 @@ ${b}`));
               }),
             i.jsxs("aside", {
               className: `
-        ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"} 
-        w-72 ${f ? "md:w-16" : "md:w-64"} 
-        shrink-0 bg-white border-r border-slate-200 flex flex-col print:hidden shadow-xl md:shadow-xs transition-all duration-200
+        ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"}
+        w-72 ${f ? "md:w-[76px]" : "md:w-72"}
+        shrink-0 bg-white border-r border-slate-200/70 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
       `,
               children: [
                 i.jsxs("div", {
                   className:
-                    "p-3 md:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between gap-2",
+                    "p-4 border-b border-slate-100 bg-white flex items-center justify-between gap-2",
                   children: [
                     i.jsxs("div", {
-                      className: "flex items-center gap-2 overflow-hidden",
+                      className: "flex items-center gap-2.5 overflow-hidden",
                       children: [
                         i.jsx("div", {
                           className:
-                            "bg-blue-900 text-white p-2 rounded-xl shadow-xs shrink-0",
+                            "bg-gradient-to-br from-indigo-600 via-blue-700 to-blue-900 text-white p-2.5 rounded-2xl shadow-lg shadow-blue-900/20 shrink-0",
                           children: i.jsx(Pb, {
                             className: "w-5 h-5 text-white",
                           }),
@@ -10477,12 +10489,12 @@ ${b}`));
                             children: [
                               i.jsx("h1", {
                                 className:
-                                  "text-xs font-black text-slate-900 leading-tight uppercase tracking-wide",
-                                children: "SRI GAYATHRI",
+                                  "text-sm font-black text-slate-900 leading-tight tracking-tight",
+                                children: "Sri Gayathri",
                               }),
                               i.jsx("p", {
                                 className:
-                                  "text-[9px] text-slate-500 font-extrabold uppercase",
+                                  "text-[10px] text-slate-400 font-bold uppercase tracking-wider",
                                 children: "Automotives",
                               }),
                             ],
@@ -10496,7 +10508,7 @@ ${b}`));
                           type: "button",
                           onClick: () => m(!f),
                           className:
-                            "hidden md:block p-1 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer shrink-0",
+                            "hidden md:flex items-center justify-center w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer shrink-0",
                           title: f ? "Expand Sidebar" : "Collapse Sidebar",
                           children: f
                             ? i.jsx(uD, { className: "w-4 h-4" })
@@ -10506,7 +10518,7 @@ ${b}`));
                           type: "button",
                           onClick: () => C(!0),
                           className:
-                            "p-1 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors cursor-pointer shrink-0",
+                            "flex items-center justify-center w-7 h-7 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer shrink-0",
                           title: "Hide Sidebar",
                           children: i.jsx(Ja, { className: "w-4 h-4" }),
                         }),
@@ -10514,28 +10526,12 @@ ${b}`));
                     }),
                   ],
                 }),
-                i.jsxs("div", {
+                !f && i.jsx("div", {
                   className:
-                    "px-3 py-2 border-b border-slate-200 bg-slate-100 flex items-center justify-between gap-1 shrink-0",
-                  children: [
-                    !f &&
-                      i.jsxs("button", {
-                        type: "button",
-                        onClick: () => setShowLanguageModal(true),
-                        className:
-                          "flex items-center gap-1 text-[11px] font-bold text-slate-700 hover:text-blue-900 cursor-pointer transition-colors text-left",
-                        title: e === "te" ? "భాషను మార్చుకోండి (Click to change language)" : "Click to change language",
-                        children: [
-                          i.jsx(NK, { className: "w-3.5 h-3.5 text-blue-900 shrink-0" }),
-                          i.jsx("span", {
-                            children:
-                              e === "te" ? "భాష (Language)" : "Language",
-                          }),
-                        ],
-                      }),
-                    i.jsxs("div", {
+                    "px-4 py-3 border-b border-slate-100 flex items-center justify-center shrink-0",
+                  children: i.jsxs("div", {
                       className:
-                        "flex items-center bg-white p-0.5 rounded-lg border border-slate-300 shadow-2xs",
+                        "flex items-center bg-slate-100 p-1 rounded-full w-full",
                       children: [
                         i.jsx("button", {
                           type: "button",
@@ -10543,7 +10539,7 @@ ${b}`));
                             s("te");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `px-2.5 py-1 text-[11px] font-black rounded-md transition cursor-pointer ${e === "te" ? "bg-blue-900 text-white shadow-2xs" : "text-slate-600 hover:text-slate-950"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "te" ? "bg-white text-blue-900 shadow-sm" : "text-slate-400 hover:text-slate-600"}`,
                           title: "తెలుగు భాష ఎంచుకోండి",
                           children: "తెలుగు",
                         }),
@@ -10553,23 +10549,32 @@ ${b}`));
                             s("en");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `px-2.5 py-1 text-[11px] font-black rounded-md transition cursor-pointer ${e === "en" ? "bg-blue-900 text-white shadow-2xs" : "text-slate-600 hover:text-slate-950"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "en" ? "bg-white text-blue-900 shadow-sm" : "text-slate-400 hover:text-slate-600"}`,
                           title: "Select English Language",
                           children: "English",
                         }),
                       ],
                     }),
-                  ],
+                }),
+                f && i.jsx("div", {
+                  className: "px-3 py-3 border-b border-slate-100 flex items-center justify-center shrink-0",
+                  children: i.jsx("button", {
+                    type: "button",
+                    onClick: () => setShowLanguageModal(true),
+                    className: "w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-blue-900 transition-colors cursor-pointer",
+                    title: e === "te" ? "భాషను మార్చుకోండి" : "Change language",
+                    children: i.jsx(NK, { className: "w-4 h-4" }),
+                  }),
                 }),
                 i.jsxs("nav", {
                   className: "flex-1 p-2 md:p-3 space-y-2 overflow-y-auto",
                   children: [
                     w.filter((menuKey: string) => {
-                    if (!menuKey || menuKey === "customer_data") return false;
+                    if (!menuKey) return false;
                     if (!currentSystemUser || currentSystemUser.isAdmin) return true;
                     if (!currentSystemUser.allowedMenus || currentSystemUser.allowedMenus.length === 0) return true;
-                    if (menuKey === "customers_and_jobcards" || menuKey === "saved_cards") {
-                      return currentSystemUser.allowedMenus.includes("customers_and_jobcards") || currentSystemUser.allowedMenus.includes("saved_cards");
+                    if (menuKey === "customer_data" || menuKey === "job_cards_data" || menuKey === "saved_cards") {
+                      return currentSystemUser.allowedMenus.includes("customer_data") || currentSystemUser.allowedMenus.includes("job_cards_data") || currentSystemUser.allowedMenus.includes("saved_cards");
                     }
                     return currentSystemUser.allowedMenus.includes(menuKey);
                   }).map((d, b) => {
@@ -10595,12 +10600,28 @@ ${b}`));
                               children: e === "te" ? "ఎడిటింగ్" : "Editing",
                             })
                           : null));
-                    else if (d === "customers_and_jobcards" || d === "saved_cards" || d === "followup" || d === "customer_details") {
+                    else if (d === "customer_data") {
+                      v = e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data";
+                      j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
+                      I = c === "customer_data" ? "bg-blue-900 text-white border-blue-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
+                      N = i.jsx("span", {
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${c === "customer_data" ? "bg-blue-800 text-white" : "bg-blue-100 text-blue-900"}`,
+                        children: _a.length
+                      });
+                    } else if (d === "job_cards_data") {
+                      v = e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data";
+                      j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
+                      I = c === "job_cards_data" ? "bg-orange-900 text-white border-orange-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
+                      N = i.jsx("span", {
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${c === "job_cards_data" ? "bg-orange-800 text-white" : "bg-orange-100 text-orange-900"}`,
+                        children: hh.length
+                      });
+                    } else if (d === "saved_cards" || d === "followup" || d === "customer_details") {
                       v = n("customersAndJobCards") || (e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards");
                       j = i.jsx(ql, { className: "w-4 h-4 shrink-0 text-current" });
                       I = "bg-purple-900 text-white border-purple-900 shadow-sm";
                       N = i.jsxs("span", {
-                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "customers_and_jobcards" || c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
+                        className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${(c === "saved_cards" || c === "followup") ? "bg-purple-800 text-white" : "bg-purple-100 text-purple-900"}`,
                         children: [`${_a.length} / ${hh.length} JC`]
                       });
                     } else if (d === "service_camp_planning") {
@@ -10684,13 +10705,16 @@ ${b}`));
                           i.jsxs("button", {
                             type: "button",
                             onClick: () => u(d),
-                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-3"} rounded-xl font-bold text-xs transition-all border cursor-pointer ${R ? I : "text-slate-600 bg-white hover:bg-slate-50 hover:text-slate-900 border-slate-200"}`,
+                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-2.5"} rounded-2xl font-bold text-[13px] transition-all duration-150 cursor-pointer ${R ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`,
                             title: f ? v : void 0,
                             children: [
                               i.jsxs("div", {
-                                className: "flex items-center gap-2.5 min-w-0",
+                                className: "flex items-center gap-3 min-w-0",
                                 children: [
-                                  j,
+                                  i.jsx("span", {
+                                    className: `flex items-center justify-center w-7 h-7 rounded-xl shrink-0 transition-colors ${R ? "bg-white/20" : "bg-slate-100 group-hover:bg-slate-200"}`,
+                                    children: j,
+                                  }),
                                   !f &&
                                     i.jsx("span", {
                                       className: "truncate",
@@ -10710,12 +10734,12 @@ ${b}`));
                 }),
                 i.jsxs("div", {
                   className:
-                    "p-3 border-t border-slate-200 bg-slate-50/50 shrink-0 space-y-1.5",
+                    "p-3 border-t border-slate-100 shrink-0 space-y-1.5",
                   children: [
                     i.jsxs("button", {
                       type: "button",
                       onClick: T,
-                      className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer mb-2`,
+                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-xs rounded-2xl transition-all shadow-md shadow-emerald-600/20 cursor-pointer mb-2`,
                       title: f ? "Add New Customer" : void 0,
                       children: [
                         i.jsx($p, { className: "w-4 h-4 shrink-0 text-white" }),
@@ -10726,21 +10750,6 @@ ${b}`));
                           }),
                       ],
                     }),
-                    currentSystemUser?.isAdmin &&
-                      i.jsxs("button", {
-                        type: "button",
-                        onClick: () => setIsUserManagementOpen(!0),
-                        className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer mb-2`,
-                        title: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "User Management",
-                        children: [
-                          i.jsx(uf, { className: "w-4 h-4 shrink-0 text-white" }),
-                          !f &&
-                            i.jsx("span", {
-                              className: "truncate",
-                              children: e === "te" ? "🛡️ యూజర్లు & పర్మిషన్లు" : "🛡️ User Management",
-                            }),
-                        ],
-                      }),
                     i.jsxs("button", {
                       type: "button",
                       onClick: async () => {
@@ -10756,14 +10765,14 @@ ${b}`));
                           tu(null);
                         }
                       },
-                      className: `w-full flex items-center justify-center ${f ? "p-2" : "gap-2 py-2 px-3"} bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition-colors shadow-xs cursor-pointer border border-rose-200 mt-auto`,
-                      title: f ? "Sign Out" : void 0,
+                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-rose-100 mt-auto`,
+                      title: f ? "Change Supervisor" : void 0,
                       children: [
                         i.jsx(jK, { className: "w-4 h-4 shrink-0" }),
                         !f &&
                           i.jsx("span", {
                             className: "truncate",
-                            children: e === "te" ? "లాగ్ అవుట్" : "Sign Out",
+                            children: e === "te" ? "సూపర్‌వైజర్ మార్చు" : "Change Supervisor",
                           }),
                       ],
                     }),
@@ -10798,11 +10807,11 @@ ${b}`));
                         className: "h-6 w-[1px] bg-slate-700 mx-0.5 shrink-0",
                       }),
                       w.filter((menuKey: string) => {
-                        if (!menuKey || menuKey === "customer_data") return false;
+                        if (!menuKey) return false;
                         if (!currentSystemUser || currentSystemUser.isAdmin) return true;
                         if (!currentSystemUser.allowedMenus || currentSystemUser.allowedMenus.length === 0) return true;
-                        if (menuKey === "customers_and_jobcards" || menuKey === "saved_cards") {
-                          return currentSystemUser.allowedMenus.includes("customers_and_jobcards") || currentSystemUser.allowedMenus.includes("saved_cards");
+                        if (menuKey === "customer_data" || menuKey === "job_cards_data" || menuKey === "saved_cards") {
+                          return currentSystemUser.allowedMenus.includes("customer_data") || currentSystemUser.allowedMenus.includes("job_cards_data") || currentSystemUser.allowedMenus.includes("saved_cards");
                         }
                         return currentSystemUser.allowedMenus.includes(menuKey);
                       }).map((d, idx) => {
@@ -10849,7 +10858,27 @@ ${b}`));
                           label = e === "te" ? "అటెండెన్స్" : "Staff";
                           activeColor =
                             "bg-teal-700 text-white shadow-md ring-1 ring-teal-400";
-                        } else if (d === "customers_and_jobcards" || d === "customer_details" || d === "followup" || d === "saved_cards") {
+                        } else if (d === "customer_data") {
+                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          label = e === "te" ? "కస్టమర్లు" : "Customers";
+                          activeColor =
+                            "bg-blue-700 text-white shadow-md ring-1 ring-blue-400";
+                          badge = i.jsx("span", {
+                            className:
+                              "absolute -top-1 -right-1 text-[8px] px-1 bg-blue-600 text-white font-black rounded-full",
+                            children: _a.length,
+                          });
+                        } else if (d === "job_cards_data") {
+                          icon = i.jsx(ql, { className: "w-4 h-4" });
+                          label = e === "te" ? "జాబ్ కార్డులు" : "Job Cards";
+                          activeColor =
+                            "bg-orange-700 text-white shadow-md ring-1 ring-orange-400";
+                          badge = i.jsx("span", {
+                            className:
+                              "absolute -top-1 -right-1 text-[8px] px-1 bg-orange-600 text-white font-black rounded-full",
+                            children: hh.length,
+                          });
+                        } else if (d === "customer_details" || d === "followup" || d === "saved_cards") {
                           icon = i.jsx(ql, { className: "w-4 h-4" });
                           label = e === "te" ? "కస్టమర్లు" : "Customers";
                           activeColor =
@@ -10947,94 +10976,8 @@ ${b}`));
                     ],
                   }),
                 i.jsxs("main", {
-                  className: `w-full min-w-0 p-1 sm:p-2 md:p-3 print:p-0 print:m-0 ${x ? "pb-20" : ""}`,
+                  className: `w-full min-w-0 p-2 sm:p-3 md:p-5 print:p-0 print:m-0 ${x ? "pb-20" : ""}`,
                   children: [
-                    i.jsxs("div", {
-                      className: "mb-2.5 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs flex flex-wrap items-center justify-between gap-2 print:hidden",
-                      children: [
-                        i.jsxs("div", {
-                          className: "flex items-center gap-2 flex-wrap",
-                          children: [
-                            i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-blue-900 text-white px-2.5 py-1 rounded-lg text-xs font-black tracking-wide shadow-xs",
-                              children: [
-                                i.jsx(Pb, { className: "w-3.5 h-3.5 text-amber-400" }),
-                                i.jsx("span", { children: "SRI GAYATHRI AUTOMOTIVES" })
-                              ]
-                            }),
-                            currentSystemUser?.isAdmin ? i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-amber-50 border border-amber-300 text-amber-950 px-2 py-0.5 rounded-lg text-xs font-semibold",
-                              children: [
-                                i.jsx("span", { className: "text-[11px] font-extrabold text-amber-900", children: e === "te" ? "బ్రాంచ్ వ్యూ:" : "Branch View:" }),
-                                i.jsxs("select", {
-                                  value: adminBranchFilter,
-                                  onChange: (ev: any) => setAdminBranchFilter(ev.target.value),
-                                  className: "bg-white border border-amber-300 text-slate-900 text-xs font-bold rounded px-2 py-0.5 outline-none cursor-pointer",
-                                  children: [
-                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అన్ని బ్రాంచ్‌లు (మాస్టర్ డేటా)" : "🌐 All Branches (Master View)" }),
-                                    systemBranches.map((br: string) => i.jsx("option", { value: br, children: `🏢 ${br}` }, br))
-                                  ]
-                                })
-                              ]
-                            }) : i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 text-emerald-900 px-2.5 py-1 rounded-lg text-xs font-black",
-                              children: [
-                                i.jsx("span", { children: "🏢" }),
-                                i.jsxs("span", { children: [e === "te" ? "బ్రాంచ్: " : "Branch: ", currentSystemUser?.branch || "Branch"] })
-                              ]
-                            })
-                          ]
-                        }),
-                        i.jsxs("div", {
-                          className: "flex items-center gap-2 flex-wrap",
-                          children: [
-                            i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-slate-100 border border-slate-200 text-slate-800 px-2.5 py-1 rounded-lg text-xs",
-                              children: [
-                                i.jsx("span", { className: "w-2 h-2 rounded-full bg-emerald-500 inline-block" }),
-                                i.jsx("span", { className: "font-black text-slate-900", children: currentSystemUser?.name || "User" }),
-                                i.jsx("span", {
-                                  className: `text-[10px] px-1.5 py-0.5 rounded font-black uppercase ${currentSystemUser?.isAdmin ? "bg-indigo-100 text-indigo-800" : "bg-slate-200 text-slate-700"}`,
-                                  children: currentSystemUser?.isAdmin ? (e === "te" ? "అడ్మిన్" : "Admin") : (currentSystemUser?.role || "Staff")
-                                })
-                              ]
-                            }),
-                            currentSystemUser?.isAdmin && i.jsxs("button", {
-                              type: "button",
-                              onClick: () => setIsUserManagementOpen(!0),
-                              className: "flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-lg shadow-xs transition-all cursor-pointer",
-                              title: e === "te" ? "యూజర్లు & పర్మిషన్ల సెట్టింగ్స్" : "User Management & Permissions",
-                              children: [
-                                i.jsx(uf, { className: "w-3.5 h-3.5" }),
-                                i.jsx("span", { children: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "Users & Permissions" })
-                              ]
-                            }),
-                            i.jsxs("button", {
-                              type: "button",
-                              onClick: async () => {
-                                try {
-                                  localStorage.removeItem("eicher_auth_user");
-                                  setCurrentSystemUser(null);
-                                  setCurrentLoggedUser(null);
-                                  tu(null);
-                                  await sH(ey);
-                                } catch {
-                                  setCurrentSystemUser(null);
-                                  setCurrentLoggedUser(null);
-                                  tu(null);
-                                }
-                              },
-                              className: "flex items-center gap-1 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-lg transition-all cursor-pointer",
-                              title: e === "te" ? "లాగ్ అవుట్" : "Sign Out",
-                              children: [
-                                i.jsx(jK, { className: "w-3.5 h-3.5" }),
-                                i.jsx("span", { children: e === "te" ? "లాగ్ అవుట్" : "Sign Out" })
-                              ]
-                            })
-                          ]
-                        })
-                      ]
-                    }),
                     c === "dashboard" &&
                       (() => {
                         const d = A || ns,
@@ -11061,86 +11004,8 @@ ${b}`));
                             children: [
                               i.jsxs("div", {
                                 className:
-                                  "flex flex-col md:flex-row md:items-center justify-between gap-2.5 border-b border-slate-200 pb-3 bg-white p-3 rounded-xl border border-slate-100 shadow-2xs",
+                                  "bg-white p-2.5 rounded-2xl shadow-sm flex flex-wrap items-center gap-2 text-xs",
                                 children: [
-                                  i.jsxs("div", {
-                                    children: [
-                                      i.jsxs("h1", {
-                                        className:
-                                          "text-xl font-black text-slate-900 tracking-tight flex items-center gap-2",
-                                        children: [
-                                          i.jsx("span", { children: "📊" }),
-                                          " Business Dashboard & Executive KPIs",
-                                        ],
-                                      }),
-                                      i.jsx("p", {
-                                        className:
-                                          "text-[11px] text-slate-500 font-medium",
-                                        children:
-                                          "Real-time attendance, job cards, telecalling, free service follow-ups, deliveries, and financial metrics.",
-                                      }),
-                                    ],
-                                  }),
-                                  i.jsxs("div", {
-                                    className:
-                                      "flex flex-wrap items-center gap-1.5",
-                                    children: [
-                                      i.jsxs("button", {
-                                        type: "button",
-                                        onClick: () => {
-                                          (Di(!0),
-                                            eo(!0),
-                                            to(!0),
-                                            Za(!0),
-                                            cc(!0),
-                                            Vc(!0));
-                                        },
-                                        className:
-                                          "px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] rounded-lg transition-colors border border-indigo-200 cursor-pointer flex items-center gap-1 shadow-2xs",
-                                        children: [
-                                          i.jsx(Xs, {
-                                            className: "w-3.5 h-3.5",
-                                          }),
-                                          " Expand All",
-                                        ],
-                                      }),
-                                      i.jsxs("button", {
-                                        type: "button",
-                                        onClick: () => {
-                                          (Di(!1),
-                                            eo(!1),
-                                            to(!1),
-                                            Za(!1),
-                                            cc(!1),
-                                            Vc(!1));
-                                        },
-                                        className:
-                                          "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] rounded-lg transition-colors border border-slate-300 cursor-pointer flex items-center gap-1 shadow-2xs",
-                                        children: [
-                                          i.jsx(bn, {
-                                            className: "w-3.5 h-3.5",
-                                          }),
-                                          " Minimize All",
-                                        ],
-                                      }),
-                                    ],
-                                  }),
-                                ],
-                              }),
-                              i.jsxs("div", {
-                                className:
-                                  "bg-slate-50 border border-slate-200 p-2 rounded-xl flex flex-wrap items-center gap-1.5 text-xs",
-                                children: [
-                                  i.jsxs("span", {
-                                    className:
-                                      "text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mr-1 flex items-center gap-1",
-                                    children: [
-                                      i.jsx(kx, {
-                                        className: "w-3 h-3 text-slate-500",
-                                      }),
-                                      " Widgets:",
-                                    ],
-                                  }),
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => {
@@ -11149,7 +11014,7 @@ ${b}`));
                                       Ai(!0);
                                     },
                                     className:
-                                      "px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 bg-indigo-600 text-white shadow-2xs hover:bg-indigo-700",
+                                      "px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm hover:bg-indigo-700",
                                     children: [
                                       i.jsx("span", {
                                         children: "📦 Deliveries",
@@ -11165,7 +11030,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => eo(!ga),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ga ? "bg-purple-600 text-white shadow-2xs" : "bg-white text-purple-700 border border-purple-200 hover:bg-purple-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ga ? "bg-purple-600 text-white shadow-sm" : "bg-slate-100 text-purple-700 hover:bg-purple-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "👥 Attendance",
@@ -11182,7 +11047,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => to(!Fo),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Fo ? "bg-amber-600 text-white shadow-2xs" : "bg-white text-amber-700 border border-amber-200 hover:bg-amber-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Fo ? "bg-amber-600 text-white shadow-sm" : "bg-slate-100 text-amber-700 hover:bg-amber-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "⚠️ Complaints",
@@ -11199,7 +11064,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => Za(!ro),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ro ? "bg-blue-600 text-white shadow-2xs" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${ro ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-blue-700 hover:bg-blue-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📄 Job Cards",
@@ -11216,7 +11081,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => cc(!so),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${so ? "bg-emerald-600 text-white shadow-2xs" : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${so ? "bg-emerald-600 text-white shadow-sm" : "bg-slate-100 text-emerald-700 hover:bg-emerald-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📊 Financials",
@@ -11238,7 +11103,7 @@ ${b}`));
                                   i.jsxs("button", {
                                     type: "button",
                                     onClick: () => Vc(!Ti),
-                                    className: `px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Ti ? "bg-teal-600 text-white shadow-2xs" : "bg-white text-teal-700 border border-teal-200 hover:bg-teal-50 opacity-60"}`,
+                                    className: `px-3 py-1.5 rounded-full font-bold text-[11px] transition-all cursor-pointer flex items-center gap-1.5 ${Ti ? "bg-teal-600 text-white shadow-sm" : "bg-slate-100 text-teal-700 hover:bg-teal-50"}`,
                                     children: [
                                       i.jsx("span", {
                                         children: "📞 Telecalling",
@@ -11320,82 +11185,43 @@ ${b}`));
                                           Ai(!0);
                                         },
                                         className:
-                                          "bg-gradient-to-br from-indigo-50 to-indigo-100/80 border-2 border-indigo-300 hover:border-indigo-500 p-3.5 rounded-xl shadow-2xs hover:shadow-md transition-all cursor-pointer flex items-center justify-between group",
+                                          "bg-indigo-50 border border-indigo-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
                                             children: [
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[10.5px] font-black text-indigo-950 uppercase tracking-wider block",
+                                                  "text-[10px] font-extrabold text-indigo-900 uppercase",
                                                 children:
                                                   "This Month Deliveries",
                                               }),
-                                              i.jsxs("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[9.5px] text-indigo-700 font-bold",
-                                                children: [
-                                                  "Delivered in ",
-                                                  new Date().toLocaleString(
-                                                    "default",
-                                                    {
-                                                      month: "long",
-                                                      year: "numeric",
-                                                    },
-                                                  ),
-                                                ],
-                                              }),
-                                              i.jsx("p", {
-                                                className:
-                                                  "text-[9px] text-indigo-800 mt-1 font-medium",
-                                                children:
-                                                  "Click to view full customer list & actions",
+                                                  "text-[9px] font-bold text-indigo-700 underline",
+                                                children: "View customers →",
                                               }),
                                             ],
                                           }),
-                                          i.jsxs("div", {
-                                            className: "text-right",
-                                            children: [
-                                              i.jsx("div", {
-                                                className:
-                                                  "text-2xl font-black text-indigo-950 font-mono group-hover:scale-105 transition-transform",
-                                                children: qn.length,
-                                              }),
-                                              i.jsxs("span", {
-                                                className:
-                                                  "text-[10px] font-bold text-white bg-indigo-700 hover:bg-indigo-800 px-2.5 py-1 rounded-full inline-block mt-1 shadow-2xs transition-colors",
-                                                children: [
-                                                  "📋 View ",
-                                                  qn.length,
-                                                  " Customers →",
-                                                ],
-                                              }),
-                                            ],
+                                          i.jsx("div", {
+                                            className:
+                                              "text-lg font-black text-indigo-950",
+                                            children: qn.length,
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: sf,
                                         className:
-                                          "bg-white border border-slate-200 hover:border-indigo-200 p-3.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                          "bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsxs("div", {
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[10px] font-bold text-slate-700 uppercase tracking-wider block",
-                                                children: "Follow-up Tab View",
-                                              }),
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9px] text-slate-500 font-medium",
-                                                children:
-                                                  "Open filtered follow-up tree for this month",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
+                                          i.jsx("div", {
                                             className:
-                                              "text-indigo-600 font-bold text-xs group-hover:translate-x-1 transition-transform flex items-center gap-1",
+                                              "text-[10px] font-extrabold text-slate-700 uppercase",
+                                            children: "Follow-up Tab View",
+                                          }),
+                                          i.jsx("div", {
+                                            className:
+                                              "text-indigo-600 font-bold text-xs flex items-center gap-1",
                                             children: [
                                               i.jsx("span", {
                                                 children: "Open Follow-up",
@@ -11487,23 +11313,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-purple-50 to-purple-100/60 border border-purple-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-purple-50 to-purple-100/60 border border-purple-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-purple-900 uppercase",
-                                            children: "Total Staff",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-purple-900 uppercase",
+                                                children: "Total Staff",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-purple-700 underline",
+                                                children: "View attendance →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-purple-950 my-0.5",
+                                              "text-lg font-black text-purple-950",
                                             children: v,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-purple-700 underline",
-                                            children: "View attendance →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11511,23 +11341,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-emerald-900 uppercase",
-                                            children: "Present Today",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-emerald-900 uppercase",
+                                                children: "Present Today",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-emerald-700 underline",
+                                                children: "View present →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-emerald-950 my-0.5",
+                                              "text-lg font-black text-emerald-950",
                                             children: j,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-emerald-700 underline",
-                                            children: "View present →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11535,23 +11369,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-rose-50 to-rose-100/60 border border-rose-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-rose-50 to-rose-100/60 border border-rose-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-rose-900 uppercase",
-                                            children: "Absent Today",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-rose-900 uppercase",
+                                                children: "Absent Today",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-rose-700 underline",
+                                                children: "View absent →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-rose-950 my-0.5",
+                                              "text-lg font-black text-rose-950",
                                             children: I,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-rose-700 underline",
-                                            children: "View absent →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11559,23 +11397,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-amber-900 uppercase",
-                                            children: "On Leave",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-amber-900 uppercase",
+                                                children: "On Leave",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-amber-700 underline",
+                                                children: "View leaves →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-amber-950 my-0.5",
+                                              "text-lg font-black text-amber-950",
                                             children: N,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-amber-700 underline",
-                                            children: "View leaves →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11583,22 +11425,26 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group col-span-2 sm:col-span-1",
+                                          "bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group col-span-2 sm:col-span-1",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-slate-700 uppercase",
-                                            children: "Unmarked",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-slate-700 uppercase",
+                                                children: "Unmarked",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-slate-600 underline",
+                                                children: "Mark attendance →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-slate-900 my-0.5",
+                                              "text-lg font-black text-slate-900",
                                             children: R,
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-slate-600 underline",
-                                            children: "Mark attendance →",
                                           }),
                                         ],
                                       }),
@@ -11906,7 +11752,7 @@ ${b}`));
                                       i.jsxs(
                                         "div",
                                         {
-                                          className: `p-2.5 rounded-xl border ${S.color} text-center hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between`,
+                                          className: `p-2.5 rounded-xl border ${S.color} flex items-center justify-between hover:shadow-sm transition-all cursor-pointer`,
                                           onClick: () => {
                                             if (
                                               S.filter === "all_jc" ||
@@ -11914,7 +11760,7 @@ ${b}`));
                                               S.filter === "closed_jc" ||
                                               S.filter === "missing_online"
                                             ) {
-                                              u("saved_cards");
+                                              u("job_cards_data");
                                               setCustomerJobCardsTab("jobcards");
                                               setJobCardsChassisFilter("");
                                               if (S.filter === "open_jc") {
@@ -11931,7 +11777,7 @@ ${b}`));
                                               S.filter === "rep_cust" ||
                                               S.filter === "nonrep_cust"
                                             ) {
-                                              u("followup");
+                                              u("customer_data");
                                               setCustomerJobCardsTab("customers");
                                               if (S.filter === "rep_cust") {
                                                 je("reporting");
@@ -11943,20 +11789,23 @@ ${b}`));
                                             }
                                           },
                                           children: [
-                                            i.jsx("div", {
-                                              className:
-                                                "text-[9.5px] font-extrabold uppercase leading-tight",
-                                              children: S.label,
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("div", {
+                                                  className:
+                                                    "text-[10px] font-extrabold uppercase",
+                                                  children: S.label,
+                                                }),
+                                                i.jsx("div", {
+                                                  className:
+                                                    "text-[9px] font-bold underline opacity-70",
+                                                  children: "View list",
+                                                }),
+                                              ],
                                             }),
                                             i.jsx("div", {
-                                              className:
-                                                "text-base font-black my-1",
+                                              className: "text-lg font-black",
                                               children: S.value,
-                                            }),
-                                            i.jsx("span", {
-                                              className:
-                                                "text-[8.5px] font-bold underline opacity-80",
-                                              children: "View list",
                                             }),
                                           ],
                                         },
@@ -12094,32 +11943,25 @@ ${b}`));
                                           onClick: () => {
                                             (u("reports"), on(S.kpi));
                                           },
-                                          className: `${S.color} border p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group`,
+                                          className: `${S.color} border p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group`,
                                           children: [
-                                            i.jsx("div", {
-                                              className:
-                                                "text-[9.5px] font-extrabold uppercase tracking-wider",
-                                              children: S.label,
-                                            }),
                                             i.jsxs("div", {
-                                              className: "my-1",
                                               children: [
                                                 i.jsx("div", {
                                                   className:
-                                                    "text-sm font-black leading-tight",
-                                                  children: S.value,
+                                                    "text-[10px] font-extrabold uppercase tracking-wider",
+                                                  children: S.label,
                                                 }),
-                                                i.jsx("span", {
+                                                i.jsx("div", {
                                                   className:
-                                                    "text-[8.5px] opacity-75 font-bold",
-                                                  children: S.sub,
+                                                    "text-[9px] font-bold underline opacity-70 group-hover:opacity-100",
+                                                  children: "View report",
                                                 }),
                                               ],
                                             }),
                                             i.jsx("div", {
-                                              className:
-                                                "text-[8.5px] font-bold underline opacity-80 group-hover:opacity-100",
-                                              children: "View report",
+                                              className: "text-lg font-black",
+                                              children: S.value,
                                             }),
                                           ],
                                         },
@@ -12201,260 +12043,205 @@ ${b}`));
                               Ti
                                 ? i.jsxs("div", {
                                     className:
-                                      "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2",
+                                      "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2",
                                     children: [
                                       i.jsxs("div", {
                                         onClick: () =>
-                                          u("followup"),
+                                          u("free_service_followup"),
                                         className:
-                                          "bg-gradient-to-br from-teal-50 to-teal-100/50 border border-teal-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-teal-50 to-teal-100/50 border border-teal-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-teal-900 uppercase",
-                                                children: "Free Service Due",
-                                              }),
-                                              i.jsx("span", {
-                                                className:
-                                                  "w-1.5 h-1.5 rounded-full bg-teal-600",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-teal-950",
-                                                children: Object.values(
-                                                  ps,
-                                                ).reduce(
-                                                  (S, ie) =>
-                                                    S +
-                                                    ((ie == null
-                                                      ? void 0
-                                                      : ie.length) || 0),
-                                                  0,
-                                                ),
+                                                  "text-[10px] font-extrabold text-teal-900 uppercase",
+                                                children: "Free Service Due",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-teal-800 font-bold",
-                                                children: "Pending follow-ups",
+                                                  "text-[9px] font-bold text-teal-700 underline",
+                                                children: "View tree",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-teal-700 underline",
-                                            children: "View tree",
+                                              "text-lg font-black text-teal-950",
+                                            children: Object.values(
+                                              ps,
+                                            ).reduce(
+                                              (S, ie) =>
+                                                S +
+                                                ((ie == null
+                                                  ? void 0
+                                                  : ie.length) || 0),
+                                              0,
+                                            ),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("telecalling"),
                                             Us("date_report"),
                                             Xa(ns),
                                             Vn(ns));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-amber-900 uppercase",
-                                                children: "Calls Today",
-                                              }),
-                                              i.jsx(tl, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-amber-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-amber-950",
-                                                children: Rn.filter(
-                                                  (S) => S.callDate === ns,
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-amber-900 uppercase",
+                                                children: "Calls Today",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-amber-800 font-bold",
-                                                children: "Logged today",
+                                                  "text-[9px] font-bold text-amber-700 underline",
+                                                children: "View logs",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-amber-700 underline",
-                                            children: "View logs",
+                                              "text-lg font-black text-amber-950",
+                                            children: Rn.filter(
+                                              (S) => S.callDate === ns,
+                                            ).length,
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("today"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-red-900 uppercase",
-                                                children: "Due Today",
-                                              }),
-                                              zn.filter(
-                                                (S) =>
-                                                  S.scheduledStatus === "today",
-                                              ).length > 0 &&
-                                                i.jsx("span", {
-                                                  className:
-                                                    "w-2 h-2 rounded-full bg-red-600 animate-ping",
-                                                }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-red-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "today",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-red-900 uppercase",
+                                                children: "Due Today",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-red-800 font-bold",
-                                                children: "Must call today",
+                                                  "text-[9px] font-bold text-red-700 underline",
+                                                children: "View due",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-red-700 underline",
-                                            children: "View due",
+                                              "text-lg font-black text-red-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "today",
+                                            ).length,
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("overdue"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-orange-900 uppercase",
-                                                children: "Overdue Calls",
-                                              }),
-                                              i.jsx(gu, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-orange-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-orange-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "overdue",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-orange-900 uppercase",
+                                                children: "Overdue Calls",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-orange-800 font-bold",
-                                                children: "Past due date",
+                                                  "text-[9px] font-bold text-orange-700 underline",
+                                                children: "View overdue",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-orange-700 underline",
-                                            children: "View overdue",
+                                              "text-lg font-black text-orange-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "overdue",
+                                            ).length,
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("telecalling"),
                                             Us("scheduled"),
                                             G("upcoming"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-blue-900 uppercase",
-                                                children: "Upcoming",
-                                              }),
-                                              i.jsx(bu, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-blue-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-blue-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "upcoming",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-blue-900 uppercase",
+                                                children: "Upcoming",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-blue-800 font-bold",
-                                                children: "Future scheduled",
+                                                  "text-[9px] font-bold text-blue-700 underline",
+                                                children: "View upcoming",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-blue-700 underline",
-                                            children: "View upcoming",
+                                              "text-lg font-black text-blue-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "upcoming",
+                                            ).length,
+                                          }),
+                                        ],
+                                      }),
+                                      i.jsxs("div", {
+                                        onClick: () => {
+                                          (u("telecalling"),
+                                            Us("reports"));
+                                        },
+                                        className:
+                                          "bg-gradient-to-br from-violet-50 to-violet-100/50 border border-violet-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                        children: [
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-violet-900 uppercase",
+                                                children: "Tele calling Reports",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-violet-700 underline",
+                                                children: "View reports",
+                                              }),
+                                            ],
+                                          }),
+                                          i.jsx("div", {
+                                            className:
+                                              "text-lg font-black text-violet-950",
+                                            children: Rn.length,
                                           }),
                                         ],
                                       }),
@@ -12567,7 +12354,7 @@ ${b}`));
                               children: [
                                 i.jsxs("div", {
                                   className:
-                                    "w-full bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                    "w-full bg-white p-4 md:p-6 rounded-3xl shadow-sm space-y-6 print:hidden",
                                   children: [
                                     i.jsxs("div", {
                                       className:
@@ -12639,7 +12426,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => op(!zu),
@@ -14758,7 +14545,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => Um(!zd),
@@ -15004,7 +14791,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => lp(!Jd),
@@ -15295,7 +15082,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden",
+                                        "bg-white rounded-3xl shadow-sm overflow-hidden",
                                       children: [
                                         i.jsxs("div", {
                                           onClick: () => D0(!Ju),
@@ -15736,7 +15523,7 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 print:hidden",
+                                        "bg-white p-4 rounded-3xl shadow-sm flex flex-wrap items-center justify-between gap-3 print:hidden",
                                       children: [
                                         i.jsxs("div", {
                                           className:
@@ -15764,74 +15551,6 @@ ${b}`));
                                               onClick: () => xp("partsOnly"),
                                               className: `px-3 py-1.5 rounded-md transition-all cursor-pointer ${nu === "partsOnly" ? "bg-white text-slate-900 shadow-xs font-black" : "text-slate-600 hover:text-slate-900"}`,
                                               children: "Page 2 Only",
-                                            }),
-                                          ],
-                                        }),
-                                        i.jsxs("div", {
-                                          className:
-                                            "flex flex-wrap items-center gap-2",
-                                          children: [
-                                            i.jsxs("button", {
-                                              type: "button",
-                                              onClick: Cc,
-                                              className:
-                                                "py-2.5 px-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer",
-                                              children: [
-                                                i.jsx(WK, {
-                                                  className: "w-3.5 h-3.5",
-                                                }),
-                                                " ",
-                                                e === "te"
-                                                  ? "ఫారం రీసెట్"
-                                                  : "Reset Form",
-                                              ],
-                                            }),
-                                            i.jsxs("button", {
-                                              type: "button",
-                                              disabled: isSavingJobCard,
-                                              onClick: () => tx({ shouldClear: true, silent: false }),
-                                              className: `py-2.5 px-5 ${isSavingJobCard ? "bg-emerald-400 cursor-not-allowed opacity-80" : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"} text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 shadow-xs`,
-                                              children: [
-                                                isSavingJobCard ? i.jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" }) : i.jsx(cf, { className: "w-4 h-4" }),
-                                                " ",
-                                                ki
-                                                  ? e === "te"
-                                                    ? "జాబ్ కార్డ్ అప్‌డేట్"
-                                                    : "Update Job Card"
-                                                  : e === "te"
-                                                    ? "జాబ్ కార్డ్ సేవ్ చేయండి"
-                                                    : "Save to List",
-                                              ],
-                                            }),
-                                            i.jsxs("button", {
-                                              type: "button",
-                                              onClick: ax,
-                                              className:
-                                                "py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
-                                              children: [
-                                                i.jsx(zl, {
-                                                  className: "w-4 h-4",
-                                                }),
-                                                " ",
-                                                e === "te"
-                                                  ? "PDF డౌన్‌లోడ్"
-                                                  : "Save as PDF",
-                                              ],
-                                            }),
-                                            i.jsxs("button", {
-                                              type: "button",
-                                              onClick: handlePrintJobCard,
-                                              className:
-                                                "py-2.5 px-4 bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
-                                              children: [
-                                                i.jsx(Lb, {
-                                                  className: "w-4 h-4",
-                                                }),
-                                                " ",
-                                                e === "te"
-                                                  ? "ప్రింట్ చేయండి"
-                                                  : "Print",
-                                              ],
                                             }),
                                           ],
                                         }),
@@ -16051,7 +15770,7 @@ ${b}`));
                                             }),
                                             i.jsxs("div", {
                                               className:
-                                                "card-p1-body space-y-1.5 my-1",
+                                                "card-p1-body space-y-1.5",
                                               children: [
                                                 i.jsxs("div", {
                                                   className: "mb-0.5",
@@ -16625,7 +16344,7 @@ ${b}`));
                                                     }),
                                                     i.jsxs("table", {
                                                       className:
-                                                        "w-full table-fixed border-collapse border border-blue-900 text-[8.5px]",
+                                                        "w-full table-fixed border-collapse border border-blue-900 text-[9.5px]",
                                                       children: [
                                                         i.jsxs("colgroup", {
                                                           children: [
@@ -16656,7 +16375,7 @@ ${b}`));
                                                             "tr",
                                                             {
                                                               className:
-                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[22px]",
+                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[23px]",
                                                               children: [
                                                                 i.jsx("th", {
                                                                   className:
@@ -16707,13 +16426,13 @@ ${b}`));
                                                                   key:
                                                                     d.id || b,
                                                                   className:
-                                                                    "border-b border-blue-900/60 h-[19px] leading-tight hover:bg-blue-50/20",
+                                                                    "border-b border-blue-900/60 h-[21px] leading-tight hover:bg-blue-50/20",
                                                                   children: [
                                                                     i.jsx(
                                                                       "td",
                                                                       {
                                                                         className:
-                                                                          "border-r border-blue-900/60 p-0.5 text-center font-mono font-bold text-[10px]",
+                                                                          "border-r border-blue-900/60 p-0.5 text-center font-mono font-bold text-[11px]",
                                                                         children:
                                                                           d.id,
                                                                       },
@@ -16735,7 +16454,7 @@ ${b}`));
                                                                                     "span",
                                                                                     {
                                                                                       className:
-                                                                                        "text-[9px] font-black text-blue-800 shrink-0",
+                                                                                        "text-[10px] font-black text-blue-800 shrink-0",
                                                                                       children:
                                                                                         [
                                                                                           "[",
@@ -16748,7 +16467,7 @@ ${b}`));
                                                                                     "span",
                                                                                     {
                                                                                       className:
-                                                                                        "text-[11px] font-extrabold text-slate-950 truncate",
+                                                                                        "text-[12px] font-extrabold text-slate-950 truncate",
                                                                                       children:
                                                                                         j,
                                                                                     },
@@ -16768,7 +16487,7 @@ ${b}`));
                                                                             "span",
                                                                             {
                                                                               className:
-                                                                                "text-[10px] font-bold text-slate-900 truncate block leading-none",
+                                                                                "text-[11px] font-bold text-slate-900 truncate block leading-none",
                                                                               children:
                                                                                 I,
                                                                             },
@@ -16784,7 +16503,7 @@ ${b}`));
                                                                           i.jsx(
                                                                             "div",
                                                                             {
-                                                                              className: `w-3 h-3 border border-blue-900 mx-auto flex items-center justify-center text-[9px] leading-none shrink-0 ${d.checked ? "bg-blue-900 text-white font-bold" : "bg-white"}`,
+                                                                              className: `w-3.5 h-3.5 border border-blue-900 mx-auto flex items-center justify-center text-[10px] leading-none shrink-0 ${d.checked ? "bg-blue-900 text-white font-bold" : "bg-white"}`,
                                                                               children:
                                                                                 d.checked
                                                                                   ? "✓"
@@ -17252,12 +16971,61 @@ ${b}`));
                                       }),
                                   ],
                                 }),
+                                i.jsxs("div", {
+                                  className:
+                                    "flex flex-wrap items-center justify-end gap-2 bg-white p-3 rounded-xl shadow-md border border-slate-200 print:hidden sticky bottom-2 z-20",
+                                  children: [
+                                    i.jsx("span", {
+                                      className: "text-[11px] font-bold text-slate-500 mr-auto",
+                                      children: ki
+                                        ? (e === "te" ? "ఈ జాబ్ కార్డ్‌ను సవరిస్తున్నారు" : "Editing this job card")
+                                        : (e === "te" ? "కొత్త జాబ్ కార్డ్ ఎంట్రీ" : "New job card entry"),
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      onClick: Cc,
+                                      className:
+                                        "py-2.5 px-3.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer",
+                                      children: [
+                                        i.jsx(WK, { className: "w-3.5 h-3.5" }),
+                                        " ",
+                                        e === "te" ? "ఫారం రీసెట్" : "Reset Form",
+                                      ],
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      disabled: isSavingJobCard,
+                                      onClick: () => tx({ shouldClear: true, silent: false }),
+                                      className: `py-2.5 px-5 ${isSavingJobCard ? "bg-emerald-400 cursor-not-allowed opacity-80" : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"} text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 shadow-xs`,
+                                      children: [
+                                        isSavingJobCard
+                                          ? i.jsx("div", { className: "w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" })
+                                          : i.jsx(cf, { className: "w-4 h-4" }),
+                                        " ",
+                                        ki
+                                          ? (e === "te" ? "జాబ్ కార్డ్ అప్‌డేట్" : "Update Job Card")
+                                          : (e === "te" ? "జాబ్ కార్డ్ సేవ్ చేయండి" : "Save to List"),
+                                      ],
+                                    }),
+                                    i.jsxs("button", {
+                                      type: "button",
+                                      onClick: handlePrintJobCard,
+                                      className:
+                                        "py-2.5 px-4 bg-blue-900 hover:bg-blue-950 text-white font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs",
+                                      children: [
+                                        i.jsx(Lb, { className: "w-4 h-4" }),
+                                        " ",
+                                        e === "te" ? "ప్రింట్ చేయండి" : "Print",
+                                      ],
+                                    }),
+                                  ],
+                                }),
                               ],
                             }),
                           c === "reports" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-2.5 md:p-3 rounded-xl border border-slate-200 shadow-sm space-y-2.5 print:hidden",
+                                "w-full bg-white p-2.5 md:p-3 rounded-3xl shadow-sm space-y-2.5 print:hidden",
                               children: [
                                 i.jsxs("div", {
                                   className:
@@ -18792,7 +18560,7 @@ ${b}`));
                           c === "complaints" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                "w-full bg-white p-5 rounded-3xl shadow-sm space-y-6 print:hidden",
                               children: [
                                 i.jsxs("div", {
                                   className:
@@ -19027,7 +18795,7 @@ ${b}`));
                                         className: "divide-y divide-slate-100",
                                         children: [
                                           Fs.filter((d) => {
-                                            if (!isRecordVisibleForUser(d.branch || d.location, d.createdBy, currentSystemUser, adminBranchFilter))
+                                            if (!isRecordVisibleForUser(d.branch || d.location, d.createdBy, currentSystemUser, adminBranchFilter, d.supervisor || d.wsIncharge || d.supervisorName || d.createdBy || ""))
                                               return !1;
                                             if (
                                               (ja !== "all" &&
@@ -19523,152 +19291,108 @@ ${b}`));
                                     children: [
                                       i.jsxs("div", {
                                         className:
-                                          "bg-blue-50/80 border-2 border-blue-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-blue-50/80 border border-blue-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-blue-800 uppercase tracking-wider",
+                                            children: "Total Staff",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-blue-950",
                                             children: [
-                                              i.jsx("p", {
+                                              b,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-blue-800 uppercase tracking-wider",
-                                                children: "Total Staff",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-blue-950 mt-1",
-                                                children: [
-                                                  b,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-blue-700",
-                                                    children: "Members",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-blue-700",
+                                                children: "Members",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-blue-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(df, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-emerald-50/80 border-2 border-emerald-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-emerald-800 uppercase tracking-wider",
+                                            children: "Present Today",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-emerald-950",
                                             children: [
-                                              i.jsx("p", {
+                                              v,
+                                              " ",
+                                              i.jsxs("span", {
                                                 className:
-                                                  "text-[10px] font-black text-emerald-800 uppercase tracking-wider",
-                                                children: "Present Today",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-emerald-950 mt-1",
+                                                  "text-[10px] font-bold text-emerald-700",
                                                 children: [
-                                                  v,
-                                                  " ",
-                                                  i.jsxs("span", {
-                                                    className:
-                                                      "text-xs font-bold text-emerald-700",
-                                                    children: [
-                                                      "(",
-                                                      b > 0
-                                                        ? Math.round(
-                                                            (v / b) * 100,
-                                                          )
-                                                        : 0,
-                                                      "%)",
-                                                    ],
-                                                  }),
+                                                  "(",
+                                                  b > 0
+                                                    ? Math.round(
+                                                        (v / b) * 100,
+                                                      )
+                                                    : 0,
+                                                  "%)",
                                                 ],
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-emerald-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(uf, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-rose-50/80 border-2 border-rose-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-rose-50/80 border border-rose-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-rose-800 uppercase tracking-wider",
+                                            children: "Absent Today",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-rose-950",
                                             children: [
-                                              i.jsx("p", {
+                                              j,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-rose-800 uppercase tracking-wider",
-                                                children: "Absent Today",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-rose-950 mt-1",
-                                                children: [
-                                                  j,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-rose-700",
-                                                    children:
-                                                      N > 0
-                                                        ? `(${N} pending)`
-                                                        : "",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-rose-700",
+                                                children:
+                                                  N > 0
+                                                    ? `(${N} pending)`
+                                                    : "",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-rose-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(dD, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-amber-50/80 border-2 border-amber-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-amber-800 uppercase tracking-wider",
+                                            children: "Leave / Half Day",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-amber-950",
                                             children: [
-                                              i.jsx("p", {
+                                              I,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-amber-800 uppercase tracking-wider",
-                                                children: "Leave / Half Day",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-amber-950 mt-1",
-                                                children: [
-                                                  I,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-amber-700",
-                                                    children: "Staff",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-amber-700",
+                                                children: "Staff",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-amber-500 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(bu, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
@@ -20246,51 +19970,17 @@ ${b}`));
                           c === "databases" &&
                             i.jsxs("div", {
                               className:
-                                "w-full bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-6 print:hidden",
+                                "w-full bg-white p-5 rounded-3xl shadow-sm space-y-6 print:hidden",
                               children: [
                                 i.jsxs("div", {
-                                  className: "border-b pb-3",
-                                  children: [
-                                    i.jsxs("h2", {
-                                      className:
-                                        "text-base font-bold text-slate-900 flex items-center gap-2",
-                                      children: [
-                                        i.jsx(Jl, {
-                                          className: "w-5 h-5 text-emerald-600",
-                                        }),
-                                        e === "te"
-                                          ? " మాస్టర్ డేటాబేస్ & సిస్టమ్ సెట్టింగ్స్"
-                                          : " Master Databases & System Settings",
-                                      ],
-                                    }),
-                                    i.jsx("p", {
-                                      className:
-                                        "text-xs text-slate-500 font-medium",
-                                      children:
-                                        e === "te"
-                                          ? "కస్టమర్ రికార్డులు, స్పేర్స్ ధరల జాబితా, జాబ్ కార్డుల ఎక్సెల్ డేటా మరియు మెనూ ఆర్డర్ సెట్టింగ్స్ నిర్వహణ."
-                                          : "Manage Customer Records, Spares Price Lists, Job Cards Import/Export Excel & CSV databases, and Menu Navigation Settings.",
-                                    }),
-                                  ],
-                                }),
-                                i.jsx(MenuOrderSettings, {
-                                  language: e,
-                                  menuOrder: w,
-                                  setMenuOrder: setMenuOrder,
-                                  isLocked: isMenuLocked,
-                                  setIsLocked: setIsMenuLocked,
-                                  onSaveToCloud: saveMenuOrderToCloud,
-                                  defaultOrder: DEFAULT_MENU_ORDER,
-                                }),
-                                i.jsxs("div", {
                                   className:
-                                    "grid grid-cols-1 md:grid-cols-3 gap-6",
+                                    "grid grid-cols-1 md:grid-cols-3 gap-3 items-start",
                                   children: [
                                     i.jsx("div", {
                                       className:
-                                        "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 flex flex-col justify-between",
+                                        "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 flex flex-col justify-between",
                                       children: i.jsxs("div", {
-                                        className: "space-y-3",
+                                        className: "space-y-2",
                                         children: [
                                           i.jsxs("div", {
                                             className:
@@ -20298,11 +19988,11 @@ ${b}`));
                                             children: [
                                               i.jsxs("h3", {
                                                 className:
-                                                  "text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                                  "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
                                                 children: [
                                                   i.jsx(Jl, {
                                                     className:
-                                                      "w-4 h-4 text-indigo-600",
+                                                      "w-3.5 h-3.5 text-indigo-600",
                                                   }),
                                                   " 1. Customer Database (.xlsx)",
                                                 ],
@@ -20311,7 +20001,7 @@ ${b}`));
                                                 type: "button",
                                                 onClick: T,
                                                 className:
-                                                  "flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-md transition-colors cursor-pointer shadow-xs",
+                                                  "flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] px-2 py-0.5 rounded-md transition-colors cursor-pointer shadow-xs",
                                                 children: [
                                                   i.jsx($p, {
                                                     className: "w-3.5 h-3.5",
@@ -20328,7 +20018,7 @@ ${b}`));
                                                     children: [
                                                       i.jsx("label", {
                                                         className:
-                                                          "block text-[11px] font-bold text-slate-700 mb-1",
+                                                          "block text-[10px] font-bold text-slate-700 mb-1",
                                                         children:
                                                           "Import Customer File (.xlsx, .csv)",
                                                       }),
@@ -20338,13 +20028,13 @@ ${b}`));
                                                           ".xlsx,.xls,.csv",
                                                         onChange: q0,
                                                         className:
-                                                          "block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer",
+                                                          "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer",
                                                       }),
                                                     ],
                                                   }),
                                                   i.jsxs("div", {
                                                     className:
-                                                      "flex flex-col gap-2 pt-1",
+                                                      "flex flex-wrap gap-1.5 pt-1",
                                                     children: [
                                                       i.jsxs("button", {
                                                         type: "button",
@@ -20353,13 +20043,13 @@ ${b}`));
                                                           Object.keys(zr)
                                                             .length === 0,
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children: [
                                                           i.jsx(zl, {
                                                             className:
                                                               "w-3.5 h-3.5",
                                                           }),
-                                                          " Export Customer File to Excel (.xlsx)",
+                                                          " Export Excel",
                                                         ],
                                                       }),
                                                       i.jsxs("button", {
@@ -20369,13 +20059,13 @@ ${b}`));
                                                           Object.keys(zr)
                                                             .length === 0,
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children: [
                                                           i.jsx(hd, {
                                                             className:
                                                               "w-3.5 h-3.5",
                                                           }),
-                                                          " 🔍 Check Chassis / Phone Duplicates",
+                                                          " 🔍 Duplicates",
                                                         ],
                                                       }),
                                                       i.jsx("button", {
@@ -20450,9 +20140,9 @@ ${b}`));
                                                           }
                                                         },
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children:
-                                                          "🗑️ Delete All Customers",
+                                                          "🗑️ Delete All",
                                                       }),
                                                     ],
                                                   }),
@@ -20477,18 +20167,18 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 flex flex-col justify-between",
+                                        "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 flex flex-col justify-between",
                                       children: [
                                         i.jsxs("div", {
-                                          className: "space-y-3",
+                                          className: "space-y-2",
                                           children: [
                                             i.jsxs("h3", {
                                               className:
-                                                "text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                                "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
                                               children: [
                                                 i.jsx(Jl, {
                                                   className:
-                                                    "w-4 h-4 text-emerald-600",
+                                                    "w-3.5 h-3.5 text-emerald-600",
                                                 }),
                                                 " 2. Spares Price List (.xlsx)",
                                               ],
@@ -20500,7 +20190,7 @@ ${b}`));
                                                       children: [
                                                         i.jsx("label", {
                                                           className:
-                                                            "block text-[11px] font-bold text-slate-700 mb-1",
+                                                            "block text-[10px] font-bold text-slate-700 mb-1",
                                                           children:
                                                             "Import Spares File (.xlsx, .csv)",
                                                         }),
@@ -20510,13 +20200,13 @@ ${b}`));
                                                             ".xlsx,.xls,.csv",
                                                           onChange: wg,
                                                           className:
-                                                            "block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer",
+                                                            "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer",
                                                         }),
                                                       ],
                                                     }),
                                                     i.jsx("div", {
                                                       className:
-                                                        "flex flex-col gap-2 pt-1",
+                                                        "flex flex-col gap-1.5 pt-1",
                                                       children: i.jsxs(
                                                         "button",
                                                         {
@@ -20526,7 +20216,7 @@ ${b}`));
                                                             Object.keys(Wo)
                                                               .length === 0,
                                                           className:
-                                                            "w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                            "w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                           children: [
                                                             i.jsx(zl, {
                                                               className:
@@ -20576,18 +20266,18 @@ ${b}`));
                                     }),
                                     i.jsxs("div", {
                                       className:
-                                        "bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 flex flex-col justify-between",
+                                        "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 flex flex-col justify-between",
                                       children: [
                                         i.jsxs("div", {
-                                          className: "space-y-3",
+                                          className: "space-y-2",
                                           children: [
                                             i.jsxs("h3", {
                                               className:
-                                                "text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                                "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
                                               children: [
                                                 i.jsx(Jl, {
                                                   className:
-                                                    "w-4 h-4 text-sky-600",
+                                                    "w-3.5 h-3.5 text-sky-600",
                                                 }),
                                                 " 3. Job Cards Database (Import / Export)",
                                               ],
@@ -20605,7 +20295,7 @@ ${b}`));
                                                   children: [
                                                     i.jsx("label", {
                                                       className:
-                                                        "block text-[11px] font-bold text-slate-700 mb-1",
+                                                        "block text-[10px] font-bold text-slate-700 mb-1",
                                                       children:
                                                         "Import Job Cards File (.xlsx, .csv)",
                                                     }),
@@ -20616,7 +20306,7 @@ ${b}`));
                                                       accept: ".xlsx,.xls,.csv",
                                                       onChange: En,
                                                       className:
-                                                        "block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer disabled:opacity-50",
+                                                        "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 cursor-pointer disabled:opacity-50",
                                                     }),
                                                     io &&
                                                       i.jsxs("p", {
@@ -20634,14 +20324,14 @@ ${b}`));
                                                 }),
                                                 i.jsxs("div", {
                                                   className:
-                                                    "flex flex-col gap-2 pt-1",
+                                                    "flex flex-wrap gap-1.5 pt-1",
                                                   children: [
                                                     i.jsxs("button", {
                                                       type: "button",
                                                       onClick: X0,
                                                       disabled: Br.length === 0,
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                        "flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                       children: [
                                                         i.jsx(zl, {
                                                           className:
@@ -20649,20 +20339,20 @@ ${b}`));
                                                         }),
                                                         " Export All (",
                                                         Br.length,
-                                                        ") to Excel (.xlsx)",
+                                                        ")",
                                                       ],
                                                     }),
                                                     i.jsxs("button", {
                                                       type: "button",
                                                       onClick: la,
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-xs py-1.5 px-3 rounded-lg transition-colors cursor-pointer",
+                                                        "flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer",
                                                       children: [
                                                         i.jsx(dd, {
                                                           className:
                                                             "w-3.5 h-3.5 text-slate-500",
                                                         }),
-                                                        " Download Sample Import Template (.xlsx)",
+                                                        " Sample Template",
                                                       ],
                                                     }),
                                                     i.jsxs("button", {
@@ -20673,73 +20363,24 @@ ${b}`));
                                                             "ARE YOU SURE YOU WANT TO CLEAR ALL DATA? THIS CANNOT BE UNDONE!",
                                                           )
                                                         ) {
-                                                          fetch(
-                                                            "/api/database/clear",
-                                                            {
-                                                              method: "POST",
-                                                              headers: {
-                                                                "Content-Type":
-                                                                  "application/json",
-                                                              },
-                                                            },
-                                                          )
-                                                            .then((b) =>
-                                                              b.json(),
-                                                            )
-                                                            .then(async (b) => {
-                                                              if (b.success) {
-                                                                if (kt) {
-                                                                  const cols = [
-                                                                    "customers_master",
-                                                                    "jobcards",
-                                                                    "complaints",
-                                                                    "spares_master",
-                                                                    "staff",
-                                                                  ];
-                                                                  for (const col of cols) {
-                                                                    const sn =
-                                                                      await ud(
-                                                                        ci(
-                                                                          kt,
-                                                                          col,
-                                                                        ),
-                                                                      );
-                                                                    if (
-                                                                      !sn.empty
-                                                                    ) {
-                                                                      const ba =
-                                                                        Bu(kt);
-                                                                      sn.docs.forEach(
-                                                                        (d) =>
-                                                                          ba.delete(
-                                                                            d.ref,
-                                                                          ),
-                                                                      );
-                                                                      await ba.commit();
-                                                                    }
-                                                                  }
-                                                                }
-                                                                alert(
-                                                                  "All data cleared successfully.",
-                                                                );
-                                                                window.location.reload();
-                                                              } else {
-                                                                alert(
-                                                                  "Failed to clear data: " +
-                                                                    b.error,
-                                                                );
-                                                              }
-                                                            });
+                                                          Rs.clearAllData().then((b) => {
+                                                            if (b.success) {
+                                                              alert("All data cleared successfully.");
+                                                              window.location.reload();
+                                                            } else {
+                                                              alert("Failed to clear data: " + b.error);
+                                                            }
+                                                          });
                                                         }
                                                       },
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs mt-2",
+                                                        "flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                       children: [
                                                         i.jsx(Cu, {
                                                           className:
                                                             "w-3.5 h-3.5",
                                                         }),
-                                                        " Clear All Data",
+                                                        " Clear Data",
                                                       ],
                                                     }),
                                                     i.jsx("div", {
@@ -20786,11 +20427,11 @@ ${b}`));
                                               children: [
                                                 i.jsxs("h3", {
                                                   className:
-                                                    "text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                                    "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
                                                   children: [
                                                     i.jsx(df, {
                                                       className:
-                                                        "w-4 h-4 text-purple-600",
+                                                        "w-3.5 h-3.5 text-purple-600",
                                                     }),
                                                     " 4. Staff Directory (.xlsx)",
                                                   ],
@@ -20811,7 +20452,7 @@ ${b}`));
                                                       un(!0));
                                                   },
                                                   className:
-                                                    "flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] px-2.5 py-1 rounded-md transition-colors cursor-pointer shadow-xs",
+                                                    "flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10px] px-2 py-0.5 rounded-md transition-colors cursor-pointer shadow-xs",
                                                   children: [
                                                     i.jsx($p, {
                                                       className: "w-3.5 h-3.5",
@@ -20828,7 +20469,7 @@ ${b}`));
                                                   children: [
                                                     i.jsx("label", {
                                                       className:
-                                                        "block text-[11px] font-bold text-slate-700 mb-1",
+                                                        "block text-[10px] font-bold text-slate-700 mb-1",
                                                       children:
                                                         "Import Staff File (.xlsx, .csv)",
                                                     }),
@@ -20838,7 +20479,7 @@ ${b}`));
                                                       accept: ".xlsx,.xls,.csv",
                                                       onChange: R1,
                                                       className:
-                                                        "block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer",
+                                                        "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 cursor-pointer",
                                                     }),
                                                   ],
                                                 }),
@@ -20847,7 +20488,7 @@ ${b}`));
                                                   onClick: gp,
                                                   disabled: er.length === 0,
                                                   className:
-                                                    "w-full flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                    "w-full flex items-center justify-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                   children: [
                                                     i.jsx(zl, {
                                                       className: "w-3.5 h-3.5",
@@ -20891,11 +20532,11 @@ ${b}`));
                                                 "flex items-center justify-between",
                                               children: i.jsxs("h3", {
                                                 className:
-                                                  "text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                                  "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
                                                 children: [
                                                   i.jsx(bu, {
                                                     className:
-                                                      "w-4 h-4 text-teal-600",
+                                                      "w-3.5 h-3.5 text-teal-600",
                                                   }),
                                                   " 5. Follow-up Master (.xlsx)",
                                                 ],
@@ -20911,7 +20552,7 @@ ${b}`));
                                               children: [
                                                 i.jsx("label", {
                                                   className:
-                                                    "block text-[11px] font-bold text-slate-700 mb-1",
+                                                    "block text-[10px] font-bold text-slate-700 mb-1",
                                                   children:
                                                     "Import Follow-up File",
                                                 }),
@@ -20920,7 +20561,7 @@ ${b}`));
                                                   accept: ".xlsx,.xls,.csv",
                                                   onChange: q0,
                                                   className:
-                                                    "block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer",
+                                                    "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer",
                                                 }),
                                               ],
                                             }),
@@ -20932,7 +20573,7 @@ ${b}`));
                                                 disabled:
                                                   Object.keys(zr).length === 0,
                                                 className:
-                                                  "w-full flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold text-xs py-2 px-3 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                  "w-full flex items-center justify-center gap-1.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                 children: [
                                                   i.jsx(zl, {
                                                     className: "w-3.5 h-3.5",
@@ -20953,6 +20594,104 @@ ${b}`));
                                             }),
                                             i.jsx("span", {
                                               className: `font-bold ${G0.isSuccess ? "text-teal-700" : "text-slate-400"}`,
+                                              children: G0.text.split(".")[0],
+                                            }),
+                                          ],
+                                        }),
+                                      ],
+                                    }),
+                                    i.jsxs("div", {
+                                      className:
+                                        "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 flex flex-col justify-between",
+                                      children: [
+                                        i.jsxs("div", {
+                                          className: "space-y-2",
+                                          children: [
+                                            i.jsxs("h3", {
+                                              className:
+                                                "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                              children: [
+                                                i.jsx(Jl, {
+                                                  className:
+                                                    "w-3.5 h-3.5 text-slate-700",
+                                                }),
+                                                " 6. Total Backup (.xlsx)",
+                                              ],
+                                            }),
+                                            i.jsx("p", {
+                                              className:
+                                                "text-[11px] text-slate-500 font-medium",
+                                              children:
+                                                "One file with everything: Job Cards, Complaints, Staff, Customers, Spares, Attendance & Settings.",
+                                            }),
+                                            i.jsxs("div", {
+                                              className: "space-y-2.5",
+                                              children: [
+                                                i.jsxs("div", {
+                                                  children: [
+                                                    i.jsx("label", {
+                                                      className:
+                                                        "block text-[10px] font-bold text-slate-700 mb-1",
+                                                      children:
+                                                        "Import Backup File (.xlsx)",
+                                                    }),
+                                                    i.jsx("input", {
+                                                      type: "file",
+                                                      accept: ".xlsx,.xls",
+                                                      onChange: restoreFullBackupFromFile,
+                                                      className:
+                                                        "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 cursor-pointer",
+                                                    }),
+                                                  ],
+                                                }),
+                                                i.jsxs("div", {
+                                                  className:
+                                                    "flex flex-wrap gap-1.5 pt-1",
+                                                  children: [
+                                                    i.jsxs("button", {
+                                                      type: "button",
+                                                      onClick: ch,
+                                                      className:
+                                                        "flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                      children: [
+                                                        i.jsx(zl, {
+                                                          className:
+                                                            "w-3.5 h-3.5",
+                                                        }),
+                                                        " Export Total Backup",
+                                                      ],
+                                                    }),
+                                                    i.jsxs("button", {
+                                                      type: "button",
+                                                      onClick: () =>
+                                                        alert(
+                                                          "🔗 Google Drive backup needs a one-time setup by the developer (a Google Cloud OAuth Client ID). Ask to have this connected, then this button will upload backups straight to Drive.\n\nFor now, use Export Total Backup to save the file locally.",
+                                                        ),
+                                                      className:
+                                                        "flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer",
+                                                      children: [
+                                                        i.jsx(iY, {
+                                                          className:
+                                                            "w-3.5 h-3.5 text-blue-600",
+                                                        }),
+                                                        " Connect Google Drive",
+                                                      ],
+                                                    }),
+                                                  ],
+                                                }),
+                                              ],
+                                            }),
+                                          ],
+                                        }),
+                                        i.jsxs("div", {
+                                          className:
+                                            "pt-2 border-t border-slate-200 text-[11px] text-slate-500 font-semibold flex justify-between items-center",
+                                          children: [
+                                            i.jsx("span", {
+                                              children: "Backup Status:",
+                                            }),
+                                            i.jsx("span", {
+                                              className: `font-bold ${G0.isSuccess ? "text-emerald-700" : "text-slate-400"}`,
                                               children: G0.text.split(".")[0],
                                             }),
                                           ],
@@ -22371,79 +22110,29 @@ ${b}`));
                                 }),
                               ],
                             }),
-                          (c === "customers_and_jobcards" || c === "saved_cards" || c === "followup") &&
+                          (c === "customer_data" || c === "job_cards_data" || c === "saved_cards") &&
                             i.jsxs("div", {
                               className: "w-full space-y-3",
                               children: [
-                                i.jsxs("div", {
-                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 p-2.5 md:p-3 rounded-2xl shadow-md text-white border border-purple-800/60",
+                                c === "job_cards_data" && jobCardsChassisFilter && i.jsxs("div", {
+                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-white p-3 md:p-4 rounded-3xl shadow-sm",
                                   children: [
-                                    i.jsxs("div", {
-                                      className: "flex items-center gap-1.5 bg-purple-950/80 p-1 rounded-xl border border-purple-800/80 shadow-inner flex-wrap",
+                                    jobCardsChassisFilter && i.jsxs("div", {
+                                      className: "flex items-center gap-1.5 bg-amber-100 text-amber-900 font-bold px-3 py-1.5 rounded-full text-xs",
                                       children: [
-                                        i.jsxs("button", {
+                                        i.jsxs("span", { children: ["Chassis: ", i.jsx("span", { className: "font-mono", children: jobCardsChassisFilter })] }),
+                                        i.jsx("button", {
                                           type: "button",
-                                          onClick: () => setCustomerJobCardsTab("customers"),
-                                          className: `px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                                            customerJobCardsTab === "customers"
-                                              ? "bg-white text-purple-950 shadow-md font-extrabold"
-                                              : "text-purple-200 hover:text-white hover:bg-purple-800/70"
-                                          }`,
-                                          children: [
-                                            i.jsx(ql, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsxs("span", { children: [e === "te" ? "కస్టమర్ మాస్టర్ ఎక్సెల్" : "Customer Master Excel", ` (${_a.length})`] })
-                                          ]
-                                        }),
-                                        i.jsxs("button", {
-                                          type: "button",
-                                          onClick: () => setCustomerJobCardsTab("jobcards"),
-                                          className: `px-3.5 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs ${
-                                            customerJobCardsTab === "jobcards"
-                                              ? "bg-white text-purple-950 shadow-md font-extrabold"
-                                              : "text-purple-200 hover:text-white hover:bg-purple-800/70"
-                                          }`,
-                                          children: [
-                                            i.jsx(dd, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsxs("span", { children: [e === "te" ? "సేవ్ చేసిన జాబ్ కార్డులు" : "Saved Job Cards", ` (${hh.length})`] })
-                                          ]
-                                        })
-                                      ]
-                                    }),
-                                    i.jsxs("div", {
-                                      className: "flex items-center gap-2 text-xs",
-                                      children: [
-                                        jobCardsChassisFilter && i.jsxs("div", {
-                                          className: "flex items-center gap-1.5 bg-amber-400/90 text-slate-950 font-black px-2.5 py-1 rounded-lg shadow-xs text-xs",
-                                          children: [
-                                            i.jsxs("span", { children: ["Chassis Filter: ", i.jsx("span", { className: "font-mono", children: jobCardsChassisFilter })] }),
-                                            i.jsx("button", {
-                                              type: "button",
-                                              onClick: () => setJobCardsChassisFilter(""),
-                                              className: "hover:text-rose-900 cursor-pointer p-0.5",
-                                              title: "Clear Chassis Filter",
-                                              children: i.jsx(Xs, { className: "w-3.5 h-3.5" })
-                                            })
-                                          ]
-                                        }),
-                                        i.jsx("span", {
-                                          className: "text-[11px] font-bold text-purple-200 hidden md:inline-block",
-                                          children: e === "te" ? "⚡ ఎక్సెల్ మాదిరిగా నేరుగా ఎడిట్ మరియు ఫిల్టర్ చేయవచ్చు" : "⚡ Real-time Excel Spreadsheet & Interactive Records"
-                                        }),
-                                        i.jsxs("button", {
-                                          type: "button",
-                                          onClick: T,
-                                          className: "px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-sm transition-all cursor-pointer",
-                                          title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
-                                          children: [
-                                            i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
-                                            i.jsx("span", { children: e === "te" ? "+ కొత్త కస్టమర్" : "+ Add Customer" })
-                                          ]
+                                          onClick: () => setJobCardsChassisFilter(""),
+                                          className: "hover:text-rose-700 cursor-pointer p-0.5",
+                                          title: "Clear Chassis Filter",
+                                          children: i.jsx(Xs, { className: "w-3.5 h-3.5" })
                                         })
                                       ]
                                     })
                                   ]
                                 }),
-                                customerJobCardsTab === "customers" && i.jsx(MasterCustomerExcelTable, {
+                                c === "customer_data" && i.jsx(MasterCustomerExcelTable, {
                                   customers: _a,
                                   allCards: hh,
                                   language: e,
@@ -22467,10 +22156,10 @@ ${b}`));
                                   },
                                   onViewJobCardsForChassis: (chassisNo) => {
                                     setJobCardsChassisFilter(chassisNo);
-                                    setCustomerJobCardsTab("jobcards");
+                                    u("job_cards_data");
                                   }
                                 }),
-                                customerJobCardsTab === "jobcards" && i.jsx(SavedJobCardsExcelTable, {
+                                c === "job_cards_data" && i.jsx(SavedJobCardsExcelTable, {
                                   cards: hh,
                                   allCards: hh,
                                   language: e,
@@ -22581,57 +22270,6 @@ ${b}`));
                                 un(!1);
                                 oa(null);
                               }
-                            }),
-                            isUserManagementOpen && i.jsx(UserManagementModal, {
-                              isOpen: isUserManagementOpen,
-                              onClose: () => setIsUserManagementOpen(!1),
-                              users: customUsers,
-                              onSaveUser: async (savedUser: any) => {
-                                const existingIndex = customUsers.findIndex((u: any) => u.id === savedUser.id);
-                                let updatedList;
-                                if (existingIndex >= 0) {
-                                  updatedList = [...customUsers];
-                                  updatedList[existingIndex] = savedUser;
-                                } else {
-                                  updatedList = [...customUsers, savedUser];
-                                }
-                                setCustomUsers(updatedList);
-                                setLocalUsers(updatedList);
-                                await persistUserToFirestore(savedUser);
-                                broadcastLiveSync("SYNC_USERS", updatedList);
-                                if (currentSystemUser && currentSystemUser.id === savedUser.id) {
-                                  setCurrentSystemUser(savedUser);
-                                  setCurrentLoggedUser(savedUser);
-                                  rh(savedUser.isAdmin ? "admin" : (savedUser.role || "staff"));
-                                }
-                              },
-                              onDeleteUser: async (userId: string) => {
-                                const updatedList = customUsers.filter((u: any) => u.id !== userId);
-                                setCustomUsers(updatedList);
-                                setLocalUsers(updatedList);
-                                await removeUserFromFirestore(userId);
-                                broadcastLiveSync("SYNC_USERS", updatedList);
-                              },
-                              branchesList: systemBranches,
-                              onSaveBranches: async (newBranches: string[]) => {
-                                setSystemBranches(newBranches);
-                                setLocalBranches(newBranches);
-                                await persistBranchesToFirestore(newBranches);
-                                broadcastLiveSync("SYNC_BRANCHES", newBranches);
-                              },
-                              allMenus: [
-                                { key: "dashboard", label: e === "te" ? "📊 డాష్‌బోర్డ్" : "📊 Dashboard" },
-                                { key: "new_entry", label: e === "te" ? "✍️ కొత్త జాబ్ కార్డ్" : "✍️ New Job Card Entry" },
-                                { key: "customers_and_jobcards", label: e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards" },
-                                { key: "service_camp_planning", label: e === "te" ? "⛺ సర్వీస్ క్యాంప్ ప్లానింగ్" : "⛺ Service Camp Planning" },
-                                { key: "free_service_followup", label: e === "te" ? "🛠️ ఉచిత సర్వీస్ ఫాలో-అప్" : "🛠️ Free Service Followup" },
-                                { key: "telecalling", label: e === "te" ? "📞 టెలి కాలింగ్ డెస్క్" : "📞 Tele Calling Desk" },
-                                { key: "complaints", label: e === "te" ? "📝 కంప్లైంట్స్ రిజిస్టర్" : "📝 Complaints Register" },
-                                { key: "attendance", label: e === "te" ? "📅 సిబ్బంది అటెండెన్స్" : "📅 Staff Attendance" },
-                                { key: "reports", label: e === "te" ? "📈 రిపోర్ట్స్ & అనలిటిక్స్" : "📈 Reports & Analytics" },
-                                { key: "databases", label: e === "te" ? "🗄️ మాస్టర్ డేటాబేస్" : "🗄️ Master Databases" },
-                              ],
-                              language: e,
                             })
                           ]
                         })
@@ -22641,6 +22279,7 @@ ${b}`));
                 })
   : i.jsx(BranchLoginView, {
       branchesList: systemBranches,
+      supervisorsList: Array.from(new Set(er.filter((m: any) => m.role === "supervisor" || m.role === "Supervisor").map((m: any) => m.name).filter(Boolean))),
       users: customUsers,
       language: e,
       onLanguageChange: (lang: any) => {
