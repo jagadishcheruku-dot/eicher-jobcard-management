@@ -3,10 +3,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import {
   getFirestore,
   collection,
-  setDoc,
   doc,
-  getDocs,
-  deleteDoc,
   writeBatch,
 } from 'firebase/firestore';
 import firebaseConfigJson from '../../firebase-applet-config.json';
@@ -46,13 +43,9 @@ export async function syncCustomersToFirestore(customers: any[]) {
     const batch = writeBatch(db);
     const customersRef = collection(db, 'customers');
 
-    // Clear existing and add new
-    const existing = await getDocs(customersRef);
-    existing.docs.forEach((doc) => batch.delete(doc.ref));
-
     customers.forEach((customer, index) => {
       const docRef = doc(customersRef, String(customer.chassisNo || customer.chassis_no || index));
-      batch.set(docRef, customer);
+      batch.set(docRef, customer, { merge: true });
     });
 
     await batch.commit();
@@ -79,13 +72,9 @@ export async function syncJobCardsToFirestore(jobCards: any[]) {
     const batch = writeBatch(db);
     const jobCardsRef = collection(db, 'jobCards');
 
-    // Clear existing and add new
-    const existing = await getDocs(jobCardsRef);
-    existing.docs.forEach((doc) => batch.delete(doc.ref));
-
     jobCards.forEach((card, index) => {
       const docRef = doc(jobCardsRef, String(card.jobNo || card.onlineJobCardNo || index));
-      batch.set(docRef, card);
+      batch.set(docRef, card, { merge: true });
     });
 
     await batch.commit();
@@ -112,13 +101,9 @@ export async function syncComplaintsToFirestore(complaints: any[]) {
     const batch = writeBatch(db);
     const complaintsRef = collection(db, 'complaints');
 
-    // Clear existing and add new
-    const existing = await getDocs(complaintsRef);
-    existing.docs.forEach((doc) => batch.delete(doc.ref));
-
     complaints.forEach((complaint, index) => {
       const docRef = doc(complaintsRef, String(complaint._id || complaint.id || index));
-      batch.set(docRef, complaint);
+      batch.set(docRef, complaint, { merge: true });
     });
 
     await batch.commit();

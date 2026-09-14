@@ -1,4 +1,59 @@
 // Real PostgreSQL REST API client for Sri Balaji Eicher Tractors
+import { db } from '../firebase';
+import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
+
+// When the app is served without the Express backend (e.g. a static Vercel
+// deploy), every /api call resolves to index.html and yields no data. Firestore
+// is then both the source of truth and the way records reach other users.
+const FS_COLLECTIONS = {
+  customers: 'customers',
+  spares: 'spares',
+  jobCards: 'jobCards',
+  complaints: 'complaints',
+} as const;
+
+const fsDocId = (raw: any, fallback: string) => {
+  const id = String(raw ?? '').trim();
+  // Firestore ids cannot contain "/" and cannot be empty.
+  return id ? id.replace(/\//g, '_') : fallback;
+};
+
+async function fsReadAll(collectionName: string): Promise<any[]> {
+  try {
+    if (!db) return [];
+    const snapshot = await getDocs(collection(db, collectionName));
+    return snapshot.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+  } catch (err) {
+    console.warn(`Firestore read (${collectionName}) failed:`, err);
+    return [];
+  }
+}
+
+async function fsUpsertAll(
+  collectionName: string,
+  rows: any[],
+  idOf: (row: any) => any
+): Promise<boolean> {
+  try {
+    if (!db || !Array.isArray(rows) || rows.length === 0) return false;
+    const collectionRef = collection(db, collectionName);
+    // Firestore caps a batch at 500 writes.
+    for (let start = 0; start < rows.length; start += 400) {
+      const batch = writeBatch(db);
+      rows.slice(start, start + 400).forEach((row, offset) => {
+        const id = fsDocId(idOf(row), `row_${start + offset}_${Date.now()}`);
+        // JSON round-trip drops undefined values, which Firestore rejects.
+        batch.set(doc(collectionRef, id), JSON.parse(JSON.stringify(row ?? {})), { merge: true });
+      });
+      await batch.commit();
+    }
+    console.log(`✅ ${rows.length} record(s) saved to Firestore (${collectionName})`);
+    return true;
+  } catch (err) {
+    console.warn(`Firestore write (${collectionName}) failed:`, err);
+    return false;
+  }
+}
 
 async function safeRequestJson<T = any>(
   url: string,
@@ -66,37 +121,50 @@ export const sqlApi = {
           };
         });
       }
-      return [];
     } catch {
-      return [];
+      // fall through to Firestore
     }
+    return (await fsReadAll(FS_COLLECTIONS.customers)).map((r: any) => ({
+      ...r,
+      chassisNo: r.chassisNo || r.chassis || r['Chassis no'] || r.id,
+      tractorModel: r.tractorModel || r.model || r.modelType || '',
+    }));
   },
   getCustomers: async () => sqlApi.fetchCustomers(),
 
   saveCustomer: async (customer: any) => {
     try {
-      const res = await safeRequestJson('/api/customers', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customer)
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    return sqlApi.bulkUpsertCustomers([customer]);
   },
 
   bulkUpsertCustomers: async (rows: any[], replaceAll = false) => {
     try {
-      const res = await safeRequestJson('/api/customers/bulk', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/customers/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rows, replaceAll })
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    const saved = await fsUpsertAll(
+      FS_COLLECTIONS.customers,
+      rows,
+      (r) => r.chassisNo || r.chassis || r['Chassis no'] || r.chassisKey || r.id
+    );
+    return saved
+      ? { success: true, count: rows.length, storage: 'firestore' }
+      : { success: false, error: 'Could not save to backend or Firestore' };
   },
   saveCustomersBulk: async (rows: any[], replaceAll = false) => sqlApi.bulkUpsertCustomers(rows, replaceAll),
 
@@ -130,37 +198,34 @@ export const sqlApi = {
           };
         });
       }
-      return [];
     } catch {
-      return [];
+      // fall through to Firestore
     }
+    return fsReadAll(FS_COLLECTIONS.spares);
   },
   getSpares: async () => sqlApi.fetchSpares(),
 
-  saveSpare: async (spare: any) => {
-    try {
-      const res = await safeRequestJson('/api/spares/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows: [spare], replaceAll: false })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  },
+  saveSpare: async (spare: any) => sqlApi.bulkUpsertSpares([spare], false),
 
   bulkUpsertSpares: async (rows: any[], replaceAll = false) => {
     try {
-      const res = await safeRequestJson('/api/spares/bulk', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/spares/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rows, replaceAll })
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    const saved = await fsUpsertAll(
+      FS_COLLECTIONS.spares,
+      rows,
+      (r) => r.partNo || r.partKey || r['Part No'] || r.id
+    );
+    return saved
+      ? { success: true, count: rows.length, storage: 'firestore' }
+      : { success: false, error: 'Could not save to backend or Firestore' };
   },
   saveSparesBulk: async (rows: any[], replaceAll = false) => sqlApi.bulkUpsertSpares(rows, replaceAll),
 
@@ -236,24 +301,25 @@ export const sqlApi = {
           };
         });
       }
-      return [];
     } catch {
-      return [];
+      // fall through to Firestore
     }
+    return fsReadAll(FS_COLLECTIONS.jobCards);
   },
   getJobCards: async () => sqlApi.fetchJobcards(),
 
   saveJobcard: async (card: any) => {
     try {
-      const res = await safeRequestJson('/api/jobcards', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/jobcards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(card)
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    return sqlApi.bulkUpsertJobcards([card]);
   },
   saveJobCard: async (card: any) => sqlApi.saveJobcard(card),
 
@@ -271,15 +337,23 @@ export const sqlApi = {
 
   bulkUpsertJobcards: async (cards: any[], replaceAll = false) => {
     try {
-      const res = await safeRequestJson('/api/jobcards/bulk', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/jobcards/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cards, replaceAll })
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    const saved = await fsUpsertAll(
+      FS_COLLECTIONS.jobCards,
+      cards,
+      (c) => c.jobNo || c.onlineJobCardNo || c.id
+    );
+    return saved
+      ? { success: true, count: cards.length, storage: 'firestore' }
+      : { success: false, error: 'Could not save to backend or Firestore' };
   },
   saveJobCardsBulk: async (cards: any[], replaceAll = false) => sqlApi.bulkUpsertJobcards(cards, replaceAll),
 
@@ -328,24 +402,25 @@ export const sqlApi = {
           createdAt: r.created_at || r.createdAt || ''
         }));
       }
-      return [];
     } catch {
-      return [];
+      // fall through to Firestore
     }
+    return fsReadAll(FS_COLLECTIONS.complaints);
   },
   getComplaints: async () => sqlApi.fetchComplaints(),
 
   saveComplaint: async (complaint: any) => {
     try {
-      const res = await safeRequestJson('/api/complaints', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/complaints', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(complaint)
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    return sqlApi.bulkUpsertComplaints([complaint]);
   },
 
   deleteComplaint: async (id: string) => {
@@ -361,15 +436,23 @@ export const sqlApi = {
 
   bulkUpsertComplaints: async (complaints: any[], replaceAll = false) => {
     try {
-      const res = await safeRequestJson('/api/complaints/bulk', {
+      const res = await safeRequestJson<{ success?: boolean }>('/api/complaints/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ complaints, replaceAll })
       });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
+      if (res && res.success) return res;
+    } catch {
+      // fall through to Firestore
     }
+    const saved = await fsUpsertAll(
+      FS_COLLECTIONS.complaints,
+      complaints,
+      (c) => c.id || c._id || c.complaintNo
+    );
+    return saved
+      ? { success: true, count: complaints.length, storage: 'firestore' }
+      : { success: false, error: 'Could not save to backend or Firestore' };
   },
   saveComplaintsBulk: async (complaints: any[], replaceAll = false) => sqlApi.bulkUpsertComplaints(complaints, replaceAll),
 
