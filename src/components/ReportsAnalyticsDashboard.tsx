@@ -259,7 +259,7 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
         </div>
       )}
 
-      {/* Daily Performance Trend */}
+      {/* Daily Performance Trend - VISUAL GRAPH */}
       {dailyTrend.length > 0 && (
         <div className="border border-slate-200 rounded-lg overflow-hidden bg-white">
           <div className="bg-slate-100 p-2.5 border-b border-slate-200">
@@ -268,31 +268,70 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
               <span>{isTe ? "దైనిక నిష్పత్తి ప్రవృత్తి" : "Daily Performance Trend"}</span>
             </div>
           </div>
-          <div className="overflow-x-auto max-h-64 overflow-y-auto">
-            <table className="w-full text-[11px]">
-              <thead className="bg-slate-50 sticky top-0">
-                <tr className="border-b border-slate-200">
-                  <th className="text-left p-2 font-bold text-slate-700">{isTe ? "తేదీ" : "Date"}</th>
-                  <th className="text-center p-2 font-bold text-slate-700">{isTe ? "నమూనాలు" : "Jobs"}</th>
-                  <th className="text-center p-2 font-bold text-slate-700">{isTe ? "సంపూర్ణం" : "Completed"}</th>
-                  <th className="text-center p-2 font-bold text-slate-700">{isTe ? "తెరిచి" : "Open"}</th>
-                  <th className="text-right p-2 font-bold text-slate-700">{isTe ? "ఆదాయం" : "Revenue"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dailyTrend.map((day, idx) => (
-                  <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="p-2 font-mono text-slate-900">{day.date}</td>
-                    <td className="text-center p-2 font-bold text-slate-900">{day.count}</td>
-                    <td className="text-center p-2 font-bold text-emerald-700">{day.jobsCompleted}</td>
-                    <td className="text-center p-2 font-bold text-amber-700">{day.jobsOpen}</td>
-                    <td className="text-right p-2 font-mono font-bold text-slate-900">
-                      ₹{Number(day.revenue).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="p-4">
+            {/* Bar Chart - Jobs Completed vs Open */}
+            <div className="mb-4">
+              <div className="text-xs font-bold text-slate-700 mb-2">{isTe ? "సేవ పరిస్థితి (బార్ చార్ట్)" : "Service Status (Bar Chart)"}</div>
+              <div className="flex gap-1 overflow-x-auto pb-2" style={{minHeight: '120px'}}>
+                {dailyTrend.slice(-14).map((day, idx) => {
+                  const maxJobs = Math.max(...dailyTrend.map(d => d.count));
+                  const completedHeight = (day.jobsCompleted / (maxJobs || 1)) * 100;
+                  const openHeight = (day.jobsOpen / (maxJobs || 1)) * 100;
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-1 flex-shrink-0">
+                      <div className="flex gap-0.5 items-end" style={{height: '80px'}}>
+                        <div
+                          className="bg-emerald-500 rounded-t opacity-80 transition-all"
+                          style={{width: '8px', height: `${completedHeight}%`, minHeight: day.jobsCompleted > 0 ? '4px' : '0'}}
+                          title={`Completed: ${day.jobsCompleted}`}
+                        />
+                        <div
+                          className="bg-amber-500 rounded-t opacity-80 transition-all"
+                          style={{width: '8px', height: `${openHeight}%`, minHeight: day.jobsOpen > 0 ? '4px' : '0'}}
+                          title={`Open: ${day.jobsOpen}`}
+                        />
+                      </div>
+                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[0]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-3 text-[10px] mt-2">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-emerald-500 rounded"></div>
+                  <span>{isTe ? "సంపూర్ణం" : "Completed"}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-amber-500 rounded"></div>
+                  <span>{isTe ? "తెరిచి" : "Open"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue Trend */}
+            <div>
+              <div className="text-xs font-bold text-slate-700 mb-2">{isTe ? "రాబడి ప్రవృత్తి" : "Revenue Trend"}</div>
+              <div className="flex gap-1 overflow-x-auto pb-2" style={{minHeight: '100px'}}>
+                {dailyTrend.slice(-14).map((day, idx) => {
+                  const maxRevenue = Math.max(...dailyTrend.map(d => d.revenue));
+                  const revenueHeight = (day.revenue / (maxRevenue || 1)) * 100;
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-1 flex-shrink-0">
+                      <div
+                        className="bg-gradient-to-t from-indigo-500 to-purple-400 rounded-t opacity-85 transition-all"
+                        style={{width: '10px', height: `${revenueHeight}%`, minHeight: day.revenue > 0 ? '4px' : '0'}}
+                        title={`₹${Number(day.revenue).toLocaleString()}`}
+                      />
+                      <span className="text-[9px] font-mono text-slate-600 text-center">{day.date.split('-')[0]}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center gap-1 text-[10px] mt-2">
+                <div className="w-2 h-2 bg-gradient-to-t from-indigo-500 to-purple-400 rounded"></div>
+                <span>{isTe ? "రాబడి" : "Revenue"}</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
