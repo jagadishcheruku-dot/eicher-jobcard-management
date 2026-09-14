@@ -16012,32 +16012,6 @@ ${b}`));
                                                         i.jsxs("div", {
                                                           className: "flex items-center gap-3 mb-2",
                                                           children: [
-                                                            i.jsx("svg", {
-                                                              width: "52",
-                                                              height: "52",
-                                                              viewBox: "0 0 100 100",
-                                                              className: "flex-shrink-0",
-                                                              children: [
-                                                                i.jsx("circle", {
-                                                                  cx: "50",
-                                                                  cy: "50",
-                                                                  r: "48",
-                                                                  fill: "#DC2626",
-                                                                  key: "bg",
-                                                                }),
-                                                                i.jsx("text", {
-                                                                  x: "50",
-                                                                  y: "60",
-                                                                  textAnchor: "middle",
-                                                                  fontSize: "50",
-                                                                  fontWeight: "900",
-                                                                  fill: "white",
-                                                                  fontFamily: "Arial, sans-serif",
-                                                                  children: "E",
-                                                                  key: "text",
-                                                                }),
-                                                              ],
-                                                            }),
                                                             i.jsxs("div", {
                                                               children: [
                                                                 i.jsx("div", {
