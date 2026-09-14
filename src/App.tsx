@@ -6432,6 +6432,34 @@ function gY() {
           }
       }
     },
+    handleUpdateComplaintStatus = async (complaintId, newStatus) => {
+      if (!complaintId || !newStatus) return;
+      const complaint = Fs.find(c => c.id === complaintId);
+      if (!complaint) return;
+
+      const updatedComplaint = { ...complaint, status: newStatus };
+      Ga(prev => prev.map(c => c.id === complaintId ? updatedComplaint : c));
+
+      try {
+        await Rs.saveComplaint(updatedComplaint);
+      } catch (err) {
+        console.warn("Cloud SQL complaint status update:", err);
+      }
+
+      if (mr && ss) {
+        try {
+          await af(ss, "Complaints", Dx, updatedComplaint);
+        } catch (err) {
+          console.error("Error updating complaint status in Sheets:", err);
+        }
+      } else if (kt) {
+        try {
+          await xu(Qs(kt, "complaints", complaintId), { status: newStatus }, { merge: true });
+        } catch (err) {
+          console.error("Error updating complaint status in Firestore:", err);
+        }
+      }
+    },
     handleUpdateJobCardRow = async (cardId, updatedFields) => {
       Oa((prev) =>
         prev.map((item) => {
@@ -19112,38 +19140,38 @@ ${b}`));
                                                   i.jsxs("td", {
                                                     className: "p-3",
                                                     children: [
-                                                      d.status === "Closed"
-                                                        ? i.jsx("span", {
-                                                            className:
-                                                              "px-2.5 py-0.5 rounded text-[10px] font-black bg-black text-white border border-black shadow-2xs uppercase tracking-wide",
-                                                            children: "Closed",
-                                                          })
-                                                        : d.status === "Running"
-                                                          ? i.jsxs("span", {
-                                                              className:
-                                                                "px-2.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-white border border-amber-600 inline-flex items-center gap-1 shadow-2xs uppercase tracking-wide",
-                                                              children: [
-                                                                i.jsx("span", {
-                                                                  className:
-                                                                    "w-1.5 h-1.5 rounded-full bg-white animate-pulse",
-                                                                }),
-                                                                "Running",
-                                                              ],
-                                                            })
-                                                          : i.jsx("span", {
-                                                              className:
-                                                                "px-2.5 py-0.5 rounded text-[10px] font-black bg-red-600 text-white border border-red-700 shadow-2xs uppercase tracking-wide",
-                                                              children:
-                                                                d.status ||
-                                                                "Open",
-                                                            }),
+                                                      i.jsx("select", {
+                                                        value: d.status || "Open",
+                                                        onChange: (e) => handleUpdateComplaintStatus(d.id, e.target.value),
+                                                        className:
+                                                          "w-full p-1.5 text-xs font-bold rounded border border-slate-300 bg-white focus:border-blue-600 focus:outline-none cursor-pointer " +
+                                                          (d.status === "Closed"
+                                                            ? "bg-black text-white border-black"
+                                                            : d.status === "Running"
+                                                            ? "bg-amber-50 text-amber-900 border-amber-300"
+                                                            : "bg-red-50 text-red-900 border-red-300"),
+                                                        children: [
+                                                          i.jsx("option", {
+                                                            value: "Open",
+                                                            children: "🔴 Open",
+                                                          }),
+                                                          i.jsx("option", {
+                                                            value: "Running",
+                                                            children: "🟡 Running",
+                                                          }),
+                                                          i.jsx("option", {
+                                                            value: "Closed",
+                                                            children: "🟢 Closed",
+                                                          }),
+                                                        ],
+                                                      }),
                                                       d.jobCardNo &&
                                                         i.jsxs("button", {
                                                           type: "button",
                                                           onClick: () =>
                                                             handleOpenJobCardFromComplaint(d),
                                                           className:
-                                                            "text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded px-1.5 py-0.5 mt-0.5 cursor-pointer flex items-center gap-0.5 transition-all shadow-2xs",
+                                                            "text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded px-1.5 py-0.5 mt-1.5 cursor-pointer flex items-center gap-0.5 transition-all shadow-2xs",
                                                           title:
                                                             "Open linked Job Card",
                                                           children: [
