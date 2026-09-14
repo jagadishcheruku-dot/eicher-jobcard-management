@@ -2605,8 +2605,15 @@ function gY() {
         ) {
           const N = {};
           (b.value.forEach((R) => {
-            const S = rl(R.full_data || R),
+            const fullData = R.data || R.full_data || R;
+            const S = rl(fullData),
               ie = R.part_no || R.partNo;
+
+            // Preserve the column fields from the database record
+            if (R.part_no) S.part_no = R.part_no;
+            if (R.part_desc) S.part_desc = R.part_desc;
+            if (R.part_desc) S.description = R.part_desc; // Also set description for lookup
+
             ie && ((S.__partNoDisplay = ie), (N[Ct(ie)] = S));
           }),
             gc(N),
@@ -5348,24 +5355,61 @@ function gY() {
     Tg = (d, b) => {
       let v = [...ri];
       v[d].partNo = b;
-      const j = O1(b),
-        I = Dg(j) || Dg(b);
+
+      // Extract part number from various formats
+      const j = O1(b);
+
+      // Look up spare part by normalized part number
+      let I = Dg(j) || Dg(b);
+
+      // If not found by normalized lookup, try direct lookup
+      if (!I && Wo) {
+        Object.keys(Wo).forEach((key) => {
+          const spare = Wo[key];
+          const sparePartNo = spare.__partNoDisplay || Kp(spare, "partNo") || key;
+          if (String(sparePartNo).toLowerCase().trim() === String(b).toLowerCase().trim()) {
+            I = spare;
+          }
+        });
+      }
+
       if (I) {
-        const N = I.__partNoDisplay || Kp(I, "partNo") || j || b,
-          R = Kp(I, "desc"),
-          S = Kp(I, "rate");
-        (N && (v[d].partNo = N), R && (v[d].desc = R), S && (v[d].rate = S));
-        const ie = parseFloat(v[d].qty) || 0,
-          le = parseFloat(S || v[d].rate) || 0;
-        v[d].wty
-          ? (v[d].amount = "0")
-          : ie && le && (v[d].amount = (ie * le).toFixed(2));
+        const N = I.__partNoDisplay || Kp(I, "partNo") || j || b;
+        let R = Kp(I, "desc"); // description
+        let S = Kp(I, "rate"); // price/rate
+
+        // Fallback: check for other possible field names
+        if (!R) R = I.description || I.itemDescription || I.name || I.itemName || I.part_desc || "";
+        if (!S) S = I.price || I.unitPrice || I.unit_price || I.mrp || I.sellingprice || I.selling_price || "";
+
+        // Update the row with looked-up values
+        if (N) v[d].partNo = N;
+        if (R) v[d].desc = R;
+        if (S) v[d].rate = String(S);
+
+        // Auto-calculate amount if qty and rate present
+        const ie = parseFloat(v[d].qty) || 0;
+        const le = parseFloat(S || v[d].rate) || 0;
+        if (v[d].wty) {
+          v[d].amount = "0";
+        } else if (ie && le) {
+          v[d].amount = (ie * le).toFixed(2);
+        }
       }
       Il(au(v));
     },
     $0 = (d, b) => {
       let v = [...ri];
-      ((v[d].desc = b), Il(au(v)));
+      v[d].desc = b;
+      // Auto-calculate amount if qty and rate present
+      const ie = parseFloat(v[d].qty) || 0;
+      const le = parseFloat(v[d].rate) || 0;
+      if (v[d].wty) {
+        v[d].amount = "0";
+      } else if (ie && le) {
+        v[d].amount = (ie * le).toFixed(2);
+      }
+      Il(au(v));
     },
     yp = (d, b, v) => {
       let j = [...ri];
