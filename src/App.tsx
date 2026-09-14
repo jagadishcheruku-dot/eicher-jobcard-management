@@ -6370,7 +6370,16 @@ function gY() {
               merged.billNo = updatedFields.billNo;
             }
 
-            // Auto-Status rule: closed date AND bill no enter cheyyaga status closed lo ki Ravali, ledante open lo undali
+            // Auto-Status rule:
+            // - If onlineJobCardNo is empty: "pending"
+            // - If onlineJobCardNo is filled and closed date+bill present: "Closed"
+            // - Otherwise: "Open"
+            const effOnlineJC = (
+              updatedFields.onlineJobCardNo !== undefined
+                ? updatedFields.onlineJobCardNo
+                : merged.onlineJobCardNo || ""
+            ).toString().trim();
+
             const effClosed = (
               merged.actualClosedDate ||
               merged.dateTimeOut ||
@@ -6378,7 +6387,9 @@ function gY() {
             ).toString().trim();
             const effBill = (merged.billNo || "").toString().trim();
 
-            if (effClosed && effBill) {
+            if (!effOnlineJC) {
+              merged.status = "pending";
+            } else if (effClosed && effBill) {
               merged.status = "Closed";
             } else if (
               updatedFields.actualClosedDate !== undefined ||
@@ -6415,6 +6426,12 @@ function gY() {
             firestorePayload.dateTimeOut = firestorePayload.actualClosedDate;
           }
 
+          const effOnlineJC = (
+            firestorePayload.onlineJobCardNo !== undefined
+              ? firestorePayload.onlineJobCardNo
+              : curr?.onlineJobCardNo || ""
+          ).toString().trim();
+
           const effClosed = (
             firestorePayload.actualClosedDate !== undefined
               ? firestorePayload.actualClosedDate
@@ -6426,7 +6443,9 @@ function gY() {
               : curr?.billNo || ""
           ).toString().trim();
 
-          if (effClosed && effBill) {
+          if (!effOnlineJC) {
+            firestorePayload.status = "pending";
+          } else if (effClosed && effBill) {
             firestorePayload.status = "Closed";
           } else if (
             firestorePayload.actualClosedDate !== undefined ||

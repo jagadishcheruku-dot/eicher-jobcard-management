@@ -452,6 +452,32 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
     });
   };
 
+  // Get next sequential job card number
+  const getNextJobCardNumber = (): number => {
+    const allNumbers: number[] = [];
+    allCards.forEach((c) => {
+      const jNo = c.jobNo || c.onlineJobCardNo;
+      if (jNo) {
+        const num = parseInt(String(jNo).replace(/\D/g, ""), 10);
+        if (!isNaN(num)) allNumbers.push(num);
+      }
+    });
+    return allNumbers.length > 0 ? Math.max(...allNumbers) + 1 : 1;
+  };
+
+  // Validate minimum data entry
+  const validateMinimumData = (card: any, draft: any): { valid: boolean; errorMsg: string } => {
+    const effCustName = (draft?.custName !== undefined ? draft.custName : card.custName || "").toString().trim();
+    const effChassisNo = (draft?.chassisNo !== undefined ? draft.chassisNo : card.chassisNo || "").toString().trim();
+    const effJobDate = (draft?.jobDate !== undefined ? draft.jobDate : card.jobDate || card.jobOpenDate || card.dateTimeIn || "").toString().trim();
+
+    if (!effCustName) return { valid: false, errorMsg: "Customer name is required" };
+    if (!effChassisNo) return { valid: false, errorMsg: "Chassis number is required" };
+    if (!effJobDate) return { valid: false, errorMsg: "Job date is required" };
+
+    return { valid: true, errorMsg: "" };
+  };
+
   // Save row logic
   const handleSaveRow = async (card: any) => {
     const draft = rowDrafts[card.id];
@@ -459,8 +485,24 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
     setSavingRows((prev) => ({ ...prev, [card.id]: true }));
     try {
+      // Validate minimum data
+      const validation = validateMinimumData(card, draft);
+      if (!validation.valid) {
+        alert(validation.errorMsg);
+        setSavingRows((prev) => ({ ...prev, [card.id]: false }));
+        return;
+      }
+
       const payload: any = { ...draft };
-      if (draft.jobNo !== undefined) payload.jobNo = draft.jobNo;
+
+      // Auto-generate jobNo if not provided (and card is new or jobNo is empty)
+      const effJobNo = (draft.jobNo !== undefined ? draft.jobNo : card.jobNo || "").toString().trim();
+      if (!effJobNo) {
+        payload.jobNo = getNextJobCardNumber();
+      } else if (draft.jobNo !== undefined) {
+        payload.jobNo = draft.jobNo;
+      }
+
       if (draft.onlineJobCardNo !== undefined) payload.onlineJobCardNo = draft.onlineJobCardNo;
       if (draft.hourMeter !== undefined) {
         payload.hourMeter = draft.hourMeter;
@@ -490,7 +532,13 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
         payload.billNo = draft.billNo;
       }
 
-      // Compute auto-status
+      // Compute auto-status based on onlineJobCardNo
+      const effOnlineJC = (
+        payload.onlineJobCardNo !== undefined
+          ? payload.onlineJobCardNo
+          : card.onlineJobCardNo || ""
+      ).toString().trim();
+
       const effClosed = (
         payload.actualClosedDate !== undefined
           ? payload.actualClosedDate
@@ -503,7 +551,17 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           : card.billNo || ""
       ).toString().trim();
 
-      payload.status = effClosed && effBill ? "Closed" : "Open";
+      // Status logic:
+      // - If onlineJobCardNo is empty: "pending"
+      // - If onlineJobCardNo is filled and closed date+bill present: "Closed"
+      // - Otherwise: "Open"
+      if (!effOnlineJC) {
+        payload.status = "pending";
+      } else if (effClosed && effBill) {
+        payload.status = "Closed";
+      } else {
+        payload.status = "Open";
+      }
 
       await onSave(card.id, payload);
 
@@ -652,13 +710,14 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   const processedCards = useMemo(() => {
     let result = [...cards];
 
-    // Status Filter: "all" | "Open" | "Closed" | "MissingOnline"
+    // Status Filter: "all" | "Open" | "Closed" | "pending" | "MissingOnline"
     if (statusFilter === "Open") {
-      result = result.filter((c) => !isCardClosed(c));
+      result = result.filter((c) => !isCardClosed(c) && c.status !== "pending");
     } else if (statusFilter === "Closed") {
       result = result.filter((c) => isCardClosed(c));
-    } else if (statusFilter === "MissingOnline") {
-      result = result.filter((c) => !(c.onlineJobCardNo || "").toString().trim());
+    } else if (statusFilter === "pending" || statusFilter === "MissingOnline") {
+      // Show cards with pending status or missing online job card no
+      result = result.filter((c) => c.status === "pending" || !(c.onlineJobCardNo || "").toString().trim());
     }
 
     // Branch & Supervisor Filters (Sri Gayathri Automotives)
