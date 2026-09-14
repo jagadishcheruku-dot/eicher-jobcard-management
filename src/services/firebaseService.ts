@@ -72,9 +72,16 @@ export const getCustomers = async () => {
       ...doc.data(),
     }));
     console.log(`✅ Loaded ${customers.length} customers from Firestore`);
+    if (customers.length === 0) {
+      console.warn("⚠️  No customers in Firestore. Check if: 1) Data was uploaded 2) Backend sync succeeded 3) Firestore rules are PUBLISHED");
+    }
     return customers;
-  } catch (error) {
-    console.error("❌ Error loading customers:", error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.error("❌ PERMISSION DENIED loading customers - Firestore Rules likely not PUBLISHED. Go to Firebase Console → Cloud Firestore → Rules → Click PUBLISH");
+    } else {
+      console.error("❌ Error loading customers:", error.code, error.message);
+    }
     return [];
   }
 };
@@ -119,9 +126,16 @@ export const getJobCards = async () => {
       ...doc.data(),
     }));
     console.log(`✅ Loaded ${jobCards.length} job cards from Firestore`);
+    if (jobCards.length === 0) {
+      console.warn("⚠️  No job cards in Firestore. Check if: 1) Job cards were created 2) Backend sync succeeded 3) Firestore rules are PUBLISHED");
+    }
     return jobCards;
-  } catch (error) {
-    console.error("❌ Error loading job cards:", error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.error("❌ PERMISSION DENIED loading job cards - Firestore Rules likely not PUBLISHED. Go to Firebase Console → Cloud Firestore → Rules → Click PUBLISH");
+    } else {
+      console.error("❌ Error loading job cards:", error.code, error.message);
+    }
     return [];
   }
 };
@@ -166,9 +180,16 @@ export const getComplaints = async () => {
       ...doc.data(),
     }));
     console.log(`✅ Loaded ${complaints.length} complaints from Firestore`);
+    if (complaints.length === 0) {
+      console.warn("⚠️  No complaints in Firestore. Check if: 1) Complaints were created 2) Backend sync succeeded 3) Firestore rules are PUBLISHED");
+    }
     return complaints;
-  } catch (error) {
-    console.error("❌ Error loading complaints:", error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.error("❌ PERMISSION DENIED loading complaints - Firestore Rules likely not PUBLISHED. Go to Firebase Console → Cloud Firestore → Rules → Click PUBLISH");
+    } else {
+      console.error("❌ Error loading complaints:", error.code, error.message);
+    }
     return [];
   }
 };

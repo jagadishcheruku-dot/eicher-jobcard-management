@@ -58,8 +58,12 @@ export async function syncCustomersToFirestore(customers: any[]) {
     await batch.commit();
     console.log(`✅ Synced ${customers.length} customers to Firestore`);
     return true;
-  } catch (error) {
-    console.warn('Error syncing customers to Firestore:', error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.warn('❌ PERMISSION DENIED syncing customers - Firestore Rules likely not PUBLISHED. Backend cannot sync data to Firestore.');
+    } else {
+      console.warn('Error syncing customers to Firestore:', error.code, error.message);
+    }
     return false;
   }
 }
@@ -87,8 +91,12 @@ export async function syncJobCardsToFirestore(jobCards: any[]) {
     await batch.commit();
     console.log(`✅ Synced ${jobCards.length} job cards to Firestore`);
     return true;
-  } catch (error) {
-    console.warn('Error syncing job cards to Firestore:', error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.warn('❌ PERMISSION DENIED syncing job cards - Firestore Rules likely not PUBLISHED. Backend cannot sync data to Firestore.');
+    } else {
+      console.warn('Error syncing job cards to Firestore:', error.code, error.message);
+    }
     return false;
   }
 }
@@ -116,8 +124,12 @@ export async function syncComplaintsToFirestore(complaints: any[]) {
     await batch.commit();
     console.log(`✅ Synced ${complaints.length} complaints to Firestore`);
     return true;
-  } catch (error) {
-    console.warn('Error syncing complaints to Firestore:', error);
+  } catch (error: any) {
+    if (error.code === 'permission-denied') {
+      console.warn('❌ PERMISSION DENIED syncing complaints - Firestore Rules likely not PUBLISHED. Backend cannot sync data to Firestore.');
+    } else {
+      console.warn('Error syncing complaints to Firestore:', error.code, error.message);
+    }
     return false;
   }
 }
