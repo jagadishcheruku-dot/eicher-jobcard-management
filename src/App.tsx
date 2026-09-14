@@ -11626,9 +11626,11 @@ ${b}`));
                                         i.jsx("button", {
                                           type: "button",
                                           onClick: () => {
-                                            const custToOpen = lookupSelectedCustomer;
+                                            const chassisNo = lookupSelectedCustomer.chassisNo || lookupSelectedCustomer["Chassis no"] || "";
                                             setLookupSelectedCustomer(null);
-                                            zg(custToOpen);
+                                            setJobCardsChassisFilter(chassisNo);
+                                            u("job_cards_data");
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
                                           },
                                           className: "flex-1 px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all cursor-pointer",
                                           children: "View Full Details"
