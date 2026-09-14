@@ -11358,32 +11358,32 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-red-50 border border-red-200 rounded-lg shadow-2xs transition-all" + (showLookupResults ? " p-2 space-y-1.5" : " p-1.5"),
+                                          "bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700 rounded-lg shadow-lg transition-all" + (showLookupResults ? " p-2.5 space-y-2" : " p-2"),
                                         children: [
                                           i.jsxs("div", {
                                             onClick: () => setShowLookupResults(!showLookupResults),
                                             className:
-                                              "flex items-center justify-between cursor-pointer hover:bg-red-100 px-1.5 py-0.5 rounded transition-colors",
+                                              "flex items-center justify-between cursor-pointer hover:bg-slate-700/50 px-1.5 py-0.5 rounded transition-colors",
                                             children: [
                                               i.jsxs("div", {
                                                 children: [
                                                   i.jsx("div", {
                                                     className:
-                                                      "text-[8px] font-extrabold text-red-900 uppercase leading-tight",
+                                                      "text-[9px] font-extrabold text-white uppercase leading-tight",
                                                     children:
                                                       "Eicher Followup",
                                                   }),
                                                   i.jsx("div", {
                                                     className:
-                                                      "text-[7px] font-bold text-red-700 underline",
+                                                      "text-[8px] font-bold text-slate-300",
                                                     children: "Quick Search",
                                                   }),
                                                 ],
                                               }),
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-red-600",
-                                                children: showLookupResults ? "🔽" : "📞",
+                                                  "text-lg font-black text-teal-400",
+                                                children: showLookupResults ? "🔽" : "🔍",
                                               }),
                                             ],
                                           }),
