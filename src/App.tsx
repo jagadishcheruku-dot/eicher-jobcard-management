@@ -1547,27 +1547,7 @@ function gY() {
         return false;
       }
     }),
-    [w, setMenuOrder] = ce.useState<string[]>(() => {
-      try {
-        const saved = typeof localStorage !== "undefined" ? localStorage.getItem("app_sidebar_menu_order") : null;
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const cleaned = parsed.filter(Boolean);
-            const expanded = cleaned.flatMap((item: string) =>
-              (item === "customers_and_jobcards" || item === "saved_cards") ? ["customer_data", "job_cards_data"] : [item]
-            );
-            const missing = DEFAULT_MENU_ORDER.filter((item) => !expanded.includes(item));
-            const finalOrder = Array.from(new Set([...expanded.filter((item) => DEFAULT_MENU_ORDER.includes(item)), ...missing]));
-            try {
-              localStorage.setItem("app_sidebar_menu_order", JSON.stringify(finalOrder));
-            } catch {}
-            return finalOrder;
-          }
-        }
-      } catch {}
-      return DEFAULT_MENU_ORDER;
-    }),
+    [w, setMenuOrder] = ce.useState<string[]>(DEFAULT_MENU_ORDER),
     [E, O] = ce.useState(!1);
 
     const saveMenuOrderToCloud = async (newOrder: string[], locked: boolean) => {

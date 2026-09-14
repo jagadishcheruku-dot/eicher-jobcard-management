@@ -37,13 +37,13 @@ export interface MenuOrderSettingsProps {
 
 export const DEFAULT_MENU_ORDER = [
   "dashboard",
+  "complaints",
   "new_entry",
   "customer_data",
   "job_cards_data",
   "service_camp_planning",
   "free_service_followup",
   "telecalling",
-  "complaints",
   "attendance",
   "reports",
   "databases",
