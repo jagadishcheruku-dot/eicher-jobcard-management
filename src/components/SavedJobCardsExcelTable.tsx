@@ -1123,18 +1123,18 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                       {isExpanded && filteredMonths.length > 0 && (
                         <div className="ml-4 space-y-0.5">
                           {filteredMonths.map((monthYear) => {
-                            const dates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear.split("-")[0]}`));
+                            const dates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear}`));
                             return (
                               <label key={monthYear} className="flex items-center justify-between p-1 hover:bg-emerald-50/50 rounded cursor-pointer text-[11px]">
                                 <div className="flex items-center gap-2 truncate pr-1">
                                   <input
                                     type="checkbox"
-                                    checked={dates.some(d => (columnFilters[colKey] || []).includes(d.value))}
+                                    checked={dates.length > 0 && dates.every(d => (columnFilters[colKey] || []).includes(d.value))}
                                     onChange={() => {
                                       setColumnFilters((prev) => {
                                         const curr = prev[colKey] || [];
-                                        const monthDates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear.split("-")[0]}`)).map(d => d.value);
-                                        const allSelected = monthDates.every(d => curr.includes(d));
+                                        const monthDates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear}`)).map(d => d.value);
+                                        const allSelected = monthDates.length > 0 && monthDates.every(d => curr.includes(d));
                                         const updated = allSelected
                                           ? curr.filter(x => !monthDates.includes(x))
                                           : [...new Set([...curr, ...monthDates])];

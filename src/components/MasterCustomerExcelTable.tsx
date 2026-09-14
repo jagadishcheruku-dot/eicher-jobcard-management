@@ -2206,17 +2206,17 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                       {isExpanded && filteredMonths.length > 0 && (
                                         <div className="ml-4 space-y-0.5">
                                           {filteredMonths.map((monthYear) => {
-                                            const dates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[1]}`));
+                                            const dates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear}`));
                                             return (
                                               <label key={monthYear} className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs">
                                                 <input
                                                   type="checkbox"
-                                                  checked={dates.some(d => (columnFilters[col.key] || []).includes(d))}
+                                                  checked={dates.length > 0 && dates.every(d => (columnFilters[col.key] || []).includes(d))}
                                                   onChange={() => {
                                                     setColumnFilters((prev) => {
                                                       const curr = prev[col.key] || [];
-                                                      const monthDates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[0]}`));
-                                                      const allSelected = monthDates.every(d => curr.includes(d));
+                                                      const monthDates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear}`));
+                                                      const allSelected = monthDates.length > 0 && monthDates.every(d => curr.includes(d));
                                                       const updated = allSelected
                                                         ? curr.filter(x => !monthDates.includes(x))
                                                         : [...new Set([...curr, ...monthDates])];
