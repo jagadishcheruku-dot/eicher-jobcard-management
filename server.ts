@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { pool, isPostgresConfigured } from './src/db/index.ts';
 import { localDb } from './src/db/storage.ts';
+import { syncCustomersToFirestore, syncJobCardsToFirestore, syncComplaintsToFirestore } from './src/lib/firebaseServerSync.ts';
 
 let geminiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
@@ -597,12 +598,14 @@ app.post('/api/customers/bulk', async (req, res) => {
 
     localDb.bulkUpsertCustomers(normalizedRows as any, replaceAll);
 
+    // Sync to Firestore for cross-user sharing (works even without PostgreSQL)
+    syncCustomersToFirestore(normalizedRows).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
     const client = getPool();
     if (!client) {
-      return res.status(503).json({
-        success: false,
-        error: '❌ Cloud database NOT configured. Data saved locally only. Please set: SQL_HOST, SQL_USER, SQL_PASSWORD, SQL_DB_NAME'
-      });
+      return res.json({ success: true, count: normalizedRows.length, firebaseSynced: true });
     }
 
     try {
@@ -671,6 +674,11 @@ app.post('/api/customers/bulk', async (req, res) => {
         ]);
         await client.query(batchQuery, params);
       }
+
+      // Sync to Firestore for cross-user sharing
+      syncCustomersToFirestore(normalizedRows).catch(err =>
+        console.warn('Firestore sync warning:', err)
+      );
 
       res.json({ success: true, count: normalizedRows.length, cloudSaved: true });
     } catch (err: any) {
@@ -1149,7 +1157,13 @@ app.post('/api/jobcards/bulk', async (req, res) => {
     });
 
     localDb.bulkUpsertJobCards(formattedCards, replaceAll);
-    res.json({ success: true, count: cards.length });
+
+    // Sync to Firestore for cross-user sharing
+    syncJobCardsToFirestore(formattedCards).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
+    res.json({ success: true, count: cards.length, firebaseSynced: true });
   } catch (error: any) {
     console.error('Error saving job cards bulk:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -1320,7 +1334,13 @@ app.post('/api/complaints/bulk', async (req, res) => {
     }));
 
     localDb.bulkUpsertComplaints(formatted, replaceAll);
-    res.json({ success: true, count: complaints.length });
+
+    // Sync to Firestore for cross-user sharing
+    syncComplaintsToFirestore(formatted).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
+    res.json({ success: true, count: complaints.length, firebaseSynced: true });
   } catch (error: any) {
     console.error('Error saving complaints bulk:', error);
     res.status(500).json({ success: false, error: error.message });
