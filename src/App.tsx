@@ -40,6 +40,7 @@ import {
 } from "firebase/auth";
 import { auth as ey, db as firestoreDb } from "./firebase";
 import { isSupabaseConfigured } from "./lib/supabase";
+import { liveCollection, onLiveSnapshot } from "./lib/liveSync";
 
 // Once Supabase holds the records, the direct Firestore reads and listeners in
 // this file would keep pushing the old copies into the UI alongside them. They
@@ -3099,10 +3100,10 @@ function gY() {
     return () => window.removeEventListener("storage", handleStorage);
   }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "jobcards"),
-            b = Gp(
+          const d = liveCollection("job_cards"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j: any[] = [];
@@ -3156,10 +3157,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "complaints"),
-            b = Gp(
+          const d = liveCollection("complaints"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = [];
@@ -3204,10 +3205,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "staff"),
-            b = Gp(
+          const d = liveCollection("staff"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = [];
@@ -3253,10 +3254,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "attendance"),
-            b = Gp(
+          const d = liveCollection("attendance"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 const j = {};
@@ -3290,10 +3291,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "customers"),
-            b = Gp(
+          const d = liveCollection("customers"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 if (v.empty) {
@@ -3335,10 +3336,10 @@ function gY() {
         }
     }, []),
     ce.useEffect(() => {
-      if (kt)
+      if (isSupabaseConfigured)
         try {
-          const d = ci(kt, "spares_master"),
-            b = Gp(
+          const d = liveCollection("spares"),
+            b = onLiveSnapshot(
               d,
               (v) => {
                 if (!v.empty) {

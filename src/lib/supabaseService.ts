@@ -103,6 +103,13 @@ const readCache = new Map<string, { at: number; rows: Promise<any[]> }>();
 // truncate the job card and spares tables.
 const PAGE_SIZE = 1000;
 
+// Live updates must see the change that woke them, so this skips the read
+// cache rather than returning what was read moments earlier.
+export async function readTableRows(table: string): Promise<any[]> {
+  readCache.delete(table);
+  return readAll(table);
+}
+
 async function readAll(table: string): Promise<any[]> {
   const cached = readCache.get(table);
   if (cached && Date.now() - cached.at < READ_CACHE_MS) return cached.rows;
