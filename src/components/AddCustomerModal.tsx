@@ -584,7 +584,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                       const newVillage = prompt(
                         isTe ? "కొత్త గ్రామం పేరు నమోదు చేయండి:" : "Enter new village name:"
                       );
-                      if (newVillage) handleAddVillage();
+                      if (newVillage) handleAddVillage(newVillage);
                     }}
                     className="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
                     title={isTe ? "కొత్త గ్రామం జోడించండి" : "Add new village"}
@@ -619,7 +619,7 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                       const newMandal = prompt(
                         isTe ? "కొత్త మండలం పేరు నమోదు చేయండి:" : "Enter new mandal name:"
                       );
-                      if (newMandal) handleAddMandal();
+                      if (newMandal) handleAddMandal(newMandal);
                     }}
                     className="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
                     title={isTe ? "కొత్త మండలం జోడించండి" : "Add new mandal"}
