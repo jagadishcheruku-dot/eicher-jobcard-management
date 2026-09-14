@@ -716,8 +716,36 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           return dateB - dateA;
         });
         const lastCard = sorted[0];
+
+        // Check if it's a free service
+        const freeServiceValue = lastCard.freeServiceList || lastCard.free_service_list || "";
+        if (freeServiceValue && String(freeServiceValue).trim()) {
+          // It's a free service - show the service count
+          const freeServiceStr = String(freeServiceValue).trim();
+          // Count total free services for this customer
+          const freeServices = matchingCards.filter((card) => {
+            const freeVal = card.freeServiceList || card.free_service_list || "";
+            return freeVal && String(freeVal).trim();
+          });
+          const ordinalNum = freeServices.length;
+          const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+          const ordinal = ordinals[ordinalNum - 1] || `${ordinalNum}th`;
+          return `${ordinal} Free Service`;
+        }
+
+        // It's a paid service - show warranty status or service type
+        const warrantyStatus = lastCard.warrantyStatus || lastCard.warranty_status || "";
+        const underWty = lastCard.underWarranty || lastCard.under_warranty || false;
         const serviceType = lastCard.serviceType || lastCard.service_type || "";
-        return serviceType ? String(serviceType).trim() : "";
+
+        let statusPart = "Paid Service";
+        if (underWty || (warrantyStatus && String(warrantyStatus).toLowerCase().includes("wty"))) {
+          statusPart = "Paid Service (Under Wty)";
+        } else if (warrantyStatus && String(warrantyStatus).trim()) {
+          statusPart = `Paid Service (${String(warrantyStatus).trim()})`;
+        }
+
+        return statusPart;
       }
       default: {
         const val = cust[colKey] !== undefined ? cust[colKey] : (fd && fd[colKey] !== undefined ? fd[colKey] : "");
