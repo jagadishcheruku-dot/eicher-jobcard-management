@@ -1917,57 +1917,6 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         </div>
       </div>
 
-      {/* Warranty Status & Chronological Sorting Legend */}
-      <div className="w-full flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 bg-gradient-to-r from-slate-100 via-white to-slate-100 border border-slate-200/90 rounded-xl shadow-2xs text-xs">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="font-extrabold text-slate-900 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-purple-600" />
-            {isTe ? "వారంటీ స్థితి సూచిక:" : "Warranty Status Legend:"}
-          </span>
-          {/* Out of Warranty Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              setQuickFilter(quickFilter === "out_of_wty" ? "all" : "out_of_wty");
-              setCurrentPage(1);
-            }}
-            className="inline-flex items-center gap-1.5 font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-2xs"
-            title={isTe ? "డెలివరీ అయి 2 సంవత్సరాలు దాటిన కస్టమర్లు (వారంటీ ముగిసింది)" : "Click to view customers out of 2-year warranty"}
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse shrink-0" />
-            <span className="font-extrabold">{isTe ? "ఎరుపు రంగు (Red):" : "Red Color:"}</span>
-            <span>{isTe ? "2 ఏళ్లు దాటినవి (Out of Warranty)" : "> 2 Years from Delivery (Out of Warranty)"}</span>
-            <span className="bg-red-200/80 text-red-900 text-[10px] font-mono px-1.5 py-0.2 rounded font-black">
-              {metrics.outOfWtyCount}
-            </span>
-          </button>
-          {/* In Warranty Pill */}
-          <button
-            type="button"
-            onClick={() => {
-              setQuickFilter(quickFilter === "in_wty" ? "all" : "in_wty");
-              setCurrentPage(1);
-            }}
-            className="inline-flex items-center gap-1.5 font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-2xs"
-            title={isTe ? "డెలివరీ అయి 2 సంవత్సరాల లోపు ఉన్న కస్టమర్లు (వారంటీ పరిధిలో)" : "Click to view customers in warranty (within 2 years)"}
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-900 shrink-0" />
-            <span className="font-extrabold">{isTe ? "నలుపు రంగు (Black):" : "Black Color:"}</span>
-            <span>{isTe ? "2 ఏళ్ల లోపువి (In Warranty)" : "≤ 2 Years (In Warranty)"}</span>
-            <span className="bg-slate-200 text-slate-800 text-[10px] font-mono px-1.5 py-0.2 rounded font-black">
-              {metrics.inWtyCount}
-            </span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 text-[11px] text-slate-600 font-bold ml-auto">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-900 rounded">
-            <span>📅</span>
-            <span>{isTe ? "డెలివరీ క్రమం: తాజా డెలివరీల నుండి పాత తేదీల వైపు (Recent → Oldest)" : "Delivery Sorting: Recent Deliveries First"}</span>
-          </span>
-        </div>
-      </div>
-
       {/* 3. MAIN SPREADSHEET TABLE (Excel Style with Sticky Headers and Action Column) */}
       <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
         <table className="w-full border-collapse text-left text-slate-900 min-w-[2800px] text-xs">

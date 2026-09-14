@@ -85,7 +85,7 @@ import { JobCardViewModal } from "./components/JobCardViewModal";
 import { formatDisplayDate, getCustomerDeliveryTimestamp, isDeliveryOutOfWarranty } from "./utils/dateFormatter";
 import { LanguageSelectionModal } from "./components/LanguageSelectionModal";
 import { CustomerSearchModal } from "./components/CustomerSearchModal";
-import { MenuOrderSettings, DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
+import { DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
 import BranchLoginView from "./components/BranchLoginView";
 import {
   DEFAULT_USERS,
@@ -11072,80 +11072,6 @@ ${b}`));
                             children: [
                               i.jsxs("div", {
                                 className:
-                                  "flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-3xl shadow-sm",
-                                children: [
-                                  i.jsxs("div", {
-                                    className: "flex items-center gap-3",
-                                    children: [
-                                      i.jsx("div", {
-                                        className: "w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-lg shrink-0 shadow-md shadow-blue-600/20",
-                                        children: "📊",
-                                      }),
-                                      i.jsx("h1", {
-                                        className:
-                                          "text-lg font-black text-slate-900 tracking-tight",
-                                        children: "Dashboard",
-                                      }),
-                                    ],
-                                  }),
-                                  i.jsxs("div", {
-                                    className:
-                                      "flex flex-wrap items-center gap-2",
-                                    children: [
-                                      i.jsxs("button", {
-                                        type: "button",
-                                        onClick: () => setShowCustomerSearchModal(true),
-                                        className:
-                                          "px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-[12px] rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20",
-                                        children: [
-                                          i.jsx("span", { children: "🔍" }),
-                                          " Find",
-                                        ],
-                                      }),
-                                      i.jsxs("button", {
-                                        type: "button",
-                                        onClick: () => {
-                                          (Di(!0),
-                                            eo(!0),
-                                            to(!0),
-                                            Za(!0),
-                                            cc(!0),
-                                            Vc(!0));
-                                        },
-                                        className:
-                                          "px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[12px] rounded-full transition-colors cursor-pointer flex items-center gap-1.5",
-                                        children: [
-                                          i.jsx(Xs, {
-                                            className: "w-3.5 h-3.5",
-                                          }),
-                                          " Expand All",
-                                        ],
-                                      }),
-                                      i.jsxs("button", {
-                                        type: "button",
-                                        onClick: () => {
-                                          (Di(!1),
-                                            eo(!1),
-                                            to(!1),
-                                            Za(!1),
-                                            cc(!1),
-                                            Vc(!1));
-                                        },
-                                        className:
-                                          "px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[12px] rounded-full transition-colors cursor-pointer flex items-center gap-1.5",
-                                        children: [
-                                          i.jsx(bn, {
-                                            className: "w-3.5 h-3.5",
-                                          }),
-                                          " Minimize",
-                                        ],
-                                      }),
-                                    ],
-                                  }),
-                                ],
-                              }),
-                              i.jsxs("div", {
-                                className:
                                   "bg-white p-2.5 rounded-2xl shadow-sm flex flex-wrap items-center gap-2 text-xs",
                                 children: [
                                   i.jsxs("button", {
@@ -20256,40 +20182,6 @@ ${b}`));
                                 "w-full bg-white p-5 rounded-3xl shadow-sm space-y-6 print:hidden",
                               children: [
                                 i.jsxs("div", {
-                                  className: "border-b pb-3",
-                                  children: [
-                                    i.jsxs("h2", {
-                                      className:
-                                        "text-base font-bold text-slate-900 flex items-center gap-2",
-                                      children: [
-                                        i.jsx(Jl, {
-                                          className: "w-5 h-5 text-emerald-600",
-                                        }),
-                                        e === "te"
-                                          ? " మాస్టర్ డేటాబేస్ & సిస్టమ్ సెట్టింగ్స్"
-                                          : " Master Databases & System Settings",
-                                      ],
-                                    }),
-                                    i.jsx("p", {
-                                      className:
-                                        "text-xs text-slate-500 font-medium",
-                                      children:
-                                        e === "te"
-                                          ? "కస్టమర్ రికార్డులు, స్పేర్స్ ధరల జాబితా, జాబ్ కార్డుల ఎక్సెల్ డేటా మరియు మెనూ ఆర్డర్ సెట్టింగ్స్ నిర్వహణ."
-                                          : "Manage Customer Records, Spares Price Lists, Job Cards Import/Export Excel & CSV databases, and Menu Navigation Settings.",
-                                    }),
-                                  ],
-                                }),
-                                i.jsx(MenuOrderSettings, {
-                                  language: e,
-                                  menuOrder: w,
-                                  setMenuOrder: setMenuOrder,
-                                  isLocked: isMenuLocked,
-                                  setIsLocked: setIsMenuLocked,
-                                  onSaveToCloud: saveMenuOrderToCloud,
-                                  defaultOrder: DEFAULT_MENU_ORDER,
-                                }),
-                                i.jsxs("div", {
                                   className:
                                     "grid grid-cols-1 md:grid-cols-3 gap-6",
                                   children: [
@@ -22382,50 +22274,9 @@ ${b}`));
                             i.jsxs("div", {
                               className: "w-full space-y-3",
                               children: [
-                                c === "customer_data" && i.jsxs("div", {
+                                c === "job_cards_data" && jobCardsChassisFilter && i.jsxs("div", {
                                   className: "flex flex-wrap items-center justify-between gap-2.5 bg-white p-3 md:p-4 rounded-3xl shadow-sm",
                                   children: [
-                                    i.jsxs("div", {
-                                      className: "flex items-center gap-3",
-                                      children: [
-                                        i.jsx("div", {
-                                          className: "w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-base shrink-0 shadow-md shadow-blue-600/20",
-                                          children: "👤"
-                                        }),
-                                        i.jsx("div", {
-                                          className: "text-base font-black text-slate-900",
-                                          children: e === "te" ? "కస్టమర్ డేటా" : "Customer Data"
-                                        }),
-                                      ]
-                                    }),
-                                    i.jsxs("button", {
-                                      type: "button",
-                                      onClick: T,
-                                      className: "px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-full text-xs font-black flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all cursor-pointer",
-                                      title: e === "te" ? "కొత్త కస్టమర్ నమోదు" : "Add New Customer",
-                                      children: [
-                                        i.jsx($p, { className: "w-3.5 h-3.5 shrink-0" }),
-                                        i.jsx("span", { children: e === "te" ? "కొత్త కస్టమర్" : "Add Customer" })
-                                      ]
-                                    })
-                                  ]
-                                }),
-                                c === "job_cards_data" && i.jsxs("div", {
-                                  className: "flex flex-wrap items-center justify-between gap-2.5 bg-white p-3 md:p-4 rounded-3xl shadow-sm",
-                                  children: [
-                                    i.jsxs("div", {
-                                      className: "flex items-center gap-3",
-                                      children: [
-                                        i.jsx("div", {
-                                          className: "w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-base shrink-0 shadow-md shadow-orange-600/20",
-                                          children: "🔧"
-                                        }),
-                                        i.jsx("div", {
-                                          className: "text-base font-black text-slate-900",
-                                          children: e === "te" ? "జాబ్ కార్డ్ డేటా" : "Job Cards Data"
-                                        }),
-                                      ]
-                                    }),
                                     jobCardsChassisFilter && i.jsxs("div", {
                                       className: "flex items-center gap-1.5 bg-amber-100 text-amber-900 font-bold px-3 py-1.5 rounded-full text-xs",
                                       children: [

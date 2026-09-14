@@ -1071,50 +1071,6 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
       {/* EXCEL SPREADSHEET TOOLBAR */}
       <div className="bg-slate-50 text-slate-800 p-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 pr-3">
-            <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-full">
-              {processedCards.length} {isTe ? "కార్డులు" : "records"}
-            </span>
-          </div>
-
-          {/* Row Height / Density */}
-          <div className="flex items-center gap-1.5">
-            <div className="inline-flex rounded-full bg-white p-1 text-xs">
-              <button
-                type="button"
-                onClick={() => setRowDensity("compact")}
-                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
-                  rowDensity === "compact"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                🤏 Compact
-              </button>
-              <button
-                type="button"
-                onClick={() => setRowDensity("normal")}
-                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
-                  rowDensity === "normal"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                ↔️ Normal
-              </button>
-              <button
-                type="button"
-                onClick={() => setRowDensity("spacious")}
-                className={`px-2.5 py-1 rounded-full font-bold cursor-pointer transition-all ${
-                  rowDensity === "spacious"
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                ↕️ Spacious
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Right Controls: Lock/Unlock 🔒, Clear Filters, Export XLSX */}
