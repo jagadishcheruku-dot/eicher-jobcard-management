@@ -95,6 +95,7 @@ import { LanguageSelectionModal } from "./components/LanguageSelectionModal";
 import { CustomerSearchModal } from "./components/CustomerSearchModal";
 import { DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
 import BranchLoginView from "./components/BranchLoginView";
+import { ReportsAnalyticsDashboard } from "./components/ReportsAnalyticsDashboard";
 import {
   DEFAULT_USERS,
   DEFAULT_BRANCHES,
@@ -2499,6 +2500,7 @@ function gY() {
         return {};
       }
     }),
+    [partSearchInput, setPartSearchInput] = ce.useState(""),
     [G0, bc] = ce.useState({
       text: "No customer file uploaded yet.",
       isSuccess: !1,
@@ -2605,8 +2607,15 @@ function gY() {
         ) {
           const N = {};
           (b.value.forEach((R) => {
-            const S = rl(R.full_data || R),
+            const fullData = R.data || R.full_data || R;
+            const S = rl(fullData),
               ie = R.part_no || R.partNo;
+
+            // Preserve the column fields from the database record
+            if (R.part_no) S.part_no = R.part_no;
+            if (R.part_desc) S.part_desc = R.part_desc;
+            if (R.part_desc) S.description = R.part_desc; // Also set description for lookup
+
             ie && ((S.__partNoDisplay = ie), (N[Ct(ie)] = S));
           }),
             gc(N),
@@ -5345,27 +5354,94 @@ function gY() {
       const b = Ct(d);
       return b && Wo[b] ? Wo[b] : null;
     },
+    // Get filtered part suggestions (max 10) based on search input
+    getPartSuggestions = (searchInput) => {
+      if (!searchInput || !Wo) return [];
+      const query = String(searchInput).toLowerCase().trim();
+      const suggestions = [];
+
+      Object.values(Wo).forEach((spare) => {
+        if (suggestions.length >= 10) return; // Limit to 10 results
+
+        const partNo = String(spare.__partNoDisplay || Kp(spare, "partNo") || "").toLowerCase().trim();
+        const desc = String(Kp(spare, "desc") || "").toLowerCase().trim();
+        const rate = Kp(spare, "rate") || "";
+
+        // Match by part number or description
+        if (partNo.includes(query) || desc.includes(query)) {
+          suggestions.push({
+            partNo: spare.__partNoDisplay || Kp(spare, "partNo") || "",
+            desc: Kp(spare, "desc") || "",
+            rate: rate,
+            displayText: desc ? `${desc} (${partNo})` : partNo,
+            value: spare.__partNoDisplay || Kp(spare, "partNo") || ""
+          });
+        }
+      });
+
+      return suggestions;
+    },
     Tg = (d, b) => {
       let v = [...ri];
       v[d].partNo = b;
-      const j = O1(b),
-        I = Dg(j) || Dg(b);
+
+      // Update part search input for datalist filtering
+      setPartSearchInput(b);
+
+      // Extract part number from various formats
+      const j = O1(b);
+
+      // Look up spare part by normalized part number
+      let I = Dg(j) || Dg(b);
+
+      // If not found by normalized lookup, try direct lookup
+      if (!I && Wo) {
+        Object.keys(Wo).forEach((key) => {
+          const spare = Wo[key];
+          const sparePartNo = spare.__partNoDisplay || Kp(spare, "partNo") || key;
+          if (String(sparePartNo).toLowerCase().trim() === String(b).toLowerCase().trim()) {
+            I = spare;
+          }
+        });
+      }
+
       if (I) {
-        const N = I.__partNoDisplay || Kp(I, "partNo") || j || b,
-          R = Kp(I, "desc"),
-          S = Kp(I, "rate");
-        (N && (v[d].partNo = N), R && (v[d].desc = R), S && (v[d].rate = S));
-        const ie = parseFloat(v[d].qty) || 0,
-          le = parseFloat(S || v[d].rate) || 0;
-        v[d].wty
-          ? (v[d].amount = "0")
-          : ie && le && (v[d].amount = (ie * le).toFixed(2));
+        const N = I.__partNoDisplay || Kp(I, "partNo") || j || b;
+        let R = Kp(I, "desc"); // description
+        let S = Kp(I, "rate"); // price/rate
+
+        // Fallback: check for other possible field names
+        if (!R) R = I.description || I.itemDescription || I.name || I.itemName || I.part_desc || "";
+        if (!S) S = I.price || I.unitPrice || I.unit_price || I.mrp || I.sellingprice || I.selling_price || "";
+
+        // Update the row with looked-up values
+        if (N) v[d].partNo = N;
+        if (R) v[d].desc = R;
+        if (S) v[d].rate = String(S);
+
+        // Auto-calculate amount if qty and rate present
+        const ie = parseFloat(v[d].qty) || 0;
+        const le = parseFloat(S || v[d].rate) || 0;
+        if (v[d].wty) {
+          v[d].amount = "0";
+        } else if (ie && le) {
+          v[d].amount = (ie * le).toFixed(2);
+        }
       }
       Il(au(v));
     },
     $0 = (d, b) => {
       let v = [...ri];
-      ((v[d].desc = b), Il(au(v)));
+      v[d].desc = b;
+      // Auto-calculate amount if qty and rate present
+      const ie = parseFloat(v[d].qty) || 0;
+      const le = parseFloat(v[d].rate) || 0;
+      if (v[d].wty) {
+        v[d].amount = "0";
+      } else if (ie && le) {
+        v[d].amount = (ie * le).toFixed(2);
+      }
+      Il(au(v));
     },
     yp = (d, b, v) => {
       let j = [...ri];
@@ -6357,6 +6433,34 @@ function gY() {
           }
       }
     },
+    handleUpdateComplaintStatus = async (complaintId, newStatus) => {
+      if (!complaintId || !newStatus) return;
+      const complaint = Fs.find(c => c.id === complaintId);
+      if (!complaint) return;
+
+      const updatedComplaint = { ...complaint, status: newStatus };
+      Ga(prev => prev.map(c => c.id === complaintId ? updatedComplaint : c));
+
+      try {
+        await Rs.saveComplaint(updatedComplaint);
+      } catch (err) {
+        console.warn("Cloud SQL complaint status update:", err);
+      }
+
+      if (mr && ss) {
+        try {
+          await af(ss, "Complaints", Dx, updatedComplaint);
+        } catch (err) {
+          console.error("Error updating complaint status in Sheets:", err);
+        }
+      } else if (kt) {
+        try {
+          await xu(Qs(kt, "complaints", complaintId), { status: newStatus }, { merge: true });
+        } catch (err) {
+          console.error("Error updating complaint status in Firestore:", err);
+        }
+      }
+    },
     handleUpdateJobCardRow = async (cardId, updatedFields) => {
       Oa((prev) =>
         prev.map((item) => {
@@ -6370,7 +6474,16 @@ function gY() {
               merged.billNo = updatedFields.billNo;
             }
 
-            // Auto-Status rule: closed date AND bill no enter cheyyaga status closed lo ki Ravali, ledante open lo undali
+            // Auto-Status rule:
+            // - If onlineJobCardNo is empty: "pending"
+            // - If onlineJobCardNo is filled and closed date+bill present: "Closed"
+            // - Otherwise: "Open"
+            const effOnlineJC = (
+              updatedFields.onlineJobCardNo !== undefined
+                ? updatedFields.onlineJobCardNo
+                : merged.onlineJobCardNo || ""
+            ).toString().trim();
+
             const effClosed = (
               merged.actualClosedDate ||
               merged.dateTimeOut ||
@@ -6378,7 +6491,9 @@ function gY() {
             ).toString().trim();
             const effBill = (merged.billNo || "").toString().trim();
 
-            if (effClosed && effBill) {
+            if (!effOnlineJC) {
+              merged.status = "pending";
+            } else if (effClosed && effBill) {
               merged.status = "Closed";
             } else if (
               updatedFields.actualClosedDate !== undefined ||
@@ -6415,6 +6530,12 @@ function gY() {
             firestorePayload.dateTimeOut = firestorePayload.actualClosedDate;
           }
 
+          const effOnlineJC = (
+            firestorePayload.onlineJobCardNo !== undefined
+              ? firestorePayload.onlineJobCardNo
+              : curr?.onlineJobCardNo || ""
+          ).toString().trim();
+
           const effClosed = (
             firestorePayload.actualClosedDate !== undefined
               ? firestorePayload.actualClosedDate
@@ -6426,7 +6547,9 @@ function gY() {
               : curr?.billNo || ""
           ).toString().trim();
 
-          if (effClosed && effBill) {
+          if (!effOnlineJC) {
+            firestorePayload.status = "pending";
+          } else if (effClosed && effBill) {
             firestorePayload.status = "Closed";
           } else if (
             firestorePayload.actualClosedDate !== undefined ||
@@ -14870,28 +14993,18 @@ ${b}`));
                                             children: [
                                               i.jsx("datalist", {
                                                 id: "partNoList",
-                                                children: Object.values(Wo).map(
-                                                  (d, b) => {
-                                                    const v =
-                                                        d.__partNoDisplay ||
-                                                        Kp(d, "partNo") ||
-                                                        "",
-                                                      j = Kp(d, "desc") || "",
-                                                      I = Kp(d, "rate") || "";
+                                                children: (getPartSuggestions(partSearchInput) || []).map(
+                                                  (suggestion, idx) => {
                                                     return i.jsx(
-                                                      wR.Fragment,
+                                                      "option",
                                                       {
-                                                        key: `p-${b}`,
-                                                        children:
-                                                          v &&
-                                                          i.jsx("option", {
-                                                            value: v,
-                                                            children: j
-                                                              ? `${j} (₹${I || "0"})`
-                                                              : v,
-                                                          }),
+                                                        key: `p-${idx}`,
+                                                        value: suggestion.value,
+                                                        children: suggestion.displayText
+                                                          ? `${suggestion.displayText} (₹${suggestion.rate || "0"})`
+                                                          : suggestion.value,
                                                       },
-                                                      `p-${b}`,
+                                                      `p-${idx}`,
                                                     );
                                                   },
                                                 ),
@@ -15645,11 +15758,52 @@ ${b}`));
                                                     i.jsxs("div", {
                                                       className: "flex-1",
                                                       children: [
-                                                        i.jsx("div", {
-                                                          className:
-                                                            "text-xl md:text-2xl font-black text-blue-900 tracking-tight leading-none mb-0.5",
-                                                          children:
-                                                            "SRI GAYATHRI AUTOMOTIVES",
+                                                        i.jsxs("div", {
+                                                          className: "flex items-center gap-3 mb-2",
+                                                          children: [
+                                                            i.jsx("svg", {
+                                                              width: "52",
+                                                              height: "52",
+                                                              viewBox: "0 0 100 100",
+                                                              className: "flex-shrink-0",
+                                                              children: [
+                                                                i.jsx("circle", {
+                                                                  cx: "50",
+                                                                  cy: "50",
+                                                                  r: "48",
+                                                                  fill: "#DC2626",
+                                                                  key: "bg",
+                                                                }),
+                                                                i.jsx("text", {
+                                                                  x: "50",
+                                                                  y: "60",
+                                                                  textAnchor: "middle",
+                                                                  fontSize: "50",
+                                                                  fontWeight: "900",
+                                                                  fill: "white",
+                                                                  fontFamily: "Arial, sans-serif",
+                                                                  children: "E",
+                                                                  key: "text",
+                                                                }),
+                                                              ],
+                                                            }),
+                                                            i.jsxs("div", {
+                                                              children: [
+                                                                i.jsx("div", {
+                                                                  className:
+                                                                    "text-xl font-black text-blue-900 tracking-tight leading-none",
+                                                                  children:
+                                                                    "SRI GAYATHRI",
+                                                                }),
+                                                                i.jsx("div", {
+                                                                  className:
+                                                                    "text-lg font-black text-blue-900 tracking-tight leading-none",
+                                                                  children:
+                                                                    "AUTOMOTIVES",
+                                                                }),
+                                                              ],
+                                                            }),
+                                                          ],
                                                         }),
                                                         i.jsx("div", {
                                                           className:
@@ -18077,482 +18231,16 @@ ${b}`));
                                         }),
                                       ],
                                     }),
-                                    Xo.length === 0
-                                      ? i.jsx("div", {
-                                          className:
-                                            "text-center py-6 text-slate-400 text-xs font-semibold",
-                                          children:
-                                            "No job cards found matching this selected KPI category and search criteria.",
-                                        })
-                                      : i.jsxs("div", {
-                                          className: "space-y-2",
-                                          children: [
-                                            i.jsx("div", {
-                                              className:
-                                                "overflow-x-auto border border-slate-200 rounded-lg max-h-[500px]",
-                                              children: i.jsxs("table", {
-                                                className:
-                                                  "w-full text-left text-xs text-slate-700 min-w-max relative border-separate border-spacing-0",
-                                                children: [
-                                                  i.jsx("thead", {
-                                                    className:
-                                                      "bg-slate-100 text-slate-800 font-extrabold uppercase text-[10px] shadow-sm",
-                                                    children: i.jsx("tr", {
-                                                      children: [
-                                                        {
-                                                          key: "slNo",
-                                                          label: "#",
-                                                        },
-                                                        {
-                                                          key: "jobNo",
-                                                          label: "Job No",
-                                                        },
-                                                        {
-                                                          key: "jobDate",
-                                                          label: "Job Date",
-                                                        },
-                                                        {
-                                                          key: "customerInfo",
-                                                          label:
-                                                            "Customer Name & Village",
-                                                        },
-                                                        {
-                                                          key: "mobile",
-                                                          label: "Mobile",
-                                                        },
-                                                        {
-                                                          key: "modelInfo",
-                                                          label:
-                                                            "Model & Chassis No",
-                                                        },
-                                                        {
-                                                          key: "servicePlace",
-                                                          label:
-                                                            "Service Place",
-                                                        },
-                                                        {
-                                                          key: "mechanic",
-                                                          label: "Technician",
-                                                        },
-                                                        {
-                                                          key: "supervisor",
-                                                          label: "Supervisor",
-                                                        },
-                                                        {
-                                                          key: "status",
-                                                          label: "Status",
-                                                        },
-                                                        {
-                                                          key: "spares",
-                                                          label: "Spares (₹)",
-                                                        },
-                                                        {
-                                                          key: "labour",
-                                                          label: "Labour (₹)",
-                                                        },
-                                                        {
-                                                          key: "total",
-                                                          label: "Total (₹)",
-                                                        },
-                                                      ].map((d) =>
-                                                        i.jsxs(
-                                                          "th",
-                                                          {
-                                                            style: Gr(d.key, !0)
-                                                              .style,
-                                                            className: `p-2 border-r border-b-2 border-slate-300 relative select-none text-center ${Gr(d.key, !0).className}`,
-                                                            children: [
-                                                              d.label,
-                                                              i.jsx("div", {
-                                                                onMouseDown: (
-                                                                  b,
-                                                                ) =>
-                                                                  fg(d.key, b),
-                                                                className:
-                                                                  "absolute right-0 top-0 bottom-0 w-3 cursor-col-resize group flex items-center justify-center z-30 hover:bg-indigo-500/20 active:bg-indigo-600/40",
-                                                                title: `Drag to resize ${d.label}`,
-                                                                children: i.jsx(
-                                                                  "div",
-                                                                  {
-                                                                    className:
-                                                                      "w-[2px] h-full bg-slate-300 group-hover:bg-indigo-600 group-active:bg-indigo-700",
-                                                                  },
-                                                                ),
-                                                              }),
-                                                            ],
-                                                          },
-                                                          d.key,
-                                                        ),
-                                                      ),
-                                                    }),
-                                                  }),
-                                                  i.jsx("tbody", {
-                                                    className:
-                                                      "divide-y divide-slate-200 font-medium bg-white",
-                                                    children: wc.map((d, b) => {
-                                                       const rowKey = d.id || d.chassisNo || b;
-                                                      const v =
-                                                        (Qo - 1) *
-                                                          (Ia === -1
-                                                            ? Xo.length
-                                                            : Ia) +
-                                                        b +
-                                                        1;
-                                                      const le =
-                                                        vl === "compact"
-                                                          ? "p-1 text-[11px]"
-                                                          : vl === "spacious"
-                                                            ? "p-3 text-xs"
-                                                            : "p-2 text-xs";
-                                                      const R =
-                                                        d.mechanic || "";
-                                                      const S =
-                                                        d.wsIncharge ||
-                                                        d.supervisor ||
-                                                        "";
-                                                      const ie =
-                                                        d.status || "Open";
-                                                      const j = Number(
-                                                        d.sparesTotal ||
-                                                          d.totalSparesAmount ||
-                                                          d.sparesAmount ||
-                                                          d.spares ||
-                                                          0,
-                                                      );
-                                                      const I = Number(
-                                                        d.labourTotal ||
-                                                          d.totalLabourAmount ||
-                                                          d.labourAmount ||
-                                                          d.labour ||
-                                                          0,
-                                                      );
-                                                      const N = j + I;
-                                                      return i.jsxs(
-                                                        "tr",
-                                                        {
-                                                          key: b,
-                                                          className:
-                                                            "group transition-colors",
-                                                          children: [
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("slNo")
-                                                                  .style,
-                                                              className: `${le} text-center text-slate-400 font-bold border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("slNo").className}`,
-                                                              children: v,
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("jobNo")
-                                                                  .style,
-                                                              className: `${le} font-mono font-bold text-indigo-900 border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("jobNo").className}`,
-                                                              children:
-                                                                d.jobNo ||
-                                                                d.onlineJobCardNo ||
-                                                                "—",
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("jobDate")
-                                                                  .style,
-                                                              className: `${le} border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("jobDate").className}`,
-                                                              children:
-                                                                ur(
-                                                                  d.jobDate ||
-                                                                    d.complaintDate,
-                                                                ) || "—",
-                                                            }),
-                                                            i.jsxs("td", {
-                                                              style:
-                                                                Gr(
-                                                                  "customerInfo",
-                                                                ).style,
-                                                              className: `${le} border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("customerInfo").className}`,
-                                                              children: [
-                                                                i.jsx("div", {
-                                                                  className:
-                                                                    "font-bold text-slate-900",
-                                                                  children:
-                                                                    d.custName ||
-                                                                    "—",
-                                                                }),
-                                                                d.village &&
-                                                                  i.jsxs(
-                                                                    "div",
-                                                                    {
-                                                                      className:
-                                                                        "text-[10px] text-slate-500 font-medium",
-                                                                      children:
-                                                                        [
-                                                                          d.village,
-                                                                          d.mandal
-                                                                            ? `, ${d.mandal}`
-                                                                            : "",
-                                                                        ],
-                                                                    },
-                                                                  ),
-                                                              ],
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("mobile")
-                                                                  .style,
-                                                              className: `${le} font-mono text-[11px] border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("mobile").className}`,
-                                                              children:
-                                                                d.ownerMob ||
-                                                                d.phNo ||
-                                                                "—",
-                                                            }),
-                                                            i.jsxs("td", {
-                                                              style:
-                                                                Gr("modelInfo")
-                                                                  .style,
-                                                              className: `${le} border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("modelInfo").className}`,
-                                                              children: [
-                                                                i.jsx("div", {
-                                                                  className:
-                                                                    "font-semibold text-slate-800",
-                                                                  children:
-                                                                    d.model ||
-                                                                    "—",
-                                                                }),
-                                                                d.chassisNo &&
-                                                                  i.jsx("div", {
-                                                                    className:
-                                                                      "text-[10px] font-mono text-slate-500",
-                                                                    children:
-                                                                      d.chassisNo,
-                                                                  }),
-                                                              ],
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr(
-                                                                  "servicePlace",
-                                                                ).style,
-                                                              className: `${le} font-bold uppercase text-[10px] border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("servicePlace").className}`,
-                                                              children:
-                                                                d.serviceLocation ===
-                                                                "dss"
-                                                                  ? "🛵 Door Step"
-                                                                  : d.serviceLocation ===
-                                                                      "event"
-                                                                    ? "🎪 Event"
-                                                                    : "🏭 Workshop",
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("mechanic")
-                                                                  .style,
-                                                              className: `${le} border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("mechanic").className}`,
-                                                              children: i.jsx(
-                                                                "input",
-                                                                {
-                                                                  type: "text",
-                                                                  list: "mechanics-datalist",
-                                                                  value:
-                                                                    R || "",
-                                                                  onChange: (
-                                                                    ye,
-                                                                  ) =>
-                                                                    mo(
-                                                                      d.id,
-                                                                      "mechanic",
-                                                                      ye.target
-                                                                        .value,
-                                                                    ),
-                                                                  placeholder:
-                                                                    "Select or type mechanic...",
-                                                                  className:
-                                                                    "w-full border border-slate-300 rounded text-slate-800 bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-2xs font-bold p-1 text-[11px]",
-                                                                },
-                                                              ),
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("supervisor")
-                                                                  .style,
-                                                              className: `${le} border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("supervisor").className}`,
-                                                              children: i.jsx(
-                                                                "input",
-                                                                {
-                                                                  type: "text",
-                                                                  list: "supervisors-datalist",
-                                                                  value:
-                                                                    S || "",
-                                                                  onChange: (
-                                                                    ye,
-                                                                  ) =>
-                                                                    mo(
-                                                                      d.id,
-                                                                      "wsIncharge",
-                                                                      ye.target
-                                                                        .value,
-                                                                    ),
-                                                                  placeholder:
-                                                                    "Select or type supervisor...",
-                                                                  className:
-                                                                    "w-full border border-slate-300 rounded text-slate-800 bg-white focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none shadow-2xs font-bold p-1 text-[11px]",
-                                                                },
-                                                              ),
-                                                            }),
-                                                            i.jsx("td", {
-                                                              style:
-                                                                Gr("status")
-                                                                  .style,
-                                                              className: `${le} text-center whitespace-nowrap border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("status").className}`,
-                                                              children: i.jsx(
-                                                                "span",
-                                                                {
-                                                                  className: `px-2 py-0.5 rounded text-[10px] font-black uppercase border ${ie === "Closed" ? "bg-emerald-600 text-white border-emerald-700 shadow-2xs" : "bg-amber-100 text-amber-900 border-amber-400 font-extrabold shadow-2xs"}`,
-                                                                  children:
-                                                                    ie ===
-                                                                    "Closed"
-                                                                      ? "✓ Closed"
-                                                                      : "⏳ Open",
-                                                                },
-                                                              ),
-                                                            }),
-                                                            i.jsxs("td", {
-                                                              style:
-                                                                Gr("spares")
-                                                                  .style,
-                                                              className: `${le} text-right font-mono font-semibold text-purple-800 border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("spares").className}`,
-                                                              children: [
-                                                                "₹",
-                                                                j.toLocaleString(
-                                                                  "en-IN",
-                                                                ),
-                                                              ],
-                                                            }),
-                                                            i.jsxs("td", {
-                                                              style:
-                                                                Gr("labour")
-                                                                  .style,
-                                                              className: `${le} text-right font-mono font-semibold text-teal-800 border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("labour").className}`,
-                                                              children: [
-                                                                "₹",
-                                                                I.toLocaleString(
-                                                                  "en-IN",
-                                                                ),
-                                                              ],
-                                                            }),
-                                                            i.jsxs("td", {
-                                                              style:
-                                                                Gr("total")
-                                                                  .style,
-                                                              className: `${le} text-right font-mono font-extrabold text-indigo-900 border-r border-slate-200 bg-white group-hover:bg-amber-100/80 ${Gr("total").className}`,
-                                                              children: [
-                                                                "₹",
-                                                                N.toLocaleString(
-                                                                  "en-IN",
-                                                                ),
-                                                              ],
-                                                            }),
-                                                          ],
-                                                        },
-                                                        d.id || b,
-                                                      );
-                                                    }),
-                                                  }),
-                                                ],
-                                              }),
-                                            }),
-                                            Xo.length > 0 &&
-                                              Ia !== -1 &&
-                                              i.jsxs("div", {
-                                                className:
-                                                  "flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 rounded-lg border border-slate-200 text-xs font-semibold",
-                                                children: [
-                                                  i.jsxs("div", {
-                                                    className:
-                                                      "text-slate-600 font-medium",
-                                                    children: [
-                                                      "Showing ",
-                                                      i.jsx("span", {
-                                                        className:
-                                                          "font-bold text-slate-900",
-                                                        children:
-                                                          (Qo - 1) * Ia + 1,
-                                                      }),
-                                                      " to",
-                                                      " ",
-                                                      i.jsx("span", {
-                                                        className:
-                                                          "font-bold text-slate-900",
-                                                        children: Math.min(
-                                                          Qo * Ia,
-                                                          Xo.length,
-                                                        ),
-                                                      }),
-                                                      " ",
-                                                      "of ",
-                                                      i.jsx("span", {
-                                                        className:
-                                                          "font-bold text-indigo-700",
-                                                        children: Xo.length,
-                                                      }),
-                                                      " cards",
-                                                    ],
-                                                  }),
-                                                  i.jsxs("div", {
-                                                    className:
-                                                      "flex items-center gap-1.5",
-                                                    children: [
-                                                      i.jsx("button", {
-                                                        type: "button",
-                                                        onClick: () => Ra(1),
-                                                        disabled: Qo <= 1,
-                                                        className:
-                                                          "px-2 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold rounded text-xs cursor-pointer",
-                                                        children: "« First",
-                                                      }),
-                                                      i.jsx("button", {
-                                                        type: "button",
-                                                        onClick: () =>
-                                                          Ra((d) =>
-                                                            Math.max(1, d - 1),
-                                                          ),
-                                                        disabled: Qo <= 1,
-                                                        className:
-                                                          "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold rounded text-xs cursor-pointer",
-                                                        children: "‹ Prev",
-                                                      }),
-                                                      i.jsxs("span", {
-                                                        className:
-                                                          "px-3 py-1 bg-indigo-50 text-indigo-900 font-bold rounded border border-indigo-200 text-xs",
-                                                        children: [
-                                                          "Page ",
-                                                          Qo,
-                                                          " of ",
-                                                          On,
-                                                        ],
-                                                      }),
-                                                      i.jsx("button", {
-                                                        type: "button",
-                                                        onClick: () =>
-                                                          Ra((d) =>
-                                                            Math.min(On, d + 1),
-                                                          ),
-                                                        disabled: Qo >= On,
-                                                        className:
-                                                          "px-2.5 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold rounded text-xs cursor-pointer",
-                                                        children: "Next ›",
-                                                      }),
-                                                      i.jsx("button", {
-                                                        type: "button",
-                                                        onClick: () => Ra(On),
-                                                        disabled: Qo >= On,
-                                                        className:
-                                                          "px-2 py-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold rounded text-xs cursor-pointer",
-                                                        children: "Last »",
-                                                      }),
-                                                    ],
-                                                  }),
-                                                ],
-                                              }),
-                                          ],
-                                        }),
+                                    i.jsx(ReportsAnalyticsDashboard, {
+                                      allCards: Xo,
+                                      allStaff: er,
+                                      attendanceRecords: dd,
+                                      language: e,
+                                      dateFrom: ic,
+                                      dateTo: Xi,
+                                      selectedMechanic: Ba,
+                                      selectedSupervisor: es,
+                                    }),
                                   ],
                                 }),
                               ],
@@ -19028,38 +18716,38 @@ ${b}`));
                                                   i.jsxs("td", {
                                                     className: "p-3",
                                                     children: [
-                                                      d.status === "Closed"
-                                                        ? i.jsx("span", {
-                                                            className:
-                                                              "px-2.5 py-0.5 rounded text-[10px] font-black bg-black text-white border border-black shadow-2xs uppercase tracking-wide",
-                                                            children: "Closed",
-                                                          })
-                                                        : d.status === "Running"
-                                                          ? i.jsxs("span", {
-                                                              className:
-                                                                "px-2.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-white border border-amber-600 inline-flex items-center gap-1 shadow-2xs uppercase tracking-wide",
-                                                              children: [
-                                                                i.jsx("span", {
-                                                                  className:
-                                                                    "w-1.5 h-1.5 rounded-full bg-white animate-pulse",
-                                                                }),
-                                                                "Running",
-                                                              ],
-                                                            })
-                                                          : i.jsx("span", {
-                                                              className:
-                                                                "px-2.5 py-0.5 rounded text-[10px] font-black bg-red-600 text-white border border-red-700 shadow-2xs uppercase tracking-wide",
-                                                              children:
-                                                                d.status ||
-                                                                "Open",
-                                                            }),
+                                                      i.jsx("select", {
+                                                        value: d.status || "Open",
+                                                        onChange: (e) => handleUpdateComplaintStatus(d.id, e.target.value),
+                                                        className:
+                                                          "w-full p-1.5 text-xs font-bold rounded border border-slate-300 bg-white focus:border-blue-600 focus:outline-none cursor-pointer " +
+                                                          (d.status === "Closed"
+                                                            ? "bg-black text-white border-black"
+                                                            : d.status === "Running"
+                                                            ? "bg-amber-50 text-amber-900 border-amber-300"
+                                                            : "bg-red-50 text-red-900 border-red-300"),
+                                                        children: [
+                                                          i.jsx("option", {
+                                                            value: "Open",
+                                                            children: "🔴 Open",
+                                                          }),
+                                                          i.jsx("option", {
+                                                            value: "Running",
+                                                            children: "🟡 Running",
+                                                          }),
+                                                          i.jsx("option", {
+                                                            value: "Closed",
+                                                            children: "🟢 Closed",
+                                                          }),
+                                                        ],
+                                                      }),
                                                       d.jobCardNo &&
                                                         i.jsxs("button", {
                                                           type: "button",
                                                           onClick: () =>
                                                             handleOpenJobCardFromComplaint(d),
                                                           className:
-                                                            "text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded px-1.5 py-0.5 mt-0.5 cursor-pointer flex items-center gap-0.5 transition-all shadow-2xs",
+                                                            "text-[9px] font-mono font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded px-1.5 py-0.5 mt-1.5 cursor-pointer flex items-center gap-0.5 transition-all shadow-2xs",
                                                           title:
                                                             "Open linked Job Card",
                                                           children: [

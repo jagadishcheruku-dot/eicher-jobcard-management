@@ -62,6 +62,15 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
   const [callSaving, setCallSaving] = useState<boolean>(false);
   const [callSavedSuccess, setCallSavedSuccess] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [customCallStatuses, setCustomCallStatuses] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("custom_call_statuses") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const [showAddStatus, setShowAddStatus] = useState<boolean>(false);
+  const [newStatusName, setNewStatusName] = useState<string>("");
 
   // Sync state on open
   useEffect(() => {
@@ -175,6 +184,32 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
       setCallSaving(false);
     }
   };
+
+  // Handle Add Custom Call Status
+  const handleAddCustomStatus = () => {
+    const trimmed = newStatusName.trim();
+    if (!trimmed) {
+      alert(isTe ? "దయచేసి సర్వీస్ కారణం నమోదు చేయండి" : "Please enter a status reason");
+      return;
+    }
+    if (customCallStatuses.includes(trimmed)) {
+      alert(isTe ? "ఈ కారణం ఇప్పటికే ఉంది" : "This status already exists");
+      return;
+    }
+    const updated = [...customCallStatuses, trimmed];
+    setCustomCallStatuses(updated);
+    try {
+      localStorage.setItem("custom_call_statuses", JSON.stringify(updated));
+    } catch {}
+    setNewStatusName("");
+    setShowAddStatus(false);
+    setCallStatus(trimmed);
+  };
+
+  // Get latest mechanic from related cards
+  const latestMechanic = relatedCards.length > 0
+    ? (relatedCards[0]?.mechanicName || relatedCards[0]?.technician || "—")
+    : "—";
 
   // Handle Copy
   const handleCopyDetails = () => {
@@ -435,20 +470,11 @@ Supervisor: ${supervisor || "—"}`;
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-slate-700 font-bold mb-1">
-                  {isTe ? "కాల్ ఫలితం / స్థితి (Call Status)" : "Call Outcome / Status"}
+                  {isTe ? "సంఘటన టెక్నీషియన్ (Mechanic)" : "Assigned Mechanic"}
                 </label>
-                <select
-                  value={callStatus}
-                  onChange={(e) => setCallStatus(e.target.value)}
-                  className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-purple-600"
-                >
-                  <option value="Interested">Interested in Service (సర్వీస్ చేయించుకుంటారు)</option>
-                  <option value="Appointment Fixed">Appointment Fixed (తేదీ నిర్ణయించారు)</option>
-                  <option value="RNR">RNR / Not Reachable (ఫోన్ ఎత్తలేదు)</option>
-                  <option value="Serviced Outside">Serviced Outside (బయట చేయించుకున్నారు)</option>
-                  <option value="Sold Tractor">Sold Tractor (ట్రాక్టర్ అమ్మేశారు)</option>
-                  <option value="Not Interested">Not Interested (ఆసక్తి లేదు)</option>
-                </select>
+                <div className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-900">
+                  {latestMechanic}
+                </div>
               </div>
 
               <div>
@@ -462,6 +488,57 @@ Supervisor: ${supervisor || "—"}`;
                   className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-purple-600"
                 />
               </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-slate-700 font-bold">
+                  {isTe ? "కాల్ ఫలితం / స్థితి (Call Status)" : "Call Outcome / Status"}
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowAddStatus(!showAddStatus)}
+                  className="text-[11px] font-bold text-purple-700 hover:text-purple-900 flex items-center gap-0.5"
+                >
+                  {showAddStatus ? "✕" : "+"} {isTe ? "కొత్త" : "New"}
+                </button>
+              </div>
+              <select
+                value={callStatus}
+                onChange={(e) => setCallStatus(e.target.value)}
+                className="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-purple-600"
+              >
+                <option value="Interested">Interested in Service (సర్వీస్ చేయించుకుంటారు)</option>
+                <option value="Appointment Fixed">Appointment Fixed (తేదీ నిర్ణయించారు)</option>
+                <option value="RNR">RNR / Not Reachable (ఫోన్ ఎత్తలేదు)</option>
+                <option value="Serviced Outside">Serviced Outside (బయట చేయించుకున్నారు)</option>
+                <option value="Sold Tractor">Sold Tractor (ట్రాక్టర్ అమ్మేశారు)</option>
+                <option value="Not Interested">Not Interested (ఆసక్తి లేదు)</option>
+                {customCallStatuses.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+              {showAddStatus && (
+                <div className="mt-2 flex gap-1.5">
+                  <input
+                    type="text"
+                    placeholder={isTe ? "కొత్త కారణం..." : "New status reason..."}
+                    value={newStatusName}
+                    onChange={(e) => setNewStatusName(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && handleAddCustomStatus()}
+                    className="flex-1 p-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:border-purple-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomStatus}
+                    className="px-2.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg transition-colors"
+                  >
+                    {isTe ? "జోడించు" : "Add"}
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>

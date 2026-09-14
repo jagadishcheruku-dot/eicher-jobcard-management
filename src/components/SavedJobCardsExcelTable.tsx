@@ -177,6 +177,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [activeFilterCol, setActiveFilterCol] = useState<string | null>(null);
   const [filterSearchText, setFilterSearchText] = useState<string>("");
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
   // Saving states for instant row-level feedback
   const [savingRows, setSavingRows] = useState<Record<string, boolean>>({});
@@ -452,6 +453,32 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
     });
   };
 
+  // Get next sequential job card number
+  const getNextJobCardNumber = (): number => {
+    const allNumbers: number[] = [];
+    allCards.forEach((c) => {
+      const jNo = c.jobNo || c.onlineJobCardNo;
+      if (jNo) {
+        const num = parseInt(String(jNo).replace(/\D/g, ""), 10);
+        if (!isNaN(num)) allNumbers.push(num);
+      }
+    });
+    return allNumbers.length > 0 ? Math.max(...allNumbers) + 1 : 1;
+  };
+
+  // Validate minimum data entry
+  const validateMinimumData = (card: any, draft: any): { valid: boolean; errorMsg: string } => {
+    const effCustName = (draft?.custName !== undefined ? draft.custName : card.custName || "").toString().trim();
+    const effChassisNo = (draft?.chassisNo !== undefined ? draft.chassisNo : card.chassisNo || "").toString().trim();
+    const effJobDate = (draft?.jobDate !== undefined ? draft.jobDate : card.jobDate || card.jobOpenDate || card.dateTimeIn || "").toString().trim();
+
+    if (!effCustName) return { valid: false, errorMsg: "Customer name is required" };
+    if (!effChassisNo) return { valid: false, errorMsg: "Chassis number is required" };
+    if (!effJobDate) return { valid: false, errorMsg: "Job date is required" };
+
+    return { valid: true, errorMsg: "" };
+  };
+
   // Save row logic
   const handleSaveRow = async (card: any) => {
     const draft = rowDrafts[card.id];
@@ -459,8 +486,24 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
     setSavingRows((prev) => ({ ...prev, [card.id]: true }));
     try {
+      // Validate minimum data
+      const validation = validateMinimumData(card, draft);
+      if (!validation.valid) {
+        alert(validation.errorMsg);
+        setSavingRows((prev) => ({ ...prev, [card.id]: false }));
+        return;
+      }
+
       const payload: any = { ...draft };
-      if (draft.jobNo !== undefined) payload.jobNo = draft.jobNo;
+
+      // Auto-generate jobNo if not provided (and card is new or jobNo is empty)
+      const effJobNo = (draft.jobNo !== undefined ? draft.jobNo : card.jobNo || "").toString().trim();
+      if (!effJobNo) {
+        payload.jobNo = getNextJobCardNumber();
+      } else if (draft.jobNo !== undefined) {
+        payload.jobNo = draft.jobNo;
+      }
+
       if (draft.onlineJobCardNo !== undefined) payload.onlineJobCardNo = draft.onlineJobCardNo;
       if (draft.hourMeter !== undefined) {
         payload.hourMeter = draft.hourMeter;
@@ -490,7 +533,13 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
         payload.billNo = draft.billNo;
       }
 
-      // Compute auto-status
+      // Compute auto-status based on onlineJobCardNo
+      const effOnlineJC = (
+        payload.onlineJobCardNo !== undefined
+          ? payload.onlineJobCardNo
+          : card.onlineJobCardNo || ""
+      ).toString().trim();
+
       const effClosed = (
         payload.actualClosedDate !== undefined
           ? payload.actualClosedDate
@@ -503,7 +552,17 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           : card.billNo || ""
       ).toString().trim();
 
-      payload.status = effClosed && effBill ? "Closed" : "Open";
+      // Status logic:
+      // - If onlineJobCardNo is empty: "pending"
+      // - If onlineJobCardNo is filled and closed date+bill present: "Closed"
+      // - Otherwise: "Open"
+      if (!effOnlineJC) {
+        payload.status = "pending";
+      } else if (effClosed && effBill) {
+        payload.status = "Closed";
+      } else {
+        payload.status = "Open";
+      }
 
       await onSave(card.id, payload);
 
@@ -580,6 +639,32 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   };
 
   // Filter dropdown handler logic
+  const isDateColumn = (colKey: string): boolean => {
+    return colKey === "jobDate" || colKey === "complaintDate" || colKey === "dateOfDelivery" || colKey === "actualClosedDate";
+  };
+
+  const groupDatesByYearMonth = (colKey: string) => {
+    const grouped: Record<string, Set<string>> = {};
+    allCards.forEach((card) => {
+      const dateStr = getCardColValue(card, colKey) || "";
+      if (dateStr && dateStr !== "") {
+        const parts = dateStr.split("-");
+        if (parts.length >= 3) {
+          const day = parts[0];
+          const month = parts[1];
+          const year = parts[2];
+          if (!grouped[year]) grouped[year] = new Set();
+          grouped[year].add(`${month}-${year}`);
+        }
+      }
+    });
+    const result: Record<string, string[]> = {};
+    Object.keys(grouped).sort().reverse().forEach((year) => {
+      result[year] = Array.from(grouped[year]).sort();
+    });
+    return result;
+  };
+
   const handleToggleFilterValue = (colKey: string, val: string) => {
     if (isFiltersLocked) return;
     setColumnFilters((prev) => {
@@ -652,13 +737,14 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   const processedCards = useMemo(() => {
     let result = [...cards];
 
-    // Status Filter: "all" | "Open" | "Closed" | "MissingOnline"
+    // Status Filter: "all" | "Open" | "Closed" | "pending" | "MissingOnline"
     if (statusFilter === "Open") {
-      result = result.filter((c) => !isCardClosed(c));
+      result = result.filter((c) => !isCardClosed(c) && c.status !== "pending");
     } else if (statusFilter === "Closed") {
       result = result.filter((c) => isCardClosed(c));
-    } else if (statusFilter === "MissingOnline") {
-      result = result.filter((c) => !(c.onlineJobCardNo || "").toString().trim());
+    } else if (statusFilter === "pending" || statusFilter === "MissingOnline") {
+      // Show cards with pending status or missing online job card no
+      result = result.filter((c) => c.status === "pending" || !(c.onlineJobCardNo || "").toString().trim());
     }
 
     // Branch & Supervisor Filters (Sri Gayathri Automotives)
@@ -1013,8 +1099,67 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               />
             </div>
 
-            <div className="max-h-40 overflow-y-auto space-y-1 pr-1 mb-2.5 divide-y divide-slate-100">
-              {popupDisplayValues.length === 0 ? (
+            <div className="max-h-60 overflow-y-auto space-y-0.5 pr-1 mb-2.5">
+              {isDateColumn(colKey) ? (
+                Object.entries(groupDatesByYearMonth(colKey)).map(([year, months]) => {
+                  const isExpanded = expandedYears.has(year);
+                  const filteredMonths = months.filter(m => m.toLowerCase().includes(filterSearchText.toLowerCase()));
+                  return (
+                    <div key={year}>
+                      <div
+                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50 rounded cursor-pointer text-[11px] font-semibold"
+                        onClick={() => {
+                          setExpandedYears((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(year)) next.delete(year);
+                            else next.add(year);
+                            return next;
+                          });
+                        }}
+                      >
+                        <span className="text-emerald-600">{isExpanded ? "▼" : "▶"}</span>
+                        <span>{year}</span>
+                      </div>
+                      {isExpanded && filteredMonths.length > 0 && (
+                        <div className="ml-4 space-y-0.5">
+                          {filteredMonths.map((monthYear) => {
+                            const dates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear.split("-")[0]}`));
+                            return (
+                              <label key={monthYear} className="flex items-center justify-between p-1 hover:bg-emerald-50/50 rounded cursor-pointer text-[11px]">
+                                <div className="flex items-center gap-2 truncate pr-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={dates.some(d => (columnFilters[colKey] || []).includes(d.value))}
+                                    onChange={() => {
+                                      setColumnFilters((prev) => {
+                                        const curr = prev[colKey] || [];
+                                        const monthDates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear.split("-")[0]}`)).map(d => d.value);
+                                        const allSelected = monthDates.every(d => curr.includes(d));
+                                        const updated = allSelected
+                                          ? curr.filter(x => !monthDates.includes(x))
+                                          : [...new Set([...curr, ...monthDates])];
+                                        if (updated.length === 0) {
+                                          const next = { ...prev };
+                                          delete next[colKey];
+                                          return next;
+                                        }
+                                        return { ...prev, [colKey]: updated };
+                                      });
+                                      setCurrentPage(1);
+                                    }}
+                                    className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                  />
+                                  <span className="truncate text-slate-800 font-medium">{monthYear.split("-").reverse().join("/")}</span>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : popupDisplayValues.length === 0 ? (
                 <div className="text-center py-4 text-slate-400 text-[11px]">
                   {isTe ? "విలువలు లేవు" : "No matching values"}
                 </div>

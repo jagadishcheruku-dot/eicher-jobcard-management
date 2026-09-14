@@ -503,29 +503,56 @@ export const FreeServiceFollowupView: React.FC<FreeServiceFollowupViewProps> = (
         </div>
       </div>
 
+      {/* Enhanced Search Header with Eicher Logo */}
+      <div className="w-full bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl shadow-lg p-4 mb-3">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3">
+            {/* Eicher Logo SVG */}
+            <svg width="60" height="60" viewBox="0 0 100 100" className="flex-shrink-0">
+              {/* Outer oval border */}
+              <ellipse cx="50" cy="50" rx="48" ry="42" fill="none" stroke="#DC2626" strokeWidth="4"/>
+              <ellipse cx="50" cy="50" rx="45" ry="39" fill="none" stroke="#991B1B" strokeWidth="2"/>
+              {/* Inner red fill */}
+              <ellipse cx="50" cy="50" rx="40" ry="35" fill="#DC2626"/>
+              {/* "E" letter */}
+              <text x="50" y="62" fontSize="50" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif" fontStyle="italic">E</text>
+            </svg>
+            <div>
+              <h2 className="text-white font-black text-lg">{isTe ? "ఐషర్ కస్టమర్ లుకప్" : "EICHER CUSTOMER LOOKUP"}</h2>
+              <p className="text-slate-300 text-[10px]">{isTe ? "చాసిస్ నం, కస్టమర్ పేరు లేదా ఫోన్ నంబర్ వెతకండి" : "Search by Chassis No, Customer Name or Mobile Number"}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative">
+          <div className="absolute left-4 top-3.5 flex items-center gap-2">
+            <Search className="w-5 h-5 text-teal-400" />
+            <div className="w-px h-6 bg-slate-600"></div>
+          </div>
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder={isTe ? "ఛాసిస్ నం, కస్టమర్ పేరు, ఫోన్ నంబర్ నమోదు చేయండి..." : "Enter Chassis No, Customer Name or Mobile Number..."}
+            className="w-full bg-white border-2 border-teal-400 rounded-xl pl-16 pr-10 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-200 transition-all"
+          />
+          {searchText && (
+            <button
+              type="button"
+              onClick={() => setSearchText("")}
+              className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 p-1"
+              title={isTe ? "సార్చ్ క్లియర్ చేయండి" : "Clear search"}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Filter Bar */}
       <div className="w-full bg-white border border-slate-200 rounded-2xl shadow-xs p-3.5 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-          {/* Search */}
-          <div className="relative sm:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              placeholder={isTe ? "కస్టమర్ పేరు, ఫోన్, ఛాసిస్, ఊరు, మోడల్..." : "Search name, phone, chassis, village..."}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs font-semibold text-slate-900 outline-none focus:border-teal-500 focus:bg-white transition-all"
-            />
-            {searchText && (
-              <button
-                type="button"
-                onClick={() => setSearchText("")}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
 
           {/* Due Status Filter */}
           <div>

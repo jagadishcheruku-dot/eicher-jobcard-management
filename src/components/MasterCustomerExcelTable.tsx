@@ -140,6 +140,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [activeFilterCol, setActiveFilterCol] = useState<string | null>(null);
   const [filterSearchText, setFilterSearchText] = useState<string>("");
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
   // Lock Filters feature (🔒 / 🔓)
   const [isFiltersLocked, setIsFiltersLocked] = useState<boolean>(() => {
@@ -641,6 +642,156 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
             fd.exchangeModels ||
             ""
         ).trim();
+      case "Last Service Date":
+      case "lastServiceDate": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const lastDate = lastCard.jobDate || lastCard.date || "";
+        return lastDate ? formatDisplayDate(lastDate, String(lastDate)) : "";
+      }
+      case "Last Service Hours":
+      case "lastServiceHours": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const hours = lastCard.hoursRun || lastCard.hourMeter || lastCard.hours || "";
+        return hours ? String(hours).trim() : "";
+      }
+      case "Last Service Type":
+      case "lastServiceType": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return "";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return "";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+
+        // Check if it's a free service
+        const freeServiceValue = lastCard.freeServiceList || lastCard.free_service_list || "";
+        if (freeServiceValue && String(freeServiceValue).trim()) {
+          // It's a free service - show the service count
+          const freeServiceStr = String(freeServiceValue).trim();
+          // Count total free services for this customer
+          const freeServices = matchingCards.filter((card) => {
+            const freeVal = card.freeServiceList || card.free_service_list || "";
+            return freeVal && String(freeVal).trim();
+          });
+          const ordinalNum = freeServices.length;
+          const ordinals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+          const ordinal = ordinals[ordinalNum - 1] || `${ordinalNum}th`;
+          return `${ordinal} Free Service`;
+        }
+
+        // It's a paid service - show warranty status or service type
+        const warrantyStatus = lastCard.warrantyStatus || lastCard.warranty_status || "";
+        const underWty = lastCard.underWarranty || lastCard.under_warranty || false;
+        const serviceType = lastCard.serviceType || lastCard.service_type || "";
+
+        let statusPart = "Paid Service";
+        if (underWty || (warrantyStatus && String(warrantyStatus).toLowerCase().includes("wty"))) {
+          statusPart = "Paid Service (Under Wty)";
+        } else if (warrantyStatus && String(warrantyStatus).trim()) {
+          statusPart = `Paid Service (${String(warrantyStatus).trim()})`;
+        }
+
+        return statusPart;
+      }
+      case "Service Due Status":
+      case "serviceDueStatus": {
+        const chassisNorm = normalizeChassisStr(
+          cust["Chassis no"] ||
+            cust["Chassis No"] ||
+            cust["CHASSIS NO"] ||
+            cust.chassisNo ||
+            cust.chassis ||
+            cust.__chassisDisplay ||
+            ""
+        );
+        if (!chassisNorm) return isTe ? "━━ డేటా లేదు" : "━━ No Data";
+        const matchingCards = (allCards || []).filter((card) => {
+          const cardChassis = normalizeChassisStr(card.chassisNo || card.chassis || "");
+          return cardChassis === chassisNorm;
+        });
+        if (matchingCards.length === 0) return isTe ? "━━ సేవ నేను" : "━━ No Service";
+        const sorted = matchingCards.sort((a, b) => {
+          const dateA = new Date(a.jobDate || a.date || "").getTime();
+          const dateB = new Date(b.jobDate || b.date || "").getTime();
+          return dateB - dateA;
+        });
+        const lastCard = sorted[0];
+        const lastDate = new Date(lastCard.jobDate || lastCard.date || "");
+        const today = new Date();
+        const daysSinceService = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        // Service reminder logic:
+        // - If < 15 days: Recently serviced (Green)
+        // - If 15-60 days: Normal (Gray)
+        // - If 60-180 days: Due soon (Yellow)
+        // - If > 180 days: Overdue (Red)
+        if (daysSinceService < 0) {
+          return isTe ? "📅 ఫ్యూచర్ డేట్" : "📅 Future Date";
+        } else if (daysSinceService <= 15) {
+          return isTe ? `✅ ${daysSinceService} రోజుల ముందు` : `✅ ${daysSinceService} days ago`;
+        } else if (daysSinceService <= 60) {
+          return isTe ? `📋 ${daysSinceService} రోజుల ముందు` : `📋 ${daysSinceService} days ago`;
+        } else if (daysSinceService <= 180) {
+          return isTe ? `⚠️ సేవ వద్దు! ${daysSinceService} రోజులు` : `⚠️ Due Soon! ${daysSinceService} days`;
+        } else {
+          return isTe ? `🔴 చెల్లిపోయిన! ${daysSinceService} రోజులు` : `🔴 Overdue! ${daysSinceService} days`;
+        }
+      }
       default: {
         const val = cust[colKey] !== undefined ? cust[colKey] : (fd && fd[colKey] !== undefined ? fd[colKey] : "");
         if (typeof colKey === "string" && (colKey.toLowerCase().includes("date") || colKey.toLowerCase().includes("del") || colKey.toLowerCase() === "dod")) {
@@ -864,6 +1015,10 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     { key: "VILLAGE", label: "VILLAGE", width: "w-40 min-w-[160px]" },
     { key: "Mandal", label: "Mandal", width: "w-36 min-w-[140px]" },
     { key: "Mobile Number", label: "Mobile Number", width: "w-36 min-w-[140px]" },
+    { key: "Last Service Date", label: isTe ? "చివరి సేవ తేదీ" : "Last Service Date", width: "w-32 min-w-[130px]" },
+    { key: "Last Service Hours", label: isTe ? "చివరి సేవ గంటలు" : "Last Service Hours", width: "w-28 min-w-[110px]" },
+    { key: "Last Service Type", label: isTe ? "చివరి సేవ రకం" : "Last Service Type", width: "w-40 min-w-[160px]" },
+    { key: "Service Due Status", label: isTe ? "సేవ సమితి స్థితి" : "Service Due Status", width: "w-36 min-w-[140px]" },
     { key: "Distict", label: "Distict", width: "w-32 min-w-[130px]" },
     { key: "PIN CODE", label: "PIN CODE", width: "w-28 min-w-[110px]" },
     { key: "DSP Name", label: "DSP Name", width: "w-36 min-w-[140px]" },
@@ -1377,6 +1532,32 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     return Array.from(set).sort((a, b) =>
       a.localeCompare(b, undefined, { numeric: true })
     );
+  };
+
+  const isDateColumn = (colKey: string): boolean => {
+    return colKey === "Date of del" || colKey === "Date of Delivery" || colKey === "DOD" || colKey === "Last Service Date";
+  };
+
+  const groupDatesByYearMonth = (colKey: string) => {
+    const grouped: Record<string, Set<string>> = {};
+    customers.forEach((cust) => {
+      const dateStr = getColDisplayValue(cust, colKey) || "";
+      if (dateStr && dateStr !== "(Blank)") {
+        const parts = dateStr.split("-");
+        if (parts.length >= 3) {
+          const day = parts[0];
+          const month = parts[1];
+          const year = parts[2];
+          if (!grouped[year]) grouped[year] = new Set();
+          grouped[year].add(`${month}-${year}`);
+        }
+      }
+    });
+    const result: Record<string, string[]> = {};
+    Object.keys(grouped).sort().reverse().forEach((year) => {
+      result[year] = Array.from(grouped[year]).sort();
+    });
+    return result;
   };
 
   const handleToggleColumnFilterValue = (colKey: string, val: string) => {
@@ -2001,30 +2182,89 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                               placeholder="Search values..."
                               className="w-full px-2 py-1 text-xs border border-slate-300 rounded mb-2 outline-none focus:border-purple-600"
                             />
-                            <div className="max-h-40 overflow-y-auto space-y-1 mb-2">
-                              {getUniqueColumnValues(col.key)
-                                .filter((v) =>
-                                  v.toLowerCase().includes(filterSearchText.toLowerCase())
-                                )
-                                .map((val) => {
-                                  const isChecked = (columnFilters[col.key] || []).includes(val);
+                            <div className="max-h-60 overflow-y-auto space-y-0.5 mb-2">
+                              {isDateColumn(col.key) ? (
+                                Object.entries(groupDatesByYearMonth(col.key)).map(([year, months]) => {
+                                  const isExpanded = expandedYears.has(year);
+                                  const filteredMonths = months.filter(m => m.toLowerCase().includes(filterSearchText.toLowerCase()));
                                   return (
-                                    <label
-                                      key={val}
-                                      className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() =>
-                                          handleToggleColumnFilterValue(col.key, val)
-                                        }
-                                        className="rounded text-purple-600"
-                                      />
-                                      <span className="truncate">{val}</span>
-                                    </label>
+                                    <div key={year}>
+                                      <div
+                                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs font-semibold"
+                                        onClick={() => {
+                                          setExpandedYears((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(year)) next.delete(year);
+                                            else next.add(year);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        <span className="text-purple-600">{isExpanded ? "▼" : "▶"}</span>
+                                        <span>{year}</span>
+                                      </div>
+                                      {isExpanded && filteredMonths.length > 0 && (
+                                        <div className="ml-4 space-y-0.5">
+                                          {filteredMonths.map((monthYear) => {
+                                            const dates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[1]}`));
+                                            return (
+                                              <label key={monthYear} className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs">
+                                                <input
+                                                  type="checkbox"
+                                                  checked={dates.some(d => (columnFilters[col.key] || []).includes(d))}
+                                                  onChange={() => {
+                                                    setColumnFilters((prev) => {
+                                                      const curr = prev[col.key] || [];
+                                                      const monthDates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[0]}`));
+                                                      const allSelected = monthDates.every(d => curr.includes(d));
+                                                      const updated = allSelected
+                                                        ? curr.filter(x => !monthDates.includes(x))
+                                                        : [...new Set([...curr, ...monthDates])];
+                                                      if (updated.length === 0) {
+                                                        const next = { ...prev };
+                                                        delete next[col.key];
+                                                        return next;
+                                                      }
+                                                      return { ...prev, [col.key]: updated };
+                                                    });
+                                                    setCurrentPage(1);
+                                                  }}
+                                                  className="rounded text-purple-600"
+                                                />
+                                                <span className="truncate">{monthYear.split("-").reverse().join("/")}</span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
                                   );
-                                })}
+                                })
+                              ) : (
+                                getUniqueColumnValues(col.key)
+                                  .filter((v) =>
+                                    v.toLowerCase().includes(filterSearchText.toLowerCase())
+                                  )
+                                  .map((val) => {
+                                    const isChecked = (columnFilters[col.key] || []).includes(val);
+                                    return (
+                                      <label
+                                        key={val}
+                                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={() =>
+                                            handleToggleColumnFilterValue(col.key, val)
+                                          }
+                                          className="rounded text-purple-600"
+                                        />
+                                        <span className="truncate">{val}</span>
+                                      </label>
+                                    );
+                                  })
+                              )}
                             </div>
                             <div className="flex items-center justify-between pt-1.5 border-t border-slate-150 text-[11px] font-bold">
                               <button

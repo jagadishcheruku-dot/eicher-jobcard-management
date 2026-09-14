@@ -97,6 +97,39 @@ const POPULAR_MANDALS = [
   "Vuyyuru",
 ];
 
+const POPULAR_VILLAGES = [
+  "Vijayawada",
+  "Machilipatnam",
+  "Gudivada",
+  "Tiruvuru",
+  "Nuzvid",
+  "Kanchikacherla",
+  "Vuyyuru",
+  "Ibrahimpatnam",
+  "Mylavaram",
+  "Penamaluru",
+  "Challapalli",
+  "Kanuru",
+  "Unmedulanka",
+  "Pedana",
+  "Bangarayakota",
+  "Giddalur",
+  "Pathipati",
+  "Kodavali",
+  "Avanigadda",
+  "Kaikalur",
+  "Nagayalanka",
+  "Nidadavolu",
+  "Razole",
+  "Kesanpalle",
+  "Movva",
+  "Mandavalli",
+  "Unguturu",
+  "Reddigudem",
+  "Gannavaram",
+  "Kalidindi",
+];
+
 export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   isOpen,
   language = "te",
@@ -143,6 +176,11 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isDuplicateChassis, setIsDuplicateChassis] = useState(false);
+
+  const [customMandals, setCustomMandals] = useState<string[]>([]);
+  const [customVillages, setCustomVillages] = useState<string[]>([]);
+  const [newMandalInput, setNewMandalInput] = useState("");
+  const [newVillageInput, setNewVillageInput] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -253,6 +291,31 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
     setDeliveryDateInput(new Date().toISOString().split("T")[0]);
     setErrorMessage("");
   };
+
+  const handleAddMandal = (newMandal: string) => {
+    const trimmedMandal = newMandal.trim();
+    if (!trimmedMandal) return;
+
+    const existing = [...POPULAR_MANDALS, ...customMandals];
+    if (!existing.includes(trimmedMandal)) {
+      setCustomMandals([...customMandals, trimmedMandal]);
+      setFormData((prev) => ({ ...prev, mandal: trimmedMandal }));
+    }
+  };
+
+  const handleAddVillage = (newVillage: string) => {
+    const trimmedVillage = newVillage.trim();
+    if (!trimmedVillage) return;
+
+    const existing = [...POPULAR_VILLAGES, ...customVillages];
+    if (!existing.includes(trimmedVillage)) {
+      setCustomVillages([...customVillages, trimmedVillage]);
+      setFormData((prev) => ({ ...prev, village: trimmedVillage }));
+    }
+  };
+
+  const allMandals = [...POPULAR_MANDALS, ...customMandals];
+  const allVillages = [...POPULAR_VILLAGES, ...customVillages];
 
   return (
     <div
@@ -500,36 +563,70 @@ export const AddCustomerModal: React.FC<AddCustomerModalProps> = ({
                 <label className="block text-slate-700 font-bold mb-1">
                   {isTe ? "గ్రామం (Village) *" : "Village *"}
                 </label>
-                <input
-                  type="text"
-                  value={formData.village}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, village: e.target.value }))
-                  }
-                  placeholder={isTe ? "గ్రామం పేరు" : "Village name"}
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-emerald-600"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={formData.village}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, village: e.target.value }))
+                    }
+                    className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-emerald-600"
+                  >
+                    <option value="">{isTe ? "ఎంచుకోండి" : "Select village"}</option>
+                    {allVillages.map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newVillage = prompt(
+                        isTe ? "కొత్త గ్రామం పేరు నమోదు చేయండి:" : "Enter new village name:"
+                      );
+                      if (newVillage) handleAddVillage(newVillage);
+                    }}
+                    className="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
+                    title={isTe ? "కొత్త గ్రామం జోడించండి" : "Add new village"}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-slate-700 font-bold mb-1">
                   {isTe ? "మండలం (Mandal)" : "Mandal"}
                 </label>
-                <input
-                  type="text"
-                  list="mandal-options"
-                  value={formData.mandal}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, mandal: e.target.value }))
-                  }
-                  placeholder={isTe ? "మండలం ఎంచుకోండి" : "Select / enter mandal"}
-                  className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-emerald-600"
-                />
-                <datalist id="mandal-options">
-                  {POPULAR_MANDALS.map((m) => (
-                    <option key={m} value={m} />
-                  ))}
-                </datalist>
+                <div className="flex gap-2">
+                  <select
+                    value={formData.mandal}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, mandal: e.target.value }))
+                    }
+                    className="flex-1 p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 outline-none focus:border-emerald-600"
+                  >
+                    <option value="">{isTe ? "ఎంచుకోండి" : "Select mandal"}</option>
+                    {allMandals.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newMandal = prompt(
+                        isTe ? "కొత్త మండలం పేరు నమోదు చేయండి:" : "Enter new mandal name:"
+                      );
+                      if (newMandal) handleAddMandal(newMandal);
+                    }}
+                    className="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
+                    title={isTe ? "కొత్త మండలం జోడించండి" : "Add new mandal"}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
               <div>
