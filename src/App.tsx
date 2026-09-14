@@ -11590,6 +11590,45 @@ ${b}`));
                                           ]
                                         })
                                       ]
+                                    }),
+                                    i.jsxs("div", {
+                                      className: "border border-slate-200 rounded-xl p-3.5 space-y-2.5 bg-slate-50/50",
+                                      children: [
+                                        i.jsx("div", {
+                                          className: "flex items-center justify-between",
+                                          children: i.jsx("h4", {
+                                            className: "font-black text-slate-900 text-xs",
+                                            children: "Job Card History"
+                                          })
+                                        }),
+                                        i.jsx("div", {
+                                          className: "py-2 text-center text-slate-500 bg-white rounded-lg border border-slate-200",
+                                          children: i.jsx("p", {
+                                            className: "text-xs font-bold text-slate-600",
+                                            children: "View full customer history by clicking 'View Full Details' below"
+                                          })
+                                        })
+                                      ]
+                                    }),
+                                    i.jsxs("div", {
+                                      className: "flex gap-2 pt-2",
+                                      children: [
+                                        i.jsx("button", {
+                                          type: "button",
+                                          onClick: () => {
+                                            setLookupSelectedCustomer(null);
+                                            sf();
+                                          },
+                                          className: "flex-1 px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                          children: "View Full Details"
+                                        }),
+                                        i.jsx("button", {
+                                          type: "button",
+                                          onClick: () => setLookupSelectedCustomer(null),
+                                          className: "flex-1 px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                          children: "Close"
+                                        })
+                                      ]
                                     })
                                   ]
                                 })
