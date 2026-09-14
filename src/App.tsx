@@ -11366,25 +11366,15 @@ ${b}`));
                                             className:
                                               "flex items-center justify-between cursor-pointer hover:bg-slate-50 px-1.5 py-0.5 rounded transition-colors",
                                             children: [
-                                              i.jsxs("div", {
-                                                children: [
-                                                  i.jsx("div", {
-                                                    className:
-                                                      "text-[10px] font-extrabold text-slate-700 uppercase leading-tight",
-                                                    children:
-                                                      "Eicher Followup",
-                                                  }),
-                                                  i.jsx("div", {
-                                                    className:
-                                                      "text-[9px] font-bold text-slate-500",
-                                                    children: "Quick Search",
-                                                  }),
-                                                ],
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-slate-700 uppercase",
+                                                children: "Search Customer",
                                               }),
                                               i.jsx("div", {
                                                 className:
-                                                  "text-lg font-black text-indigo-600",
-                                                children: showLookupResults ? "🔽" : "🔍",
+                                                  "text-indigo-600 font-bold text-xs flex items-center gap-1",
+                                                children: showLookupResults ? "🔽 Close" : "🔍 Search",
                                               }),
                                             ],
                                           }),
