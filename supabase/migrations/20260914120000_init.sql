@@ -98,7 +98,12 @@ begin
       'create policy anon_all on %I for all to anon, authenticated using (true) with check (true)',
       t
     );
-    execute format('alter publication supabase_realtime add table %I', t);
+    -- The publication may already cover the table, either from an earlier run
+    -- or because it is defined for all tables.
+    begin
+      execute format('alter publication supabase_realtime add table %I', t);
+    exception when duplicate_object then null;
+    end;
   end loop;
 end $$;
 
@@ -114,4 +119,8 @@ create table if not exists system_users (
 alter table system_users enable row level security;
 drop policy if exists anon_all on system_users;
 create policy anon_all on system_users for all to anon, authenticated using (true) with check (true);
-alter publication supabase_realtime add table system_users;
+do $$
+begin
+  alter publication supabase_realtime add table system_users;
+exception when duplicate_object then null;
+end $$;
