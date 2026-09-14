@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ArrowRight, Building2, Shield } from "lucide-react";
+import { ArrowRight, UserCog, Shield } from "lucide-react";
 import { SystemUser } from "./UserManagementModal";
 
 interface BranchLoginViewProps {
   branchesList: string[];
+  supervisorsList: string[];
   users: SystemUser[];
   onLogin: (user: SystemUser, selectedBranch: string) => void;
   language?: "te" | "en";
@@ -11,35 +12,35 @@ interface BranchLoginViewProps {
 }
 
 export const BranchLoginView: React.FC<BranchLoginViewProps> = ({
-  branchesList,
+  supervisorsList,
   onLogin,
   language = "te",
   onLanguageChange,
 }) => {
   const isTe = language === "te";
-  const [selectedBranch, setSelectedBranch] = useState<string>("All Branches (Master)");
+  const [selectedSupervisor, setSelectedSupervisor] = useState<string>("All Branches (Master)");
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isAllBranches = selectedBranch === "All Branches (Master)";
+    const isAll = selectedSupervisor === "All Branches (Master)";
     const user: SystemUser = {
-      id: isAllBranches ? "admin_master" : `branch_${selectedBranch}`,
-      username: isAllBranches ? "admin" : selectedBranch,
+      id: isAll ? "admin_master" : `supervisor_${selectedSupervisor}`,
+      username: isAll ? "admin" : selectedSupervisor,
       password: "",
-      name: isAllBranches ? "Sri Gayathri Automotives" : selectedBranch,
-      branch: selectedBranch,
-      role: isAllBranches ? "Admin" : "Staff",
+      name: isAll ? "Sri Gayathri Automotives" : selectedSupervisor,
+      branch: selectedSupervisor,
+      role: isAll ? "Admin" : "Supervisor",
       allowedMenus: [],
       canEdit: true,
       canDelete: true,
       canUpdate: true,
       canCreate: true,
-      isAdmin: isAllBranches,
-      dataScope: isAllBranches ? "all" : "branch",
+      isAdmin: isAll,
+      dataScope: isAll ? "all" : "branch",
     };
 
-    onLogin(user, selectedBranch);
+    onLogin(user, selectedSupervisor);
   };
 
   return (
@@ -72,7 +73,7 @@ export const BranchLoginView: React.FC<BranchLoginViewProps> = ({
         </div>
       )}
 
-      {/* Branch Selection Box */}
+      {/* Supervisor Selection Box */}
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 p-6 sm:p-8 max-w-md w-full relative z-10 space-y-6 animate-in fade-in zoom-in-95 duration-200">
 
         {/* Dealership Logo & Header */}
@@ -89,31 +90,31 @@ export const BranchLoginView: React.FC<BranchLoginViewProps> = ({
             </p>
             <p className="text-[11px] text-slate-500 font-medium mt-1">
               {isTe
-                ? "మీ బ్రాంచ్ ఎంచుకుని కొనసాగించండి"
-                : "Select your branch to continue"}
+                ? "మీ సూపర్‌వైజర్ ఎంచుకుని కొనసాగించండి"
+                : "Select your supervisor to continue"}
             </p>
           </div>
         </div>
 
-        {/* Branch Select Form */}
+        {/* Supervisor Select Form */}
         <form onSubmit={handleContinue} className="space-y-4">
           <div className="space-y-1">
             <label className="block text-xs font-black text-slate-700 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-blue-800" />
-              <span>{isTe ? "బ్రాంచ్ ఎంచుకోండి (Select Branch)" : "Select Branch"}</span>
+              <UserCog className="w-3.5 h-3.5 text-blue-800" />
+              <span>{isTe ? "సూపర్‌వైజర్ ఎంచుకోండి (Select Supervisor)" : "Select Supervisor"}</span>
             </label>
             <select
-              value={selectedBranch}
-              onChange={(e) => setSelectedBranch(e.target.value)}
+              value={selectedSupervisor}
+              onChange={(e) => setSelectedSupervisor(e.target.value)}
               className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-600 focus:bg-white outline-none transition-all cursor-pointer"
               autoFocus
             >
               <option value="All Branches (Master)">
-                🌐 {isTe ? "అన్ని బ్రాంచీలు (Master)" : "All Branches (Master)"}
+                🌐 {isTe ? "అందరూ (Master)" : "All Supervisors (Master)"}
               </option>
-              {branchesList.map((branch) => (
-                <option key={branch} value={branch}>
-                  🏢 {branch}
+              {supervisorsList.map((sup) => (
+                <option key={sup} value={sup}>
+                  🧑‍💼 {sup}
                 </option>
               ))}
             </select>

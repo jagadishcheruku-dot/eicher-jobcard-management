@@ -8196,7 +8196,8 @@ ${b}`));
       const filtered = Br.filter(Boolean).filter((card) => {
         const cardBranch = card.branch || card.BRANCH || card.dealershipBranch || "";
         const cardCreatedBy = card.createdBy || card.supervisor || card.advisorName || "";
-        return isRecordVisibleForUser(cardBranch, cardCreatedBy, currentSystemUser, adminBranchFilter);
+        const cardSupervisor = card.supervisor || card.wsIncharge || card.supervisorName || card.wsInchargeName || "";
+        return isRecordVisibleForUser(cardBranch, cardCreatedBy, currentSystemUser, adminBranchFilter, cardSupervisor);
       });
       filtered.sort((a: any, b: any) => {
         const getTs = (c: any) => {
@@ -8226,7 +8227,8 @@ ${b}`));
     }, [Br, currentSystemUser, adminBranchFilter]),
     visibleFs = ce.useMemo(() => {
       return Fs.filter(Boolean).filter((comp) => {
-        return isRecordVisibleForUser(comp.branch || comp.location, comp.createdBy, currentSystemUser, adminBranchFilter);
+        const compSupervisor = comp.supervisor || comp.wsIncharge || comp.supervisorName || comp.createdBy || "";
+        return isRecordVisibleForUser(comp.branch || comp.location, comp.createdBy, currentSystemUser, adminBranchFilter, compSupervisor);
       });
     }, [Fs, currentSystemUser, adminBranchFilter]),
     uu = ce.useMemo(() => {
@@ -8275,7 +8277,8 @@ ${b}`));
         if (!v) return;
         const custBranch = v.BRANCH || v.branch || "";
         const custCreatedBy = v.createdBy || "";
-        if (isRecordVisibleForUser(custBranch, custCreatedBy, currentSystemUser, adminBranchFilter)) {
+        const custSupervisor = v.supervisor || v.wsIncharge || v.supervisorName || v.createdBy || "";
+        if (isRecordVisibleForUser(custBranch, custCreatedBy, currentSystemUser, adminBranchFilter, custSupervisor)) {
           const ch = (v["Chassis no"] || v.__chassisDisplay || be(v, "chassis") || v.chassisNo || v.chassis || "").toString().trim();
           const phone = (v["Mobile Number"] || v.__custPhoneDisplay || be(v, "custPhone") || v.mobileNumber || v.phone || "").toString().trim();
           const name = (v["Customer Name"] || v.__custNameDisplay || be(v, "custName") || v.custName || v.customerName || "").toString().trim();
@@ -10769,13 +10772,13 @@ ${b}`));
                         }
                       },
                       className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-rose-100 mt-auto`,
-                      title: f ? "Change Branch" : void 0,
+                      title: f ? "Change Supervisor" : void 0,
                       children: [
                         i.jsx(jK, { className: "w-4 h-4 shrink-0" }),
                         !f &&
                           i.jsx("span", {
                             className: "truncate",
-                            children: e === "te" ? "బ్రాంచ్ మార్చు" : "Change Branch",
+                            children: e === "te" ? "సూపర్‌వైజర్ మార్చు" : "Change Supervisor",
                           }),
                       ],
                     }),
@@ -10990,22 +10993,22 @@ ${b}`));
                             currentSystemUser?.isAdmin ? i.jsxs("div", {
                               className: "flex items-center gap-1.5 bg-amber-50 text-amber-900 px-2.5 py-1 rounded-full text-xs font-semibold",
                               children: [
-                                i.jsx("span", { className: "text-[11px] font-extrabold", children: e === "te" ? "బ్రాంచ్:" : "Branch:" }),
+                                i.jsx("span", { className: "text-[11px] font-extrabold", children: e === "te" ? "సూపర్‌వైజర్:" : "Supervisor:" }),
                                 i.jsxs("select", {
                                   value: adminBranchFilter,
                                   onChange: (ev: any) => setAdminBranchFilter(ev.target.value),
                                   className: "bg-transparent text-amber-950 text-xs font-bold outline-none cursor-pointer",
                                   children: [
-                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అన్ని బ్రాంచ్‌లు" : "🌐 All Branches" }),
-                                    systemBranches.map((br: string) => i.jsx("option", { value: br, children: `🏢 ${br}` }, br))
+                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అందరూ" : "🌐 All Supervisors" }),
+                                    Array.from(new Set(er.filter((m: any) => m.role === "supervisor" || m.role === "Supervisor").map((m: any) => m.name).filter(Boolean))).map((sup: string) => i.jsx("option", { value: sup, children: `🧑‍💼 ${sup}` }, sup))
                                   ]
                                 })
                               ]
                             }) : i.jsxs("div", {
                               className: "flex items-center gap-1.5 bg-emerald-50 text-emerald-900 px-2.5 py-1 rounded-full text-xs font-black",
                               children: [
-                                i.jsx("span", { children: "🏢" }),
-                                i.jsx("span", { children: currentSystemUser?.branch || "Branch" })
+                                i.jsx("span", { children: "🧑‍💼" }),
+                                i.jsx("span", { children: currentSystemUser?.branch || "Supervisor" })
                               ]
                             })
                         }),
@@ -11039,7 +11042,7 @@ ${b}`));
                                 }
                               },
                               className: "flex items-center justify-center w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full transition-all cursor-pointer",
-                              title: e === "te" ? "బ్రాంచ్ మార్చు" : "Change Branch",
+                              title: e === "te" ? "సూపర్‌వైజర్ మార్చు" : "Change Supervisor",
                               children: i.jsx(jK, { className: "w-3.5 h-3.5" }),
                             })
                           ]
@@ -18853,7 +18856,7 @@ ${b}`));
                                         className: "divide-y divide-slate-100",
                                         children: [
                                           Fs.filter((d) => {
-                                            if (!isRecordVisibleForUser(d.branch || d.location, d.createdBy, currentSystemUser, adminBranchFilter))
+                                            if (!isRecordVisibleForUser(d.branch || d.location, d.createdBy, currentSystemUser, adminBranchFilter, d.supervisor || d.wsIncharge || d.supervisorName || d.createdBy || ""))
                                               return !1;
                                             if (
                                               (ja !== "all" &&
@@ -22332,6 +22335,7 @@ ${b}`));
                 })
   : i.jsx(BranchLoginView, {
       branchesList: systemBranches,
+      supervisorsList: Array.from(new Set(er.filter((m: any) => m.role === "supervisor" || m.role === "Supervisor").map((m: any) => m.name).filter(Boolean))),
       users: customUsers,
       language: e,
       onLanguageChange: (lang: any) => {
