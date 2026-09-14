@@ -1,24 +1,47 @@
-// Real PostgreSQL REST API client for Sri Balaji Eicher Tractors
+// Data layer for Sri Balaji Eicher Tractors.
+//
+// Firestore is the single source of truth. The app ships as a static bundle
+// (no Express backend in production), and every user opens the same link
+// without signing in, so records have to live in Firestore to survive a
+// reload and to be visible to everyone.
 import { db } from '../firebase';
-import { collection, getDocs, doc, writeBatch } from 'firebase/firestore';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  writeBatch,
+} from 'firebase/firestore';
 
-// When the app is served without the Express backend (e.g. a static Vercel
-// deploy), every /api call resolves to index.html and yields no data. Firestore
-// is then both the source of truth and the way records reach other users.
-const FS_COLLECTIONS = {
+const COLLECTIONS = {
   customers: 'customers',
-  spares: 'spares',
-  jobCards: 'jobCards',
+  spares: 'spares_master',
+  jobCards: 'jobcards',
   complaints: 'complaints',
+  staff: 'staff',
+  attendance: 'attendance',
+  settings: 'settings',
+  serviceCamps: 'serviceCamps',
 } as const;
 
-const fsDocId = (raw: any, fallback: string) => {
-  const id = String(raw ?? '').trim();
-  // Firestore ids cannot contain "/" and cannot be empty.
-  return id ? id.replace(/\//g, '_') : fallback;
+// Spares are stored as chunk documents (chunk_0, chunk_1, …) each holding a
+// rows array, because the full parts list exceeds Firestore's 1MB per-document
+// limit.
+const SPARES_CHUNK_SIZE = 300;
+
+const ok = (count: number) => ({ success: true, count });
+const fail = (error: string) => ({ success: false, error });
+
+// Firestore ids may not contain "/" and may not be empty.
+const docId = (raw: any, fallback: string) => {
+  const id = String(raw ?? '').trim().replace(/\//g, '_');
+  return id || fallback;
 };
 
-async function fsReadAll(collectionName: string): Promise<any[]> {
+// Firestore rejects undefined; a JSON round-trip drops those keys.
+const plain = (row: any) => JSON.parse(JSON.stringify(row ?? {}));
+
+async function readAll(collectionName: string): Promise<any[]> {
   try {
     if (!db) return [];
     const snapshot = await getDocs(collection(db, collectionName));
@@ -29,632 +52,303 @@ async function fsReadAll(collectionName: string): Promise<any[]> {
   }
 }
 
-async function fsUpsertAll(
+async function upsertAll(
   collectionName: string,
   rows: any[],
   idOf: (row: any) => any
-): Promise<boolean> {
+): Promise<string[] | null> {
   try {
-    if (!db || !Array.isArray(rows) || rows.length === 0) return false;
-    const collectionRef = collection(db, collectionName);
-    // Firestore caps a batch at 500 writes.
+    if (!db) return null;
+    if (!Array.isArray(rows) || rows.length === 0) return [];
+    const ref = collection(db, collectionName);
+    const written: string[] = [];
+    // A Firestore batch holds at most 500 writes.
     for (let start = 0; start < rows.length; start += 400) {
       const batch = writeBatch(db);
       rows.slice(start, start + 400).forEach((row, offset) => {
-        const id = fsDocId(idOf(row), `row_${start + offset}_${Date.now()}`);
-        // JSON round-trip drops undefined values, which Firestore rejects.
-        batch.set(doc(collectionRef, id), JSON.parse(JSON.stringify(row ?? {})), { merge: true });
+        const id = docId(idOf(row), `row_${start + offset}_${Date.now()}`);
+        written.push(id);
+        batch.set(doc(ref, id), plain(row), { merge: true });
       });
       await batch.commit();
     }
-    console.log(`✅ ${rows.length} record(s) saved to Firestore (${collectionName})`);
-    return true;
+    return written;
   } catch (err) {
     console.warn(`Firestore write (${collectionName}) failed:`, err);
+    return null;
+  }
+}
+
+async function deleteIds(collectionName: string, ids: string[]): Promise<boolean> {
+  try {
+    if (!db || ids.length === 0) return true;
+    const ref = collection(db, collectionName);
+    for (let start = 0; start < ids.length; start += 400) {
+      const batch = writeBatch(db);
+      ids.slice(start, start + 400).forEach((id) => batch.delete(doc(ref, id)));
+      await batch.commit();
+    }
+    return true;
+  } catch (err) {
+    console.warn(`Firestore delete (${collectionName}) failed:`, err);
     return false;
   }
 }
 
-async function safeRequestJson<T = any>(
-  url: string,
-  options?: RequestInit,
-  retries = 2
-): Promise<T | null> {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const res = await fetch(url, options);
-      if (!res.ok) {
-        if (attempt < retries && (res.status === 502 || res.status === 503 || res.status === 504 || res.status === 404)) {
-          await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-          continue;
-        }
-        return null;
-      }
-      const contentType = res.headers.get('content-type') || '';
-      if (!contentType.includes('application/json')) {
-        if (attempt < retries) {
-          await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-          continue;
-        }
-        return null;
-      }
-      return (await res.json()) as T;
-    } catch (err) {
-      if (attempt < retries) {
-        await new Promise(r => setTimeout(r, 400 * (attempt + 1)));
-        continue;
-      }
-      return null;
-    }
-  }
-  return null;
+// Writes the new rows first, then drops whatever they did not cover, so a
+// failed write can never leave the collection emptied.
+async function replaceAllDocs(
+  collectionName: string,
+  rows: any[],
+  idOf: (row: any) => any
+): Promise<boolean> {
+  const existing = (await readAll(collectionName)).map((r) => r.id);
+  const written = await upsertAll(collectionName, rows, idOf);
+  if (written === null) return false;
+  const keep = new Set(written);
+  await deleteIds(collectionName, existing.filter((id) => !keep.has(id)));
+  return true;
 }
+
+async function save(
+  collectionName: string,
+  rows: any[],
+  idOf: (row: any) => any,
+  replaceAll: boolean
+) {
+  if (!Array.isArray(rows) || rows.length === 0) return ok(0);
+  const done = replaceAll
+    ? await replaceAllDocs(collectionName, rows, idOf)
+    : (await upsertAll(collectionName, rows, idOf)) !== null;
+  return done ? ok(rows.length) : fail(`Could not save to Firestore (${collectionName})`);
+}
+
+const ids = {
+  customer: (r: any) => r.chassisNo || r.chassis || r['Chassis no'] || r.chassisKey || r.id,
+  spare: (r: any) => r.partNo || r.partKey || r['Part No'] || r.id,
+  jobCard: (r: any) => r.jobNo || r.onlineJobCardNo || r.id,
+  complaint: (r: any) => r.id || r._id || r.complaintNo,
+  staff: (r: any) => r.id || r.name,
+  camp: (r: any) => r.id,
+};
 
 export const sqlApi = {
   // Customers
-  fetchCustomers: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/customers');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => {
-          let fullData = {};
-          let followupHistory = [];
-          try { fullData = typeof r.full_data === 'string' ? JSON.parse(r.full_data) : (r.full_data || {}); } catch {}
-          try { followupHistory = typeof r.followup_history === 'string' ? JSON.parse(r.followup_history) : (r.followup_history || []); } catch {}
-          return {
-            ...fullData,
-            id: r.id,
-            chassisKey: r.chassis_key,
-            chassisNo: r.chassis_no,
-            custName: r.cust_name,
-            fatherName: r.father_name,
-            custAddr: r.cust_addr,
-            village: r.village,
-            mandal: r.mandal,
-            ownerMob: r.owner_mob,
-            driverMob: r.driver_mob,
-            regdNo: r.regd_no,
-            engineNo: r.engine_no,
-            tractorModel: r.tractor_model,
-            dateOfDelivery: r.date_of_delivery,
-            followupHistory,
-          };
-        });
-      }
-    } catch {
-      // fall through to Firestore
-    }
-    return (await fsReadAll(FS_COLLECTIONS.customers)).map((r: any) => ({
+  fetchCustomers: async () =>
+    (await readAll(COLLECTIONS.customers)).map((r: any) => ({
       ...r,
       chassisNo: r.chassisNo || r.chassis || r['Chassis no'] || r.id,
       tractorModel: r.tractorModel || r.model || r.modelType || '',
-    }));
-  },
+    })),
   getCustomers: async () => sqlApi.fetchCustomers(),
 
-  saveCustomer: async (customer: any) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/customers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customer)
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    return sqlApi.bulkUpsertCustomers([customer]);
-  },
+  saveCustomer: async (customer: any) =>
+    save(COLLECTIONS.customers, [customer], ids.customer, false),
 
-  bulkUpsertCustomers: async (rows: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/customers/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows, replaceAll })
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    const saved = await fsUpsertAll(
-      FS_COLLECTIONS.customers,
-      rows,
-      (r) => r.chassisNo || r.chassis || r['Chassis no'] || r.chassisKey || r.id
-    );
-    return saved
-      ? { success: true, count: rows.length, storage: 'firestore' }
-      : { success: false, error: 'Could not save to backend or Firestore' };
-  },
-  saveCustomersBulk: async (rows: any[], replaceAll = false) => sqlApi.bulkUpsertCustomers(rows, replaceAll),
+  bulkUpsertCustomers: async (rows: any[], replaceAll = false) =>
+    save(COLLECTIONS.customers, rows, ids.customer, replaceAll),
+  saveCustomersBulk: async (rows: any[], replaceAll = false) =>
+    sqlApi.bulkUpsertCustomers(rows, replaceAll),
 
   deleteAllCustomers: async () => {
-    try {
-      const res = await safeRequestJson('/api/database/delete-all-customers', {
-        method: 'POST',
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const existing = (await readAll(COLLECTIONS.customers)).map((r) => r.id);
+    const done = await deleteIds(COLLECTIONS.customers, existing);
+    return done ? ok(existing.length) : fail('Could not clear customers');
   },
 
   // Spares
-  fetchSpares: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/spares');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => {
-          let fullData = {};
-          try { fullData = typeof r.full_data === 'string' ? JSON.parse(r.full_data) : (r.full_data || {}); } catch {}
-          return {
-            ...fullData,
-            id: r.id,
-            partKey: r.part_key,
-            partNo: r.part_no,
-            partDesc: r.part_desc,
-            mrp: r.mrp,
-            category: r.category
-          };
-        });
-      }
-    } catch {
-      // fall through to Firestore
-    }
-    return fsReadAll(FS_COLLECTIONS.spares);
-  },
+  fetchSpares: async () =>
+    (await readAll(COLLECTIONS.spares))
+      .sort((a: any, b: any) => (a.chunkIndex ?? 0) - (b.chunkIndex ?? 0))
+      .flatMap((chunk: any) => (Array.isArray(chunk.rows) ? chunk.rows : [])),
   getSpares: async () => sqlApi.fetchSpares(),
 
-  saveSpare: async (spare: any) => sqlApi.bulkUpsertSpares([spare], false),
-
-  bulkUpsertSpares: async (rows: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/spares/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rows, replaceAll })
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    const saved = await fsUpsertAll(
-      FS_COLLECTIONS.spares,
-      rows,
-      (r) => r.partNo || r.partKey || r['Part No'] || r.id
-    );
-    return saved
-      ? { success: true, count: rows.length, storage: 'firestore' }
-      : { success: false, error: 'Could not save to backend or Firestore' };
+  saveSpare: async (spare: any) => {
+    const rows = await sqlApi.fetchSpares();
+    const key = (r: any) => String(ids.spare(r) ?? '').trim();
+    const index = rows.findIndex((r: any) => key(r) && key(r) === key(spare));
+    if (index >= 0) rows[index] = { ...rows[index], ...spare };
+    else rows.push(spare);
+    return sqlApi.bulkUpsertSpares(rows);
   },
-  saveSparesBulk: async (rows: any[], replaceAll = false) => sqlApi.bulkUpsertSpares(rows, replaceAll),
 
-  // Jobcards
-  fetchJobcards: async () => {
+  // The chunks are positional, so a write always republishes the whole list.
+  bulkUpsertSpares: async (rows: any[]) => {
     try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/jobcards');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => {
-          let checkpoints = [];
-          let repairRows = [];
-          let partRows = [];
-          let fullData: any = {};
-          try { checkpoints = typeof r.checkpoints === 'string' ? JSON.parse(r.checkpoints) : (r.checkpoints || []); } catch {}
-          try { repairRows = typeof r.repair_rows === 'string' ? JSON.parse(r.repair_rows) : (r.repair_rows || []); } catch {}
-          try { partRows = typeof r.part_rows === 'string' ? JSON.parse(r.part_rows) : (r.part_rows || []); } catch {}
-          try { fullData = typeof r.full_data === 'string' ? JSON.parse(r.full_data) : (r.full_data || {}); } catch {}
-
-          return {
-            ...fullData,
-            id: r.id,
-            jobNo: r.job_no,
-            onlineJobCardNo: r.online_job_card_no,
-            jobDate: r.job_date,
-            dateTimeIn: r.date_time_in,
-            dateTimeOut: r.date_time_out,
-            expectedRepairTime: r.expected_repair_time,
-            status: r.status,
-            custName: r.cust_name,
-            fatherName: r.father_name,
-            custAddr: r.cust_addr,
-            village: r.village,
-            mandal: r.mandal,
-            ownerMob: r.owner_mob,
-            driverMob: r.driver_mob,
-            regdNo: r.regd_no,
-            chassisNo: r.chassis_no,
-            engineNo: r.engine_no,
-            model: r.model,
-            modelType: r.model_type,
-            serialNo: r.serial_no,
-            hourMeter: r.hour_meter,
-            serviceType: r.service_type,
-            freeServiceList: r.free_service_list,
-            extraRepairs: r.extra_repairs,
-            mechanic: r.mechanic,
-            mechanicName: r.mechanic,
-            technicianName: r.mechanic,
-            wsIncharge: r.ws_incharge,
-            supervisor: r.ws_incharge,
-            serviceLocation: r.service_location,
-            billNo: r.bill_no,
-            reasonsForAnalysis: r.reasons_for_analysis,
-            telecalling: r.telecalling,
-            warrantyOverride: r.warranty_override,
-            totalLabour: r.total_labour,
-            warrantyMaterial: r.warranty_material,
-            nonWarrantyMaterial: r.non_warranty_material,
-            gTotal: r.g_total,
-            actualClosedDate: r.actual_closed_date,
-            branch: r.branch || fullData.branch || '',
-            historyFileNo: r.history_file_no || fullData.historyFileNo || '',
-            complaintDate: r.complaint_date || fullData.complaintDate || '',
-            installDate: r.install_date || r.date_of_delivery || fullData.installDate || '',
-            dateOfDelivery: r.date_of_delivery || r.install_date || fullData.dateOfDelivery || '',
-            distDealership: r.dist_dealership || fullData.distDealership || '',
-            checkpoints,
-            repairRows,
-            partRows,
-            createdBy: r.created_by,
-            createdByEmail: r.created_by_email,
-            createdAt: r.created_at,
-          };
+      if (!db) return fail('Firestore unavailable');
+      const list = Array.isArray(rows) ? rows : [];
+      const ref = collection(db, COLLECTIONS.spares);
+      const existing = (await readAll(COLLECTIONS.spares)).map((r) => r.id);
+      const totalChunks = Math.ceil(list.length / SPARES_CHUNK_SIZE);
+      const uploadedAt = new Date().toISOString();
+      for (let i = 0; i < totalChunks; i++) {
+        const batch = writeBatch(db);
+        batch.set(doc(ref, `chunk_${i}`), {
+          chunkIndex: i,
+          totalChunks,
+          uploadedAt,
+          rows: list.slice(i * SPARES_CHUNK_SIZE, (i + 1) * SPARES_CHUNK_SIZE).map(plain),
         });
+        await batch.commit();
       }
-    } catch {
-      // fall through to Firestore
+      const keep = new Set(Array.from({ length: totalChunks }, (_, i) => `chunk_${i}`));
+      await deleteIds(COLLECTIONS.spares, existing.filter((id) => !keep.has(id)));
+      return ok(list.length);
+    } catch (err) {
+      console.warn('Firestore write (spares) failed:', err);
+      return fail('Could not save spares to Firestore');
     }
-    return fsReadAll(FS_COLLECTIONS.jobCards);
   },
+  saveSparesBulk: async (rows: any[]) => sqlApi.bulkUpsertSpares(rows),
+
+  // Job cards
+  fetchJobcards: async () => readAll(COLLECTIONS.jobCards),
+  fetchJobCards: async () => sqlApi.fetchJobcards(),
   getJobCards: async () => sqlApi.fetchJobcards(),
 
-  saveJobcard: async (card: any) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/jobcards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(card)
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    return sqlApi.bulkUpsertJobcards([card]);
-  },
+  saveJobcard: async (card: any) => save(COLLECTIONS.jobCards, [card], ids.jobCard, false),
   saveJobCard: async (card: any) => sqlApi.saveJobcard(card),
 
   deleteJobcard: async (id: string) => {
-    try {
-      const res = await safeRequestJson(`/api/jobcards/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const done = await deleteIds(COLLECTIONS.jobCards, [docId(id, '')].filter(Boolean));
+    return done ? ok(1) : fail('Could not delete job card');
   },
   deleteJobCard: async (id: string) => sqlApi.deleteJobcard(id),
 
-  bulkUpsertJobcards: async (cards: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/jobcards/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cards, replaceAll })
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    const saved = await fsUpsertAll(
-      FS_COLLECTIONS.jobCards,
-      cards,
-      (c) => c.jobNo || c.onlineJobCardNo || c.id
-    );
-    return saved
-      ? { success: true, count: cards.length, storage: 'firestore' }
-      : { success: false, error: 'Could not save to backend or Firestore' };
-  },
-  saveJobCardsBulk: async (cards: any[], replaceAll = false) => sqlApi.bulkUpsertJobcards(cards, replaceAll),
+  bulkUpsertJobcards: async (cards: any[], replaceAll = false) =>
+    save(COLLECTIONS.jobCards, cards, ids.jobCard, replaceAll),
+  saveJobCardsBulk: async (cards: any[], replaceAll = false) =>
+    sqlApi.bulkUpsertJobcards(cards, replaceAll),
 
-  bulkDeleteJobcards: async (ids: string[]) => {
-    try {
-      const res = await safeRequestJson('/api/database/delete-jobcards', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+  bulkDeleteJobcards: async (cardIds: string[]) => {
+    const done = await deleteIds(
+      COLLECTIONS.jobCards,
+      (cardIds || []).map((id) => docId(id, '')).filter(Boolean)
+    );
+    return done ? ok(cardIds.length) : fail('Could not delete job cards');
   },
 
   // Complaints
-  fetchComplaints: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/complaints');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => ({
-          id: r.id,
-          complaintNo: r.complaint_no || r.complaintNo || '',
-          complaintDate: r.date || r.complaint_date || r.complaintDate || '',
-          date: r.date || r.complaint_date || r.complaintDate || '',
-          customerName: r.customer_name || r.customerName || '',
-          mobileNumber: r.phone || r.mobile_number || r.mobileNumber || '',
-          phone: r.phone || r.mobile_number || r.mobileNumber || '',
-          village: r.village || '',
-          mandal: r.mandal || '',
-          tractorModel: r.tractor_model || r.tractorModel || '',
-          chassisNo: r.chassis_no || r.chassisNo || '',
-          hours: r.hours || '',
-          complaintDetails: r.complaint_details || r.complaintDetails || '',
-          assignedMechanic: r.mechanic || r.assigned_mechanic || r.assignedMechanic || '',
-          mechanic: r.mechanic || r.assigned_mechanic || r.assignedMechanic || '',
-          assignedSupervisor: r.supervisor || r.assigned_supervisor || r.assignedSupervisor || '',
-          supervisor: r.supervisor || r.assigned_supervisor || r.assignedSupervisor || '',
-          status: r.status || 'Open',
-          jobCardNo: r.job_card_no || r.jobCardNo || '',
-          closureDate: r.closure_date || r.closureDate || '',
-          closedDate: r.closure_date || r.closureDate || '',
-          resolution: r.remarks || r.resolution || '',
-          remarks: r.remarks || r.resolution || '',
-          createdAt: r.created_at || r.createdAt || ''
-        }));
-      }
-    } catch {
-      // fall through to Firestore
-    }
-    return fsReadAll(FS_COLLECTIONS.complaints);
-  },
+  fetchComplaints: async () => readAll(COLLECTIONS.complaints),
   getComplaints: async () => sqlApi.fetchComplaints(),
 
-  saveComplaint: async (complaint: any) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/complaints', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(complaint)
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    return sqlApi.bulkUpsertComplaints([complaint]);
-  },
+  saveComplaint: async (complaint: any) =>
+    save(COLLECTIONS.complaints, [complaint], ids.complaint, false),
 
   deleteComplaint: async (id: string) => {
-    try {
-      const res = await safeRequestJson(`/api/complaints/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const done = await deleteIds(COLLECTIONS.complaints, [docId(id, '')].filter(Boolean));
+    return done ? ok(1) : fail('Could not delete complaint');
   },
 
-  bulkUpsertComplaints: async (complaints: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson<{ success?: boolean }>('/api/complaints/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ complaints, replaceAll })
-      });
-      if (res && res.success) return res;
-    } catch {
-      // fall through to Firestore
-    }
-    const saved = await fsUpsertAll(
-      FS_COLLECTIONS.complaints,
-      complaints,
-      (c) => c.id || c._id || c.complaintNo
-    );
-    return saved
-      ? { success: true, count: complaints.length, storage: 'firestore' }
-      : { success: false, error: 'Could not save to backend or Firestore' };
-  },
-  saveComplaintsBulk: async (complaints: any[], replaceAll = false) => sqlApi.bulkUpsertComplaints(complaints, replaceAll),
+  bulkUpsertComplaints: async (complaints: any[], replaceAll = false) =>
+    save(COLLECTIONS.complaints, complaints, ids.complaint, replaceAll),
+  saveComplaintsBulk: async (complaints: any[], replaceAll = false) =>
+    sqlApi.bulkUpsertComplaints(complaints, replaceAll),
 
   // Staff
-  fetchStaff: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/staff');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          role: r.role || 'mechanic',
-          phone: r.phone || r.mobile_number || '',
-          mobileNumber: r.mobile_number || r.phone || '',
-          fatherName: r.father_name || r.fatherName || '',
-          village: r.village || '',
-          mandal: r.mandal || '',
-          dateOfJoining: r.date_of_joining || r.dateOfJoining || '',
-          supervisor: r.supervisor || r.assigned_supervisor || '',
-          assignedSupervisor: r.assigned_supervisor || r.supervisor || '',
-          active: r.active === 'true' || r.active === true,
-          createdAt: r.created_at,
-          updatedAt: r.updated_at
-        }));
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  },
+  fetchStaff: async () =>
+    (await readAll(COLLECTIONS.staff)).map((r: any) => ({
+      ...r,
+      role: r.role || 'mechanic',
+      active: r.active === undefined ? true : r.active === true || r.active === 'true',
+    })),
   getStaff: async () => sqlApi.fetchStaff(),
 
-  saveStaff: async (staff: any) => {
-    try {
-      const res = await safeRequestJson('/api/staff', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(staff)
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  },
+  saveStaff: async (staff: any) => save(COLLECTIONS.staff, [staff], ids.staff, false),
 
   deleteStaff: async (id: string) => {
-    try {
-      const res = await safeRequestJson(`/api/staff/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const done = await deleteIds(COLLECTIONS.staff, [docId(id, '')].filter(Boolean));
+    return done ? ok(1) : fail('Could not delete staff member');
   },
 
-  bulkUpsertStaff: async (staff: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson('/api/staff/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ staff, replaceAll })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  },
-  saveStaffBulk: async (staff: any[], replaceAll = false) => sqlApi.bulkUpsertStaff(staff, replaceAll),
+  bulkUpsertStaff: async (staff: any[], replaceAll = false) =>
+    save(COLLECTIONS.staff, staff, ids.staff, replaceAll),
+  saveStaffBulk: async (staff: any[], replaceAll = false) =>
+    sqlApi.bulkUpsertStaff(staff, replaceAll),
 
-  // Attendance
+  // Attendance — one document per date, returned as { [date]: records }.
   fetchAttendance: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any }>('/api/attendance');
-      if (data && data.success && data.data) {
-        return data.data;
-      }
-      return {};
-    } catch {
-      return {};
-    }
+    const days = await readAll(COLLECTIONS.attendance);
+    const byDate: Record<string, any> = {};
+    days.forEach(({ id, ...rest }: any) => {
+      byDate[id] = rest.records ?? rest;
+    });
+    return byDate;
   },
   getAttendance: async () => sqlApi.fetchAttendance(),
 
   saveAttendance: async (date: string, records: any) => {
-    try {
-      const res = await safeRequestJson('/api/attendance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, records })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    if (!date) return fail('Attendance needs a date');
+    const done = await upsertAll(COLLECTIONS.attendance, [{ date, records }], () => date);
+    return done !== null ? ok(1) : fail('Could not save attendance');
   },
 
-  // App Settings
+  // App settings — one document per key, returned as { [key]: value }.
   fetchSettings: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: Record<string, string> }>('/api/settings');
-      if (data && data.success && data.data) {
-        return data.data;
-      }
-      return {};
-    } catch {
-      return {};
-    }
+    const rows = await readAll(COLLECTIONS.settings);
+    const settings: Record<string, string> = {};
+    rows.forEach(({ id, value }: any) => {
+      if (value !== undefined) settings[id] = value;
+    });
+    return settings;
   },
   getSettings: async () => sqlApi.fetchSettings(),
 
   saveSettings: async (key: string, value: string) => {
-    try {
-      const res = await safeRequestJson('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key, value })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    if (!key) return fail('Setting needs a key');
+    const done = await upsertAll(COLLECTIONS.settings, [{ value }], () => key);
+    return done !== null ? ok(1) : fail('Could not save setting');
   },
 
-  // Master Backup
+  // Wipes every collection. Only reachable from the guarded "clear all data"
+  // admin button.
+  clearAllData: async () => {
+    const names = Object.values(COLLECTIONS);
+    const results = await Promise.all(
+      names.map(async (name) => {
+        const existing = (await readAll(name)).map((r) => r.id);
+        return deleteIds(name, existing);
+      })
+    );
+    return results.every(Boolean) ? ok(names.length) : fail('Could not clear every collection');
+  },
+
+  // Master backup — every collection in one payload.
   fetchMasterBackup: async () => {
-    try {
-      const res = await safeRequestJson('/api/master-backup');
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const [customers, spares, jobCards, complaints, staff, serviceCamps] = await Promise.all([
+      readAll(COLLECTIONS.customers),
+      readAll(COLLECTIONS.spares),
+      readAll(COLLECTIONS.jobCards),
+      readAll(COLLECTIONS.complaints),
+      readAll(COLLECTIONS.staff),
+      readAll(COLLECTIONS.serviceCamps),
+    ]);
+    const attendance = await sqlApi.fetchAttendance();
+    return {
+      success: true,
+      data: { customers, spares, jobCards, complaints, staff, serviceCamps, attendance },
+    };
   },
 
-  // Service Camps
-  fetchServiceCamps: async () => {
-    try {
-      const data = await safeRequestJson<{ success: boolean; data: any[] }>('/api/service-camps');
-      if (data && data.success && Array.isArray(data.data)) {
-        return data.data.map((r: any) => ({
-          id: r.id,
-          dealershipCode: r.dealership_code || r.dealershipCode || '4731',
-          branch: r.branch || '',
-          mandal: r.mandal || '',
-          village: r.village || '',
-          campDate: r.camp_date || r.campDate || '',
-          targetTractors: r.target_tractors || r.targetTractors || '',
-          supervisor: r.supervisor || '',
-          mechanic: r.mechanic || '',
-          status: r.status || 'Upcoming',
-          serviceTypeExpected: r.service_type_expected || r.serviceTypeExpected || '',
-          offers: r.offers || '',
-          contactPerson: r.contact_person || r.contactPerson || '',
-          contactPhone: r.contact_phone || r.contactPhone || '',
-          notes: r.notes || '',
-          attendedCount: r.attended_count || r.attendedCount || '',
-          createdAt: r.created_at || r.createdAt || ''
-        }));
-      }
-      return [];
-    } catch {
-      return [];
-    }
-  },
+  // Service camps
+  fetchServiceCamps: async () =>
+    (await readAll(COLLECTIONS.serviceCamps)).map((r: any) => ({
+      ...r,
+      dealershipCode: r.dealershipCode || '4731',
+      status: r.status || 'Upcoming',
+    })),
   getServiceCamps: async () => sqlApi.fetchServiceCamps(),
 
-  saveServiceCamp: async (camp: any) => {
-    try {
-      const res = await safeRequestJson('/api/service-camps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(camp)
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  },
+  saveServiceCamp: async (camp: any) =>
+    save(COLLECTIONS.serviceCamps, [camp], ids.camp, false),
 
   deleteServiceCamp: async (id: string) => {
-    try {
-      const res = await safeRequestJson(`/api/service-camps/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
+    const done = await deleteIds(COLLECTIONS.serviceCamps, [docId(id, '')].filter(Boolean));
+    return done ? ok(1) : fail('Could not delete service camp');
   },
 
-  bulkUpsertServiceCamps: async (camps: any[], replaceAll = false) => {
-    try {
-      const res = await safeRequestJson('/api/service-camps/bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ camps, replaceAll })
-      });
-      return res || { success: false, error: 'Request failed' };
-    } catch (e) {
-      return { success: false, error: String(e) };
-    }
-  }
+  bulkUpsertServiceCamps: async (camps: any[], replaceAll = false) =>
+    save(COLLECTIONS.serviceCamps, camps, ids.camp, replaceAll),
 };
 
 export const sqlService = sqlApi;

@@ -42,7 +42,7 @@ import {
   VillageInfo
 } from '../data/dealershipData';
 import { Language } from '../translations';
-import { apiSaveServiceCamp, apiDeleteServiceCamp } from '../api';
+import { sqlService } from '../lib/sqlService';
 import { VillageCustomerInline } from './VillageCustomerInline';
 import { BroadcastQueueModal } from './BroadcastQueueModal';
 import { KrishnaDistrictRouteMap } from './KrishnaDistrictRouteMap';
@@ -811,7 +811,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
     };
 
     try {
-      await apiSaveServiceCamp(campToSave);
+      await sqlService.saveServiceCamp(campToSave);
 
       const existingIdx = serviceCamps.findIndex(c => c.id === campToSave.id);
       let updated: ServiceCamp[];
@@ -837,7 +837,7 @@ export const ServiceCampPlanning: React.FC<ServiceCampPlanningProps> = ({
       return;
     }
     try {
-      await apiDeleteServiceCamp(id);
+      await sqlService.deleteServiceCamp(id);
       const updated = serviceCamps.filter(c => c.id !== id);
       onUpdateServiceCamps(updated);
     } catch (err) {

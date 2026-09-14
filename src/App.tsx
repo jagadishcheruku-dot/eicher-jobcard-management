@@ -3285,7 +3285,7 @@ function gY() {
     ce.useEffect(() => {
       if (kt)
         try {
-          const d = ci(kt, "customers_master"),
+          const d = ci(kt, "customers"),
             b = Gp(
               d,
               (v) => {
@@ -4267,50 +4267,6 @@ function gY() {
           });
           savedCount = Object.keys(fullMap).length;
         }
-        if (kt && Array.isArray(fresh) && fresh.length > 0) {
-          try {
-            const b = await ud(ci(kt, "customers_master"));
-            if (!b.empty) {
-              const N = Bu(kt);
-              (b.docs.forEach((R) => N.delete(R.ref)), await N.commit());
-            }
-            const v = fresh.map((N) => {
-                const R = {};
-                return (
-                  N &&
-                    typeof N == "object" &&
-                    Object.keys(N).forEach((S) => {
-                      R[S] = Bs(N[S]);
-                    }),
-                  R
-                );
-              }),
-              j = 250,
-              I = Math.ceil(v.length / j);
-            for (let N = 0; N < I; N++) {
-              const R = v.slice(N * j, (N + 1) * j),
-                S = Qs(kt, "customers_master", `chunk_${N}`);
-              await xu(S, {
-                chunkIndex: N,
-                totalChunks: I,
-                uploadedAt: new Date().toISOString(),
-                rows: R,
-              });
-            }
-            await xu(
-              Qs(kt, "app_master_data", "customers_meta"),
-              {
-                totalRows: v.length,
-                totalChunks: I,
-                uploadedAt: new Date().toISOString(),
-                uploadedBy: ($t == null ? void 0 : $t.email) || "user",
-              },
-              { merge: !0 },
-            );
-          } catch (e) {
-            console.warn("Firestore customer chunk sync:", e);
-          }
-        }
         let msg = `✅ ${savedCount} unique customer record(s) active & synced in Cloud Database.`;
         if (
           typeof newAddedCount === "number" &&
@@ -4333,57 +4289,18 @@ function gY() {
           text: "⏳ Syncing spares records to cloud database...",
           isSuccess: !1,
         });
-        try {
-          await Rs.saveSparesBulk(d, !1);
-          const res = await fetch("/api/spares");
-          const json = await res.json();
-          if (json.success && json.data) {
-            d = json.data.map((x) => JSON.parse(x.full_data || "{}"));
-          }
-        } catch (b) {
-          console.warn("Cloud SQL spares sync:", b);
-        }
-        if (kt) {
-          const b = await ud(ci(kt, "spares_master"));
-          if (!b.empty) {
-            const N = Bu(kt);
-            (b.docs.forEach((R) => N.delete(R.ref)), await N.commit());
-          }
-          if (d.length === 0) return;
-          const v = d.map((N) => {
-              const R = {};
-              return (
-                N &&
-                  typeof N == "object" &&
-                  Object.keys(N).forEach((S) => {
-                    R[S] = Bs(N[S]);
-                  }),
-                R
-              );
-            }),
-            j = 300,
-            I = Math.ceil(v.length / j);
-          for (let N = 0; N < I; N++) {
-            const R = v.slice(N * j, (N + 1) * j),
-              S = Qs(kt, "spares_master", `chunk_${N}`);
-            await xu(S, {
-              chunkIndex: N,
-              totalChunks: I,
-              uploadedAt: new Date().toISOString(),
-              rows: R,
-            });
-          }
-          await xu(
-            Qs(kt, "app_master_data", "spares_meta"),
-            {
-              totalRows: v.length,
-              totalChunks: I,
-              uploadedAt: new Date().toISOString(),
-              uploadedBy: ($t == null ? void 0 : $t.email) || "user",
-            },
-            { merge: !0 },
+        const sanitized = d.map((N) => {
+          const R = {};
+          return (
+            N &&
+              typeof N == "object" &&
+              Object.keys(N).forEach((S) => {
+                R[S] = Bs(N[S]);
+              }),
+            R
           );
-        }
+        });
+        await Rs.saveSparesBulk(sanitized);
         Ol({
           text: `✅ ${d.length} spare part(s) synced to Cloud SQL & cloud database successfully.`,
           isSuccess: !0,
@@ -20438,63 +20355,14 @@ ${b}`));
                                                             "ARE YOU SURE YOU WANT TO CLEAR ALL DATA? THIS CANNOT BE UNDONE!",
                                                           )
                                                         ) {
-                                                          fetch(
-                                                            "/api/database/clear",
-                                                            {
-                                                              method: "POST",
-                                                              headers: {
-                                                                "Content-Type":
-                                                                  "application/json",
-                                                              },
-                                                            },
-                                                          )
-                                                            .then((b) =>
-                                                              b.json(),
-                                                            )
-                                                            .then(async (b) => {
-                                                              if (b.success) {
-                                                                if (kt) {
-                                                                  const cols = [
-                                                                    "customers_master",
-                                                                    "jobcards",
-                                                                    "complaints",
-                                                                    "spares_master",
-                                                                    "staff",
-                                                                  ];
-                                                                  for (const col of cols) {
-                                                                    const sn =
-                                                                      await ud(
-                                                                        ci(
-                                                                          kt,
-                                                                          col,
-                                                                        ),
-                                                                      );
-                                                                    if (
-                                                                      !sn.empty
-                                                                    ) {
-                                                                      const ba =
-                                                                        Bu(kt);
-                                                                      sn.docs.forEach(
-                                                                        (d) =>
-                                                                          ba.delete(
-                                                                            d.ref,
-                                                                          ),
-                                                                      );
-                                                                      await ba.commit();
-                                                                    }
-                                                                  }
-                                                                }
-                                                                alert(
-                                                                  "All data cleared successfully.",
-                                                                );
-                                                                window.location.reload();
-                                                              } else {
-                                                                alert(
-                                                                  "Failed to clear data: " +
-                                                                    b.error,
-                                                                );
-                                                              }
-                                                            });
+                                                          Rs.clearAllData().then((b) => {
+                                                            if (b.success) {
+                                                              alert("All data cleared successfully.");
+                                                              window.location.reload();
+                                                            } else {
+                                                              alert("Failed to clear data: " + b.error);
+                                                            }
+                                                          });
                                                         }
                                                       },
                                                       className:
