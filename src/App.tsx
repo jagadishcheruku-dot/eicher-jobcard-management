@@ -16494,7 +16494,7 @@ ${b}`));
                                                     }),
                                                     i.jsxs("table", {
                                                       className:
-                                                        "w-full table-fixed border-collapse border border-blue-900 text-[8.5px]",
+                                                        "w-full table-fixed border-collapse border border-blue-900 text-[9.5px]",
                                                       children: [
                                                         i.jsxs("colgroup", {
                                                           children: [
@@ -16525,7 +16525,7 @@ ${b}`));
                                                             "tr",
                                                             {
                                                               className:
-                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[22px]",
+                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[30px]",
                                                               children: [
                                                                 i.jsx("th", {
                                                                   className:
@@ -16576,13 +16576,13 @@ ${b}`));
                                                                   key:
                                                                     d.id || b,
                                                                   className:
-                                                                    "border-b border-blue-900/60 h-[19px] leading-tight hover:bg-blue-50/20",
+                                                                    "border-b border-blue-900/60 h-[27px] leading-tight hover:bg-blue-50/20",
                                                                   children: [
                                                                     i.jsx(
                                                                       "td",
                                                                       {
                                                                         className:
-                                                                          "border-r border-blue-900/60 p-0.5 text-center font-mono font-bold text-[10px]",
+                                                                          "border-r border-blue-900/60 p-0.5 text-center font-mono font-bold text-[11px]",
                                                                         children:
                                                                           d.id,
                                                                       },
@@ -16604,7 +16604,7 @@ ${b}`));
                                                                                     "span",
                                                                                     {
                                                                                       className:
-                                                                                        "text-[9px] font-black text-blue-800 shrink-0",
+                                                                                        "text-[10px] font-black text-blue-800 shrink-0",
                                                                                       children:
                                                                                         [
                                                                                           "[",
@@ -16617,7 +16617,7 @@ ${b}`));
                                                                                     "span",
                                                                                     {
                                                                                       className:
-                                                                                        "text-[11px] font-extrabold text-slate-950 truncate",
+                                                                                        "text-[12px] font-extrabold text-slate-950 truncate",
                                                                                       children:
                                                                                         j,
                                                                                     },
@@ -16637,7 +16637,7 @@ ${b}`));
                                                                             "span",
                                                                             {
                                                                               className:
-                                                                                "text-[10px] font-bold text-slate-900 truncate block leading-none",
+                                                                                "text-[11px] font-bold text-slate-900 truncate block leading-none",
                                                                               children:
                                                                                 I,
                                                                             },
@@ -16653,7 +16653,7 @@ ${b}`));
                                                                           i.jsx(
                                                                             "div",
                                                                             {
-                                                                              className: `w-3 h-3 border border-blue-900 mx-auto flex items-center justify-center text-[9px] leading-none shrink-0 ${d.checked ? "bg-blue-900 text-white font-bold" : "bg-white"}`,
+                                                                              className: `w-3.5 h-3.5 border border-blue-900 mx-auto flex items-center justify-center text-[10px] leading-none shrink-0 ${d.checked ? "bg-blue-900 text-white font-bold" : "bg-white"}`,
                                                                               children:
                                                                                 d.checked
                                                                                   ? "✓"

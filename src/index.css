@@ -138,20 +138,20 @@
     print-color-adjust: exact !important;
   }
 
-  /* Minimize vertical spacing to eliminate gaps at bottom of pages */
+  /* Preserve vertical spacing identical to live preview */
   .card-p1 [class*="space-y-1.5"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-1.5"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 2px !important;
+    margin-top: 6px !important;
     margin-bottom: 0 !important;
   }
   .card-p1 [class*="space-y-1"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-1"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 2px !important;
+    margin-top: 4px !important;
     margin-bottom: 0 !important;
   }
   .card-p1 [class*="space-y-0.5"] > :not([hidden]) ~ :not([hidden]),
   .card-p2 [class*="space-y-0.5"] > :not([hidden]) ~ :not([hidden]) {
-    margin-top: 1px !important;
+    margin-top: 2px !important;
     margin-bottom: 0 !important;
   }
 
