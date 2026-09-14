@@ -2200,7 +2200,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                           });
                                         }}
                                       >
-                                        <span className="text-purple-600">{isExpanded ? "▼" : "▶"}</span>
+                                        <span className="text-purple-600 font-bold text-sm">{isExpanded ? "−" : "+"}</span>
                                         <span>{year}</span>
                                       </div>
                                       {isExpanded && filteredMonths.length > 0 && (

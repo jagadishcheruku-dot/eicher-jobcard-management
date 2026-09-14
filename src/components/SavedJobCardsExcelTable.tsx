@@ -1117,7 +1117,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                           });
                         }}
                       >
-                        <span className="text-emerald-600">{isExpanded ? "▼" : "▶"}</span>
+                        <span className="text-emerald-600 font-bold">{isExpanded ? "−" : "+"}</span>
                         <span>{year}</span>
                       </div>
                       {isExpanded && filteredMonths.length > 0 && (
