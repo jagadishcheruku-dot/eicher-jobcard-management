@@ -11359,31 +11359,31 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700 rounded-lg shadow-lg transition-all" + (showLookupResults ? " p-2.5 space-y-2" : " p-2"),
+                                          "bg-white border border-slate-200 rounded-xl shadow-2xs transition-all" + (showLookupResults ? " p-2.5 space-y-2" : " p-2"),
                                         children: [
                                           i.jsxs("div", {
                                             onClick: () => setShowLookupResults(!showLookupResults),
                                             className:
-                                              "flex items-center justify-between cursor-pointer hover:bg-slate-700/50 px-1.5 py-0.5 rounded transition-colors",
+                                              "flex items-center justify-between cursor-pointer hover:bg-slate-50 px-1.5 py-0.5 rounded transition-colors",
                                             children: [
                                               i.jsxs("div", {
                                                 children: [
                                                   i.jsx("div", {
                                                     className:
-                                                      "text-[9px] font-extrabold text-white uppercase leading-tight",
+                                                      "text-[10px] font-extrabold text-slate-700 uppercase leading-tight",
                                                     children:
                                                       "Eicher Followup",
                                                   }),
                                                   i.jsx("div", {
                                                     className:
-                                                      "text-[8px] font-bold text-slate-300",
+                                                      "text-[9px] font-bold text-slate-500",
                                                     children: "Quick Search",
                                                   }),
                                                 ],
                                               }),
                                               i.jsx("div", {
                                                 className:
-                                                  "text-lg font-black text-teal-400",
+                                                  "text-lg font-black text-indigo-600",
                                                 children: showLookupResults ? "🔽" : "🔍",
                                               }),
                                             ],
@@ -11396,11 +11396,11 @@ ${b}`));
                                                 value: lookupSearchText,
                                                 onChange: (e) => setLookupSearchText(e.target.value),
                                                 className:
-                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-600 rounded-lg outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-400 bg-slate-800 text-white placeholder-slate-400",
+                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-300 bg-white text-slate-900",
                                               }),
                                               lookupSearchText.trim() && i.jsx("div", {
                                                 className:
-                                                  "space-y-1 max-h-48 overflow-y-auto bg-slate-800 rounded border border-slate-700 p-2",
+                                                  "space-y-1 max-h-48 overflow-y-auto bg-slate-50 rounded border border-slate-200 p-2",
                                                 children: _a.filter((cust) => {
                                                   const q = lookupSearchText.toLowerCase();
                                                   const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
@@ -11416,21 +11416,21 @@ ${b}`));
                                                       setLookupSelectedCustomer(cust);
                                                     },
                                                     className:
-                                                      "p-1.5 bg-slate-700 hover:bg-slate-600 rounded text-[8px] cursor-pointer border-l-2 border-slate-500 transition-all",
+                                                      "p-1.5 bg-white hover:bg-indigo-50 rounded text-[8px] cursor-pointer border-l-2 border-indigo-500 border-t border-r border-b border-slate-200 transition-all",
                                                     children: [
                                                       i.jsx("div", {
                                                         className:
-                                                          "font-bold text-slate-100",
+                                                          "font-bold text-slate-900",
                                                         children: custName,
                                                       }),
                                                       i.jsx("div", {
                                                         className:
-                                                          "text-slate-300",
+                                                          "text-slate-600",
                                                         children: `📱 ${custPhone}`,
                                                       }),
                                                       i.jsx("div", {
                                                         className:
-                                                          "text-slate-400",
+                                                          "text-slate-500",
                                                         children: `🚗 ${custChassis}`,
                                                       }),
                                                     ],
