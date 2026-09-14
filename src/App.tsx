@@ -3562,6 +3562,111 @@ function gY() {
         jo(!1);
       }
     },
+    restoreFullBackupFromFile = (evt: any) => {
+      const file = evt.target.files && evt.target.files[0];
+      if (!file) return;
+      if (
+        !window.confirm(
+          "⚠️ WARNING: This will REPLACE all current Job Cards, Complaints, Staff, Customers, and Spares data with the contents of this backup file. This cannot be undone. Continue?",
+        )
+      ) {
+        if (evt.target) evt.target.value = "";
+        return;
+      }
+      bc({ text: "⏳ Restoring full backup...", isSuccess: !1 });
+      const reader = new FileReader();
+      reader.onload = async (e: any) => {
+        try {
+          const wb = jh(e.target?.result, { type: "array" });
+          const getSheet = (name: string) => {
+            const ws = wb.Sheets[name];
+            return ws ? lr.sheet_to_json(ws, { defval: "" }) : [];
+          };
+          const jobCardsRows = getSheet("JobCards").map(j1);
+          const complaintsRows = getSheet("Complaints");
+          const staffRows = getSheet("Staff");
+          const customersRows = getSheet("Customers");
+          const sparesRows = getSheet("Spares");
+          const settingsRows = getSheet("AppSettings");
+          const attendanceRows = getSheet("StaffAttendance");
+
+          if (jobCardsRows.length > 0) {
+            Oa(jobCardsRows);
+            await bo(jobCardsRows);
+          }
+          if (complaintsRows.length > 0) {
+            Ga(complaintsRows);
+            try {
+              localStorage.setItem("sri_backup_complaints", JSON.stringify(complaintsRows));
+            } catch {}
+          }
+          if (staffRows.length > 0) {
+            qo(staffRows);
+            try {
+              localStorage.setItem("sri_backup_staff", JSON.stringify(staffRows));
+            } catch {}
+          }
+          if (customersRows.length > 0) {
+            const map: any = {};
+            customersRows.forEach((row: any) => {
+              const key = Ct(row["Chassis no"] || row.chassisNo || "");
+              if (key) {
+                let followupHistory = row.followupHistory || [];
+                if (typeof followupHistory === "string") {
+                  try {
+                    followupHistory = JSON.parse(followupHistory);
+                  } catch {
+                    followupHistory = [];
+                  }
+                }
+                map[key] = { ...row, followupHistory };
+              }
+            });
+            Pi(map);
+            await ui(Dc, map);
+          }
+          if (sparesRows.length > 0) {
+            const map: any = {};
+            sparesRows.forEach((row: any) => {
+              const key = Ct(row.partNo || row["Part No"] || "");
+              if (key) map[key] = row;
+            });
+            gc(map);
+            await ui(hf, map);
+          }
+          if (settingsRows.length > 0) {
+            settingsRows.forEach((row: any) => {
+              if (row.key === "MenuOrder" && row.value) {
+                try {
+                  setMenuOrder(JSON.parse(row.value));
+                } catch {}
+              }
+              if (row.key === "ServiceInterval" && row.value) {
+                const parsed = parseInt(row.value, 10);
+                if (!isNaN(parsed)) M0(parsed);
+              }
+            });
+          }
+          if (attendanceRows.length > 0) {
+            const att: any = {};
+            attendanceRows.forEach((row: any) => {
+              if (!row.date || !row.staffId) return;
+              att[row.date] = att[row.date] || {};
+              att[row.date][row.staffId] = { status: row.status || "", remarks: row.remarks || "" };
+            });
+            U(att);
+          }
+          bc({ text: "✅ Backup restored successfully! Reloading...", isSuccess: !0 });
+          setTimeout(() => window.location.reload(), 900);
+        } catch (err) {
+          console.error("Restore error:", err);
+          bc({ text: "❌ Failed to restore backup. Check file format.", isSuccess: !1 });
+        } finally {
+          if (evt.target) evt.target.value = "";
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    },
     yg = async (d) => {
       const v = (await Tx(d, "JobCards", ty)).map(j1),
         j = await Tx(d, "Complaints", Dx),
@@ -20030,7 +20135,7 @@ ${b}`));
                                                   }),
                                                   i.jsxs("div", {
                                                     className:
-                                                      "flex flex-col gap-1.5 pt-1",
+                                                      "flex flex-wrap gap-1.5 pt-1",
                                                     children: [
                                                       i.jsxs("button", {
                                                         type: "button",
@@ -20039,13 +20144,13 @@ ${b}`));
                                                           Object.keys(zr)
                                                             .length === 0,
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children: [
                                                           i.jsx(zl, {
                                                             className:
                                                               "w-3.5 h-3.5",
                                                           }),
-                                                          " Export Customer File to Excel (.xlsx)",
+                                                          " Export Excel",
                                                         ],
                                                       }),
                                                       i.jsxs("button", {
@@ -20055,13 +20160,13 @@ ${b}`));
                                                           Object.keys(zr)
                                                             .length === 0,
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children: [
                                                           i.jsx(hd, {
                                                             className:
                                                               "w-3.5 h-3.5",
                                                           }),
-                                                          " 🔍 Check Chassis / Phone Duplicates",
+                                                          " 🔍 Duplicates",
                                                         ],
                                                       }),
                                                       i.jsx("button", {
@@ -20136,9 +20241,9 @@ ${b}`));
                                                           }
                                                         },
                                                         className:
-                                                          "w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                          "flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                         children:
-                                                          "🗑️ Delete All Customers",
+                                                          "🗑️ Delete All",
                                                       }),
                                                     ],
                                                   }),
@@ -20320,14 +20425,14 @@ ${b}`));
                                                 }),
                                                 i.jsxs("div", {
                                                   className:
-                                                    "flex flex-col gap-1.5 pt-1",
+                                                    "flex flex-wrap gap-1.5 pt-1",
                                                   children: [
                                                     i.jsxs("button", {
                                                       type: "button",
                                                       onClick: X0,
                                                       disabled: Br.length === 0,
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                        "flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                       children: [
                                                         i.jsx(zl, {
                                                           className:
@@ -20335,20 +20440,20 @@ ${b}`));
                                                         }),
                                                         " Export All (",
                                                         Br.length,
-                                                        ") to Excel (.xlsx)",
+                                                        ")",
                                                       ],
                                                     }),
                                                     i.jsxs("button", {
                                                       type: "button",
                                                       onClick: la,
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer",
+                                                        "flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer",
                                                       children: [
                                                         i.jsx(dd, {
                                                           className:
                                                             "w-3.5 h-3.5 text-slate-500",
                                                         }),
-                                                        " Download Sample Import Template (.xlsx)",
+                                                        " Sample Template",
                                                       ],
                                                     }),
                                                     i.jsxs("button", {
@@ -20419,13 +20524,13 @@ ${b}`));
                                                         }
                                                       },
                                                       className:
-                                                        "w-full flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs mt-1.5",
+                                                        "flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
                                                       children: [
                                                         i.jsx(Cu, {
                                                           className:
                                                             "w-3.5 h-3.5",
                                                         }),
-                                                        " Clear All Data",
+                                                        " Clear Data",
                                                       ],
                                                     }),
                                                     i.jsx("div", {
@@ -20639,6 +20744,104 @@ ${b}`));
                                             }),
                                             i.jsx("span", {
                                               className: `font-bold ${G0.isSuccess ? "text-teal-700" : "text-slate-400"}`,
+                                              children: G0.text.split(".")[0],
+                                            }),
+                                          ],
+                                        }),
+                                      ],
+                                    }),
+                                    i.jsxs("div", {
+                                      className:
+                                        "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 flex flex-col justify-between",
+                                      children: [
+                                        i.jsxs("div", {
+                                          className: "space-y-2",
+                                          children: [
+                                            i.jsxs("h3", {
+                                              className:
+                                                "text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2",
+                                              children: [
+                                                i.jsx(Jl, {
+                                                  className:
+                                                    "w-3.5 h-3.5 text-slate-700",
+                                                }),
+                                                " 6. Total Backup (.xlsx)",
+                                              ],
+                                            }),
+                                            i.jsx("p", {
+                                              className:
+                                                "text-[11px] text-slate-500 font-medium",
+                                              children:
+                                                "One file with everything: Job Cards, Complaints, Staff, Customers, Spares, Attendance & Settings.",
+                                            }),
+                                            i.jsxs("div", {
+                                              className: "space-y-2.5",
+                                              children: [
+                                                i.jsxs("div", {
+                                                  children: [
+                                                    i.jsx("label", {
+                                                      className:
+                                                        "block text-[10px] font-bold text-slate-700 mb-1",
+                                                      children:
+                                                        "Import Backup File (.xlsx)",
+                                                    }),
+                                                    i.jsx("input", {
+                                                      type: "file",
+                                                      accept: ".xlsx,.xls",
+                                                      onChange: restoreFullBackupFromFile,
+                                                      className:
+                                                        "block w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 cursor-pointer",
+                                                    }),
+                                                  ],
+                                                }),
+                                                i.jsxs("div", {
+                                                  className:
+                                                    "flex flex-wrap gap-1.5 pt-1",
+                                                  children: [
+                                                    i.jsxs("button", {
+                                                      type: "button",
+                                                      onClick: ch,
+                                                      className:
+                                                        "flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                      children: [
+                                                        i.jsx(zl, {
+                                                          className:
+                                                            "w-3.5 h-3.5",
+                                                        }),
+                                                        " Export Total Backup",
+                                                      ],
+                                                    }),
+                                                    i.jsxs("button", {
+                                                      type: "button",
+                                                      onClick: () =>
+                                                        alert(
+                                                          "🔗 Google Drive backup needs a one-time setup by the developer (a Google Cloud OAuth Client ID). Ask to have this connected, then this button will upload backups straight to Drive.\n\nFor now, use Export Total Backup to save the file locally.",
+                                                        ),
+                                                      className:
+                                                        "flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-semibold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer",
+                                                      children: [
+                                                        i.jsx(iY, {
+                                                          className:
+                                                            "w-3.5 h-3.5 text-blue-600",
+                                                        }),
+                                                        " Connect Google Drive",
+                                                      ],
+                                                    }),
+                                                  ],
+                                                }),
+                                              ],
+                                            }),
+                                          ],
+                                        }),
+                                        i.jsxs("div", {
+                                          className:
+                                            "pt-2 border-t border-slate-200 text-[11px] text-slate-500 font-semibold flex justify-between items-center",
+                                          children: [
+                                            i.jsx("span", {
+                                              children: "Backup Status:",
+                                            }),
+                                            i.jsx("span", {
+                                              className: `font-bold ${G0.isSuccess ? "text-emerald-700" : "text-slate-400"}`,
                                               children: G0.text.split(".")[0],
                                             }),
                                           ],
