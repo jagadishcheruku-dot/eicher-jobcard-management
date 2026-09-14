@@ -84,7 +84,8 @@ create table if not exists app_settings (
 -- The workshop shares one link and nobody signs in, so every table is left
 -- readable and writable by the anon key — the same access the Firestore rules
 -- granted. Row level security stays on so policies are explicit rather than
--- implied.
+-- implied. Supabase adds new tables to the supabase_realtime publication
+-- itself, so doing it here only raises duplicate_object.
 do $$
 declare t text;
 begin
@@ -98,12 +99,6 @@ begin
       'create policy anon_all on %I for all to anon, authenticated using (true) with check (true)',
       t
     );
-    -- The publication may already cover the table, either from an earlier run
-    -- or because it is defined for all tables.
-    begin
-      execute format('alter publication supabase_realtime add table %I', t);
-    exception when duplicate_object then null;
-    end;
   end loop;
 end $$;
 
@@ -119,8 +114,3 @@ create table if not exists system_users (
 alter table system_users enable row level security;
 drop policy if exists anon_all on system_users;
 create policy anon_all on system_users for all to anon, authenticated using (true) with check (true);
-do $$
-begin
-  alter publication supabase_realtime add table system_users;
-exception when duplicate_object then null;
-end $$;
