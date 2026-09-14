@@ -12122,7 +12122,7 @@ ${b}`));
                                     children: [
                                       i.jsxs("div", {
                                         onClick: () =>
-                                          u("followup"),
+                                          u("free_service_followup"),
                                         className:
                                           "bg-gradient-to-br from-teal-50 to-teal-100/50 border border-teal-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
@@ -12158,7 +12158,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("free_service_followup"),
                                             Us("date_report"),
                                             Xa(ns),
                                             Vn(ns));
@@ -12191,7 +12191,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("free_service_followup"),
                                             Us("scheduled"),
                                             G("today"));
                                         },
@@ -12225,7 +12225,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("free_service_followup"),
                                             Us("scheduled"),
                                             G("overdue"));
                                         },
@@ -12259,7 +12259,7 @@ ${b}`));
                                       }),
                                       i.jsxs("div", {
                                         onClick: () => {
-                                          (u("followup"),
+                                          (u("free_service_followup"),
                                             Us("scheduled"),
                                             G("upcoming"));
                                         },
