@@ -3,6 +3,7 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import './index.css';
+import { getCustomers, getJobCards, getComplaints } from './services/firebaseService';
 
 // Check whether an argument contains ignorable network/auth errors in preview sandbox
 const isIgnoredErrorOrMessage = (arg: any): boolean => {
@@ -78,6 +79,39 @@ window.addEventListener('unhandledrejection', (event) => {
     event.stopPropagation();
   }
 });
+
+// Load data from Firestore on app startup
+const initializeAppData = async () => {
+  try {
+    console.log('📂 Loading data from Firestore on app startup...');
+    const [customers, jobCards, complaints] = await Promise.all([
+      getCustomers(),
+      getJobCards(),
+      getComplaints(),
+    ]);
+
+    if (customers.length > 0) {
+      localStorage.setItem('sri_all_customers', JSON.stringify(customers));
+      console.log(`✅ Loaded ${customers.length} customers from Firestore`);
+    }
+
+    if (jobCards.length > 0) {
+      localStorage.setItem('sri_all_jobcards', JSON.stringify(jobCards));
+      console.log(`✅ Loaded ${jobCards.length} job cards from Firestore`);
+    }
+
+    if (complaints.length > 0) {
+      localStorage.setItem('sri_all_complaints', JSON.stringify(complaints));
+      console.log(`✅ Loaded ${complaints.length} complaints from Firestore`);
+    }
+
+    console.log('✅ App initialization complete - data ready!');
+  } catch (err) {
+    console.warn('⚠️ Could not load data from Firestore on startup:', err);
+  }
+};
+
+initializeAppData();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
