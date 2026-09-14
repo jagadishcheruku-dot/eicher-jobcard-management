@@ -11333,102 +11333,51 @@ ${b}`));
                                         ],
                                       }),
                                       i.jsxs("div", {
+                                        onClick: sf,
                                         className:
-                                          "bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-lg p-3 space-y-2",
+                                          "bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                        children: [
+                                          i.jsx("div", {
+                                            className:
+                                              "text-[10px] font-extrabold text-slate-700 uppercase",
+                                            children: "Follow-up Tab View",
+                                          }),
+                                          i.jsx("div", {
+                                            className:
+                                              "text-indigo-600 font-bold text-xs flex items-center gap-1",
+                                            children: [
+                                              i.jsx("span", {
+                                                children: "Open Follow-up",
+                                              }),
+                                              " →",
+                                            ],
+                                          }),
+                                        ],
+                                      }),
+                                      i.jsxs("div", {
+                                        onClick: sf,
+                                        className:
+                                          "bg-red-50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className: "flex items-center gap-2",
                                             children: [
-                                              i.jsx("svg", {
-                                                width: "40",
-                                                height: "40",
-                                                viewBox: "0 0 100 100",
-                                                className: "flex-shrink-0",
-                                                children: [
-                                                  i.jsx("ellipse", {
-                                                    cx: "50",
-                                                    cy: "50",
-                                                    rx: "48",
-                                                    ry: "42",
-                                                    fill: "none",
-                                                    stroke: "#DC2626",
-                                                    strokeWidth: "4",
-                                                    key: "border1",
-                                                  }),
-                                                  i.jsx("ellipse", {
-                                                    cx: "50",
-                                                    cy: "50",
-                                                    rx: "45",
-                                                    ry: "39",
-                                                    fill: "none",
-                                                    stroke: "#991B1B",
-                                                    strokeWidth: "2",
-                                                    key: "border2",
-                                                  }),
-                                                  i.jsx("ellipse", {
-                                                    cx: "50",
-                                                    cy: "50",
-                                                    rx: "40",
-                                                    ry: "35",
-                                                    fill: "#DC2626",
-                                                    key: "fill",
-                                                  }),
-                                                  i.jsx("text", {
-                                                    x: "50",
-                                                    y: "62",
-                                                    fontSize: "50",
-                                                    fontWeight: "bold",
-                                                    fill: "white",
-                                                    textAnchor: "middle",
-                                                    fontFamily: "Arial, sans-serif",
-                                                    fontStyle: "italic",
-                                                    children: "E",
-                                                    key: "text",
-                                                  }),
-                                                ],
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-red-900 uppercase",
+                                                children:
+                                                  "Eicher Follow-up Lookup",
                                               }),
-                                              i.jsxs("div", {
-                                                children: [
-                                                  i.jsx("h3", {
-                                                    className:
-                                                      "text-white font-black text-[11px] leading-tight",
-                                                    children:
-                                                      "EICHER FOLLOWUP",
-                                                  }),
-                                                  i.jsx("p", {
-                                                    className:
-                                                      "text-slate-300 text-[8px]",
-                                                    children:
-                                                      "Quick Lookup",
-                                                  }),
-                                                ],
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-red-700 underline",
+                                                children: "Quick Search →",
                                               }),
                                             ],
                                           }),
-                                          i.jsxs("div", {
+                                          i.jsx("div", {
                                             className:
-                                              "relative flex items-center bg-white rounded-lg border-2 border-teal-400 overflow-hidden",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "px-2 text-teal-500 text-xs font-bold",
-                                                children: "🔍",
-                                              }),
-                                              i.jsx("input", {
-                                                type: "text",
-                                                placeholder:
-                                                  "Customer name / Chassis...",
-                                                className:
-                                                  "flex-1 px-2 py-1.5 text-xs font-semibold outline-none text-slate-900 bg-white",
-                                              }),
-                                              i.jsx("button", {
-                                                type: "button",
-                                                onClick: sf,
-                                                className:
-                                                  "px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold transition-all",
-                                                children: "Open",
-                                              }),
-                                            ],
+                                              "text-lg font-black text-red-600",
+                                            children: "📞",
                                           }),
                                         ],
                                       }),
