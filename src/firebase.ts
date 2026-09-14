@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Using memoryLocalCache with force long polling to avoid IndexedDB lock closure errors in preview sandboxes
-const databaseId = (firebaseConfigJson as any).firestoreDatabaseId || 'ai-studio-newjobcardentry-770fa411-2eed-4762-a720-d623ec3d035d';
+const databaseId = (firebaseConfigJson as any).firestoreDatabaseId || '(default)';
 
 let firestoreDb: any;
 try {
