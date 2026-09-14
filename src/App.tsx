@@ -10984,71 +10984,6 @@ ${b}`));
                 i.jsxs("main", {
                   className: `w-full min-w-0 p-2 sm:p-3 md:p-5 print:p-0 print:m-0 ${x ? "pb-20" : ""}`,
                   children: [
-                    i.jsxs("div", {
-                      className: "mb-3 bg-white/80 backdrop-blur-sm rounded-2xl px-4 py-2.5 shadow-sm flex flex-wrap items-center justify-between gap-2 print:hidden",
-                      children: [
-                        i.jsx("div", {
-                          className: "flex items-center gap-2 flex-wrap",
-                          children:
-                            currentSystemUser?.isAdmin ? i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-amber-50 text-amber-900 px-2.5 py-1 rounded-full text-xs font-semibold",
-                              children: [
-                                i.jsx("span", { className: "text-[11px] font-extrabold", children: e === "te" ? "సూపర్‌వైజర్:" : "Supervisor:" }),
-                                i.jsxs("select", {
-                                  value: adminBranchFilter,
-                                  onChange: (ev: any) => setAdminBranchFilter(ev.target.value),
-                                  className: "bg-transparent text-amber-950 text-xs font-bold outline-none cursor-pointer",
-                                  children: [
-                                    i.jsx("option", { value: "All Branches (Master)", children: e === "te" ? "🌐 అందరూ" : "🌐 All Supervisors" }),
-                                    Array.from(new Set(er.filter((m: any) => m.role === "supervisor" || m.role === "Supervisor").map((m: any) => m.name).filter(Boolean))).map((sup: string) => i.jsx("option", { value: sup, children: `🧑‍💼 ${sup}` }, sup))
-                                  ]
-                                })
-                              ]
-                            }) : i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-emerald-50 text-emerald-900 px-2.5 py-1 rounded-full text-xs font-black",
-                              children: [
-                                i.jsx("span", { children: "🧑‍💼" }),
-                                i.jsx("span", { children: currentSystemUser?.branch || "Supervisor" })
-                              ]
-                            })
-                        }),
-                        i.jsxs("div", {
-                          className: "flex items-center gap-2 flex-wrap",
-                          children: [
-                            i.jsxs("div", {
-                              className: "flex items-center gap-1.5 bg-slate-100 text-slate-800 pl-1 pr-2.5 py-1 rounded-full text-xs",
-                              children: [
-                                i.jsx("span", { className: "w-5 h-5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[9px] font-black", children: (currentSystemUser?.name || "U").charAt(0).toUpperCase() }),
-                                i.jsx("span", { className: "font-bold text-slate-900", children: currentSystemUser?.name || "User" }),
-                                i.jsx("span", {
-                                  className: `text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase ${currentSystemUser?.isAdmin ? "bg-indigo-100 text-indigo-800" : "bg-slate-200 text-slate-700"}`,
-                                  children: currentSystemUser?.isAdmin ? (e === "te" ? "అడ్మిన్" : "Admin") : (currentSystemUser?.role || "Staff")
-                                })
-                              ]
-                            }),
-                            i.jsx("button", {
-                              type: "button",
-                              onClick: async () => {
-                                try {
-                                  localStorage.removeItem("eicher_auth_user");
-                                  setCurrentSystemUser(null);
-                                  setCurrentLoggedUser(null);
-                                  tu(null);
-                                  await sH(ey);
-                                } catch {
-                                  setCurrentSystemUser(null);
-                                  setCurrentLoggedUser(null);
-                                  tu(null);
-                                }
-                              },
-                              className: "flex items-center justify-center w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full transition-all cursor-pointer",
-                              title: e === "te" ? "సూపర్‌వైజర్ మార్చు" : "Change Supervisor",
-                              children: i.jsx(jK, { className: "w-3.5 h-3.5" }),
-                            })
-                          ]
-                        })
-                      ]
-                    }),
                     c === "dashboard" &&
                       (() => {
                         const d = A || ns,
@@ -19352,152 +19287,108 @@ ${b}`));
                                     children: [
                                       i.jsxs("div", {
                                         className:
-                                          "bg-blue-50/80 border-2 border-blue-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-blue-50/80 border border-blue-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-blue-800 uppercase tracking-wider",
+                                            children: "Total Staff",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-blue-950",
                                             children: [
-                                              i.jsx("p", {
+                                              b,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-blue-800 uppercase tracking-wider",
-                                                children: "Total Staff",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-blue-950 mt-1",
-                                                children: [
-                                                  b,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-blue-700",
-                                                    children: "Members",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-blue-700",
+                                                children: "Members",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-blue-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(df, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-emerald-50/80 border-2 border-emerald-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-emerald-800 uppercase tracking-wider",
+                                            children: "Present Today",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-emerald-950",
                                             children: [
-                                              i.jsx("p", {
+                                              v,
+                                              " ",
+                                              i.jsxs("span", {
                                                 className:
-                                                  "text-[10px] font-black text-emerald-800 uppercase tracking-wider",
-                                                children: "Present Today",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-emerald-950 mt-1",
+                                                  "text-[10px] font-bold text-emerald-700",
                                                 children: [
-                                                  v,
-                                                  " ",
-                                                  i.jsxs("span", {
-                                                    className:
-                                                      "text-xs font-bold text-emerald-700",
-                                                    children: [
-                                                      "(",
-                                                      b > 0
-                                                        ? Math.round(
-                                                            (v / b) * 100,
-                                                          )
-                                                        : 0,
-                                                      "%)",
-                                                    ],
-                                                  }),
+                                                  "(",
+                                                  b > 0
+                                                    ? Math.round(
+                                                        (v / b) * 100,
+                                                      )
+                                                    : 0,
+                                                  "%)",
                                                 ],
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-emerald-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(uf, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-rose-50/80 border-2 border-rose-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-rose-50/80 border border-rose-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-rose-800 uppercase tracking-wider",
+                                            children: "Absent Today",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-rose-950",
                                             children: [
-                                              i.jsx("p", {
+                                              j,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-rose-800 uppercase tracking-wider",
-                                                children: "Absent Today",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-rose-950 mt-1",
-                                                children: [
-                                                  j,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-rose-700",
-                                                    children:
-                                                      N > 0
-                                                        ? `(${N} pending)`
-                                                        : "",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-rose-700",
+                                                children:
+                                                  N > 0
+                                                    ? `(${N} pending)`
+                                                    : "",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-rose-600 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(dD, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         className:
-                                          "bg-amber-50/80 border-2 border-amber-200/80 rounded-xl p-3.5 shadow-2xs flex items-center justify-between",
+                                          "bg-amber-50/80 border border-amber-200/80 rounded-xl p-2.5 shadow-2xs flex items-center justify-between",
                                         children: [
-                                          i.jsxs("div", {
+                                          i.jsx("p", {
+                                            className:
+                                              "text-[10px] font-black text-amber-800 uppercase tracking-wider",
+                                            children: "Leave / Half Day",
+                                          }),
+                                          i.jsxs("p", {
+                                            className:
+                                              "text-lg font-black text-amber-950",
                                             children: [
-                                              i.jsx("p", {
+                                              I,
+                                              " ",
+                                              i.jsx("span", {
                                                 className:
-                                                  "text-[10px] font-black text-amber-800 uppercase tracking-wider",
-                                                children: "Leave / Half Day",
-                                              }),
-                                              i.jsxs("p", {
-                                                className:
-                                                  "text-xl font-black text-amber-950 mt-1",
-                                                children: [
-                                                  I,
-                                                  " ",
-                                                  i.jsx("span", {
-                                                    className:
-                                                      "text-xs font-semibold text-amber-700",
-                                                    children: "Staff",
-                                                  }),
-                                                ],
+                                                  "text-[10px] font-semibold text-amber-700",
+                                                children: "Staff",
                                               }),
                                             ],
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "p-2.5 bg-amber-500 text-white rounded-xl shadow-2xs",
-                                            children: i.jsx(bu, {
-                                              className: "w-5 h-5",
-                                            }),
                                           }),
                                         ],
                                       }),
@@ -20079,7 +19970,7 @@ ${b}`));
                               children: [
                                 i.jsxs("div", {
                                   className:
-                                    "grid grid-cols-1 md:grid-cols-3 gap-3",
+                                    "grid grid-cols-1 md:grid-cols-3 gap-3 items-start",
                                   children: [
                                     i.jsx("div", {
                                       className:
