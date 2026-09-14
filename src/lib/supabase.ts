@@ -15,14 +15,21 @@ export const supabase = createClient(url, anonKey, {
   auth: { persistSession: false },
 });
 
-// Records only moved to Supabase once its tables exist, so the app asks before
-// it commits to the new backend: an unreachable project, a missing table or a
-// rejected key all mean the Firestore path should keep serving instead.
-export async function isSupabaseReachable(): Promise<boolean> {
+// The app only commits to Supabase once the records are actually there. An
+// unreachable project, a missing table, a rejected key — or tables that exist
+// but are still empty because the migration has not been run — all mean the
+// Firestore path should keep serving, so the workshop never opens the app to
+// blank screens mid-migration. Once the data lands, the next load switches
+// over on its own.
+export async function isSupabaseReady(): Promise<boolean> {
   try {
-    const { error } = await supabase.from('job_cards').select('id').limit(1);
+    const { data, error } = await supabase.from('job_cards').select('id').limit(1);
     if (error) {
       console.warn('Supabase unavailable, staying on Firestore:', error.message);
+      return false;
+    }
+    if (!data || data.length === 0) {
+      console.warn('Supabase has no job cards yet, staying on Firestore. Run migrateToSupabase() to move the data.');
       return false;
     }
     return true;

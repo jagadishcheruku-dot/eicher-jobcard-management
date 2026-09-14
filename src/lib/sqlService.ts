@@ -3,7 +3,7 @@
 // Records are moving from Firestore to Supabase. Supabase takes over only once
 // its tables answer a probe, so a deploy that lands before the migration has
 // run keeps serving from Firestore rather than showing empty screens.
-import { isSupabaseConfigured, isSupabaseReachable } from './supabase';
+import { isSupabaseConfigured, isSupabaseReady } from './supabase';
 import { supabaseApi } from './supabaseService';
 import { firestoreApi } from './firestoreService';
 
@@ -18,7 +18,7 @@ async function backend(): Promise<DataApi> {
     return firestoreApi;
   }
   if (!resolving) {
-    resolving = isSupabaseReachable().then((reachable) => {
+    resolving = isSupabaseReady().then((reachable) => {
       resolved = reachable ? 'supabase' : 'firestore';
       console.log(`Data backend: ${resolved}`);
       return (reachable ? supabaseApi : firestoreApi) as DataApi;
