@@ -56,10 +56,11 @@
     break-inside: avoid !important;
   }
 
-  /* CARD PAGE 1 - A4 Container with flexible height to eliminate gaps */
+  /* CARD PAGE 1 - A4 Container that fills full page without gaps */
   .card-p1 {
     width: 100% !important;
     max-width: 190mm !important;
+    min-height: 276mm !important;
     padding: 2mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
@@ -78,10 +79,11 @@
     color-adjust: exact !important;
   }
 
-  /* CARD PAGE 2 - A4 Container with flexible height to eliminate gaps */
+  /* CARD PAGE 2 - A4 Container that fills full page without gaps */
   .card-p2 {
     width: 100% !important;
     max-width: 190mm !important;
+    min-height: 276mm !important;
     padding: 2.5mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
