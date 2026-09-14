@@ -87,7 +87,6 @@ import { LanguageSelectionModal } from "./components/LanguageSelectionModal";
 import { CustomerSearchModal } from "./components/CustomerSearchModal";
 import { MenuOrderSettings, DEFAULT_MENU_ORDER } from "./components/MenuOrderSettings";
 import BranchLoginView from "./components/BranchLoginView";
-import UserManagementModal from "./components/UserManagementModal";
 import {
   DEFAULT_USERS,
   DEFAULT_BRANCHES,
@@ -2340,7 +2339,6 @@ function gY() {
     [customUsers, setCustomUsers] = ce.useState(() => getLocalUsers()),
     [systemBranches, setSystemBranches] = ce.useState(() => getLocalBranches()),
     [adminBranchFilter, setAdminBranchFilter] = ce.useState("All Branches (Master)"),
-    [isUserManagementOpen, setIsUserManagementOpen] = ce.useState(!1),
     [Yu, xc] = ce.useState(!1),
     [w1, N1] = ce.useState("login"),
     [F0, dp] = ce.useState(""),
@@ -10755,21 +10753,6 @@ ${b}`));
                           }),
                       ],
                     }),
-                    currentSystemUser?.isAdmin &&
-                      i.jsxs("button", {
-                        type: "button",
-                        onClick: () => setIsUserManagementOpen(!0),
-                        className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition-colors cursor-pointer mb-2`,
-                        title: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "User Management",
-                        children: [
-                          i.jsx(uf, { className: "w-4 h-4 shrink-0" }),
-                          !f &&
-                            i.jsx("span", {
-                              className: "truncate",
-                              children: e === "te" ? "యూజర్లు & పర్మిషన్లు" : "User Management",
-                            }),
-                        ],
-                      }),
                     i.jsxs("button", {
                       type: "button",
                       onClick: async () => {
@@ -10786,13 +10769,13 @@ ${b}`));
                         }
                       },
                       className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-white hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-rose-100 mt-auto`,
-                      title: f ? "Sign Out" : void 0,
+                      title: f ? "Change Branch" : void 0,
                       children: [
                         i.jsx(jK, { className: "w-4 h-4 shrink-0" }),
                         !f &&
                           i.jsx("span", {
                             className: "truncate",
-                            children: e === "te" ? "లాగ్ అవుట్" : "Sign Out",
+                            children: e === "te" ? "బ్రాంచ్ మార్చు" : "Change Branch",
                           }),
                       ],
                     }),
@@ -11040,13 +11023,6 @@ ${b}`));
                                 })
                               ]
                             }),
-                            currentSystemUser?.isAdmin && i.jsx("button", {
-                              type: "button",
-                              onClick: () => setIsUserManagementOpen(!0),
-                              className: "flex items-center justify-center w-8 h-8 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-full transition-all cursor-pointer",
-                              title: e === "te" ? "యూజర్లు & పర్మిషన్ల సెట్టింగ్స్" : "User Management & Permissions",
-                              children: i.jsx(uf, { className: "w-3.5 h-3.5" }),
-                            }),
                             i.jsx("button", {
                               type: "button",
                               onClick: async () => {
@@ -11063,7 +11039,7 @@ ${b}`));
                                 }
                               },
                               className: "flex items-center justify-center w-8 h-8 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-full transition-all cursor-pointer",
-                              title: e === "te" ? "లాగ్ అవుట్" : "Sign Out",
+                              title: e === "te" ? "బ్రాంచ్ మార్చు" : "Change Branch",
                               children: i.jsx(jK, { className: "w-3.5 h-3.5" }),
                             })
                           ]
@@ -22603,58 +22579,6 @@ ${b}`));
                                 un(!1);
                                 oa(null);
                               }
-                            }),
-                            isUserManagementOpen && i.jsx(UserManagementModal, {
-                              isOpen: isUserManagementOpen,
-                              onClose: () => setIsUserManagementOpen(!1),
-                              users: customUsers,
-                              onSaveUser: async (savedUser: any) => {
-                                const existingIndex = customUsers.findIndex((u: any) => u.id === savedUser.id);
-                                let updatedList;
-                                if (existingIndex >= 0) {
-                                  updatedList = [...customUsers];
-                                  updatedList[existingIndex] = savedUser;
-                                } else {
-                                  updatedList = [...customUsers, savedUser];
-                                }
-                                setCustomUsers(updatedList);
-                                setLocalUsers(updatedList);
-                                await persistUserToFirestore(savedUser);
-                                broadcastLiveSync("SYNC_USERS", updatedList);
-                                if (currentSystemUser && currentSystemUser.id === savedUser.id) {
-                                  setCurrentSystemUser(savedUser);
-                                  setCurrentLoggedUser(savedUser);
-                                  rh(savedUser.isAdmin ? "admin" : (savedUser.role || "staff"));
-                                }
-                              },
-                              onDeleteUser: async (userId: string) => {
-                                const updatedList = customUsers.filter((u: any) => u.id !== userId);
-                                setCustomUsers(updatedList);
-                                setLocalUsers(updatedList);
-                                await removeUserFromFirestore(userId);
-                                broadcastLiveSync("SYNC_USERS", updatedList);
-                              },
-                              branchesList: systemBranches,
-                              onSaveBranches: async (newBranches: string[]) => {
-                                setSystemBranches(newBranches);
-                                setLocalBranches(newBranches);
-                                await persistBranchesToFirestore(newBranches);
-                                broadcastLiveSync("SYNC_BRANCHES", newBranches);
-                              },
-                              allMenus: [
-                                { key: "dashboard", label: e === "te" ? "📊 డాష్‌బోర్డ్" : "📊 Dashboard" },
-                                { key: "new_entry", label: e === "te" ? "✍️ కొత్త జాబ్ కార్డ్" : "✍️ New Job Card Entry" },
-                                { key: "customer_data", label: e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data" },
-                                { key: "job_cards_data", label: e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data" },
-                                { key: "service_camp_planning", label: e === "te" ? "⛺ సర్వీస్ క్యాంప్ ప్లానింగ్" : "⛺ Service Camp Planning" },
-                                { key: "free_service_followup", label: e === "te" ? "🛠️ ఉచిత సర్వీస్ ఫాలో-అప్" : "🛠️ Free Service Followup" },
-                                { key: "telecalling", label: e === "te" ? "📞 టెలి కాలింగ్ డెస్క్" : "📞 Tele Calling Desk" },
-                                { key: "complaints", label: e === "te" ? "📝 కంప్లైంట్స్ రిజిస్టర్" : "📝 Complaints Register" },
-                                { key: "attendance", label: e === "te" ? "📅 సిబ్బంది అటెండెన్స్" : "📅 Staff Attendance" },
-                                { key: "reports", label: e === "te" ? "📈 రిపోర్ట్స్ & అనలిటిక్స్" : "📈 Reports & Analytics" },
-                                { key: "databases", label: e === "te" ? "🗄️ మాస్టర్ డేటాబేస్" : "🗄️ Master Databases" },
-                              ],
-                              language: e,
                             })
                           ]
                         })
