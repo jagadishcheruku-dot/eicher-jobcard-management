@@ -1715,7 +1715,8 @@ function gY() {
     [ht, re] = ce.useState(!1),
     [H, Q] = ce.useState(!1),
     [lookupSearchText, setLookupSearchText] = ce.useState(""),
-    [showLookupResults, setShowLookupResults] = ce.useState(!1);
+    [showLookupResults, setShowLookupResults] = ce.useState(!1),
+    [lookupSelectedCustomer, setLookupSelectedCustomer] = ce.useState(null);
   ce.useEffect(() => {
     typeof window < "u" && window.innerWidth < 768 && C(!0);
   }, []);
@@ -11412,9 +11413,7 @@ ${b}`));
                                                   const custChassis = cust.chassisNo || cust["Chassis no"] || "—";
                                                   return i.jsxs("div", {
                                                     onClick: () => {
-                                                      setLookupSearchText("");
-                                                      setShowLookupResults(!1);
-                                                      sf();
+                                                      setLookupSelectedCustomer(cust);
                                                     },
                                                     className:
                                                       "p-1.5 bg-red-50 hover:bg-red-100 rounded text-[8px] cursor-pointer border-l-2 border-red-500 transition-all",
@@ -11471,6 +11470,131 @@ ${b}`));
                                     ],
                                   }),
                             ],
+                          }),
+                          lookupSelectedCustomer && i.jsx("div", {
+                            className: "fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto",
+                            children: i.jsxs("div", {
+                              className: "bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150",
+                              children: [
+                                i.jsxs("div", {
+                                  className: "bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white p-4 flex justify-between items-center shrink-0",
+                                  children: [
+                                    i.jsxs("div", {
+                                      className: "flex items-center gap-2.5",
+                                      children: [
+                                        i.jsx("div", {
+                                          className: "p-2 bg-white/10 rounded-xl",
+                                          children: i.jsx("div", {
+                                            className: "w-5 h-5 text-red-200 font-bold flex items-center justify-center",
+                                            children: "👤"
+                                          })
+                                        }),
+                                        i.jsxs("div", {
+                                          children: [
+                                            i.jsx("h3", {
+                                              className: "font-extrabold text-sm md:text-base",
+                                              children: lookupSelectedCustomer.customerName || lookupSelectedCustomer["Customer Name"] || "Customer"
+                                            }),
+                                            i.jsx("p", {
+                                              className: "text-[11px] text-red-100 font-medium",
+                                              children: "Customer Details & History"
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    i.jsx("button", {
+                                      type: "button",
+                                      onClick: () => setLookupSelectedCustomer(null),
+                                      className: "p-1.5 hover:bg-white/20 rounded-lg text-white transition-colors cursor-pointer",
+                                      children: i.jsx("div", { className: "w-5 h-5", children: "✕" })
+                                    })
+                                  ]
+                                }),
+                                i.jsxs("div", {
+                                  className: "p-4 md:p-5 overflow-y-auto max-h-[75vh] space-y-4 text-xs",
+                                  children: [
+                                    i.jsxs("div", {
+                                      className: "bg-red-50/70 border border-red-200 rounded-xl p-3.5 space-y-2",
+                                      children: [
+                                        i.jsx("div", {
+                                          className: "flex items-center justify-between border-b border-red-200 pb-2",
+                                          children: i.jsx("span", {
+                                            className: "font-extrabold text-red-950 text-[11px] uppercase tracking-wide",
+                                            children: "Customer Overview"
+                                          })
+                                        }),
+                                        i.jsxs("div", {
+                                          className: "grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs",
+                                          children: [
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("span", {
+                                                  className: "text-slate-500 font-bold block text-[10px] uppercase",
+                                                  children: "Chassis No"
+                                                }),
+                                                i.jsx("span", {
+                                                  className: "font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded border border-red-200 inline-block mt-0.5",
+                                                  children: lookupSelectedCustomer.chassisNo || lookupSelectedCustomer["Chassis no"] || "—"
+                                                })
+                                              ]
+                                            }),
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("span", {
+                                                  className: "text-slate-500 font-bold block text-[10px] uppercase",
+                                                  children: "Model"
+                                                }),
+                                                i.jsx("span", {
+                                                  className: "font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-red-200 inline-block mt-0.5 text-[10px]",
+                                                  children: lookupSelectedCustomer.model || lookupSelectedCustomer["Model"] || "Eicher Tractor"
+                                                })
+                                              ]
+                                            }),
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("span", {
+                                                  className: "text-slate-500 font-bold block text-[10px] uppercase",
+                                                  children: "Mobile"
+                                                }),
+                                                i.jsx("span", {
+                                                  className: "font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded border border-red-200 inline-block mt-0.5 text-[10px]",
+                                                  children: lookupSelectedCustomer.mobileNumber || lookupSelectedCustomer["Mobile No"] || lookupSelectedCustomer.phoneNo || "—"
+                                                })
+                                              ]
+                                            }),
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("span", {
+                                                  className: "text-slate-500 font-bold block text-[10px] uppercase",
+                                                  children: "Village"
+                                                }),
+                                                i.jsx("span", {
+                                                  className: "font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-red-200 inline-block mt-0.5 text-[10px]",
+                                                  children: lookupSelectedCustomer.village || lookupSelectedCustomer["Village"] || "—"
+                                                })
+                                              ]
+                                            }),
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("span", {
+                                                  className: "text-slate-500 font-bold block text-[10px] uppercase",
+                                                  children: "Delivery Date"
+                                                }),
+                                                i.jsx("span", {
+                                                  className: "font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-red-200 inline-block mt-0.5 text-[10px]",
+                                                  children: lookupSelectedCustomer.dateOfDel || lookupSelectedCustomer["Date of Delivery"] || "—"
+                                                })
+                                              ]
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    })
+                                  ]
+                                })
+                              ]
+                            })
                           }),
                           i.jsxs("div", {
                             className:
