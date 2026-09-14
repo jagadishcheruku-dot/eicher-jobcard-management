@@ -5851,13 +5851,6 @@ function gY() {
       }
     },
     handlePrintJobCard = async () => {
-      const d = String(fs || "").trim(),
-        b = String(ho || "").trim(),
-        v = String(lo || "").trim(),
-        j = String(Fa || "").trim();
-      if (d || b || v || j) {
-        await tx({ shouldClear: false, silent: true });
-      }
       u("new_entry");
       const ch =
           String(fs || "")
@@ -8059,13 +8052,6 @@ ${b}`));
     Ko = va.reduce((d, b) => d + (parseFloat(b.charge) || 0), 0),
     Ml = ri.reduce((d, b) => d + (parseFloat(b.amount) || 0), 0),
     ax = async () => {
-      const d = String(fs || "").trim(),
-        b = String(ho || "").trim(),
-        v = String(lo || "").trim(),
-        j = String(Fa || "").trim();
-      if (d || b || v || j) {
-        await tx({ shouldClear: false, silent: true });
-      }
       const ch =
           String(fs || "")
             .trim()
@@ -10300,7 +10286,7 @@ ${b}`));
         d.chassis ||
         "";
       (Ai(!1),
-        u("saved_cards"),
+        u("job_cards_data"),
         _0(b),
         _n(1),
         Hc("all"),
@@ -11849,7 +11835,7 @@ ${b}`));
                                               S.filter === "closed_jc" ||
                                               S.filter === "missing_online"
                                             ) {
-                                              u("saved_cards");
+                                              u("job_cards_data");
                                               setCustomerJobCardsTab("jobcards");
                                               setJobCardsChassisFilter("");
                                               if (S.filter === "open_jc") {

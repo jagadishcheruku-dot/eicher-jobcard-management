@@ -41,11 +41,11 @@ export const DEFAULT_MENU_ORDER = [
   "new_entry",
   "customer_data",
   "job_cards_data",
-  "service_camp_planning",
   "free_service_followup",
   "telecalling",
   "attendance",
   "reports",
+  "service_camp_planning",
   "databases",
 ];
 
