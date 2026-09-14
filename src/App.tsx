@@ -11253,82 +11253,43 @@ ${b}`));
                                           Ai(!0);
                                         },
                                         className:
-                                          "bg-gradient-to-br from-indigo-50 to-indigo-100/80 border-2 border-indigo-300 hover:border-indigo-500 p-3.5 rounded-xl shadow-2xs hover:shadow-md transition-all cursor-pointer flex items-center justify-between group",
+                                          "bg-indigo-50 border border-indigo-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
                                             children: [
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[10.5px] font-black text-indigo-950 uppercase tracking-wider block",
+                                                  "text-[10px] font-extrabold text-indigo-900 uppercase",
                                                 children:
                                                   "This Month Deliveries",
                                               }),
-                                              i.jsxs("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[9.5px] text-indigo-700 font-bold",
-                                                children: [
-                                                  "Delivered in ",
-                                                  new Date().toLocaleString(
-                                                    "default",
-                                                    {
-                                                      month: "long",
-                                                      year: "numeric",
-                                                    },
-                                                  ),
-                                                ],
-                                              }),
-                                              i.jsx("p", {
-                                                className:
-                                                  "text-[9px] text-indigo-800 mt-1 font-medium",
-                                                children:
-                                                  "Click to view full customer list & actions",
+                                                  "text-[9px] font-bold text-indigo-700 underline",
+                                                children: "View customers →",
                                               }),
                                             ],
                                           }),
-                                          i.jsxs("div", {
-                                            className: "text-right",
-                                            children: [
-                                              i.jsx("div", {
-                                                className:
-                                                  "text-2xl font-black text-indigo-950 font-mono group-hover:scale-105 transition-transform",
-                                                children: qn.length,
-                                              }),
-                                              i.jsxs("span", {
-                                                className:
-                                                  "text-[10px] font-bold text-white bg-indigo-700 hover:bg-indigo-800 px-2.5 py-1 rounded-full inline-block mt-1 shadow-2xs transition-colors",
-                                                children: [
-                                                  "📋 View ",
-                                                  qn.length,
-                                                  " Customers →",
-                                                ],
-                                              }),
-                                            ],
+                                          i.jsx("div", {
+                                            className:
+                                              "text-lg font-black text-indigo-950",
+                                            children: qn.length,
                                           }),
                                         ],
                                       }),
                                       i.jsxs("div", {
                                         onClick: sf,
                                         className:
-                                          "bg-white border border-slate-200 hover:border-indigo-200 p-3.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
+                                          "bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsxs("div", {
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[10px] font-bold text-slate-700 uppercase tracking-wider block",
-                                                children: "Follow-up Tab View",
-                                              }),
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9px] text-slate-500 font-medium",
-                                                children:
-                                                  "Open filtered follow-up tree for this month",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
+                                          i.jsx("div", {
                                             className:
-                                              "text-indigo-600 font-bold text-xs group-hover:translate-x-1 transition-transform flex items-center gap-1",
+                                              "text-[10px] font-extrabold text-slate-700 uppercase",
+                                            children: "Follow-up Tab View",
+                                          }),
+                                          i.jsx("div", {
+                                            className:
+                                              "text-indigo-600 font-bold text-xs flex items-center gap-1",
                                             children: [
                                               i.jsx("span", {
                                                 children: "Open Follow-up",
@@ -11420,23 +11381,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-purple-50 to-purple-100/60 border border-purple-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-purple-50 to-purple-100/60 border border-purple-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-purple-900 uppercase",
-                                            children: "Total Staff",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-purple-900 uppercase",
+                                                children: "Total Staff",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-purple-700 underline",
+                                                children: "View attendance →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-purple-950 my-0.5",
+                                              "text-lg font-black text-purple-950",
                                             children: v,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-purple-700 underline",
-                                            children: "View attendance →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11444,23 +11409,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-emerald-50 to-emerald-100/60 border border-emerald-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-emerald-900 uppercase",
-                                            children: "Present Today",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-emerald-900 uppercase",
+                                                children: "Present Today",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-emerald-700 underline",
+                                                children: "View present →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-emerald-950 my-0.5",
+                                              "text-lg font-black text-emerald-950",
                                             children: j,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-emerald-700 underline",
-                                            children: "View present →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11468,23 +11437,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-rose-50 to-rose-100/60 border border-rose-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-rose-50 to-rose-100/60 border border-rose-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-rose-900 uppercase",
-                                            children: "Absent Today",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-rose-900 uppercase",
+                                                children: "Absent Today",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-rose-700 underline",
+                                                children: "View absent →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-rose-950 my-0.5",
+                                              "text-lg font-black text-rose-950",
                                             children: I,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-rose-700 underline",
-                                            children: "View absent →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11492,23 +11465,27 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-amber-900 uppercase",
-                                            children: "On Leave",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-amber-900 uppercase",
+                                                children: "On Leave",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-amber-700 underline",
+                                                children: "View leaves →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-amber-950 my-0.5",
+                                              "text-lg font-black text-amber-950",
                                             children: N,
                                           }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-amber-700 underline",
-                                            children: "View leaves →",
-                                          }),
                                         ],
                                       }),
                                       i.jsxs("div", {
@@ -11516,22 +11493,26 @@ ${b}`));
                                           (u("attendance"), ge("daily"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group col-span-2 sm:col-span-1",
+                                          "bg-gradient-to-br from-slate-50 to-slate-100/80 border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group col-span-2 sm:col-span-1",
                                         children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-slate-700 uppercase",
-                                            children: "Unmarked",
+                                          i.jsxs("div", {
+                                            children: [
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[10px] font-extrabold text-slate-700 uppercase",
+                                                children: "Unmarked",
+                                              }),
+                                              i.jsx("div", {
+                                                className:
+                                                  "text-[9px] font-bold text-slate-600 underline",
+                                                children: "Mark attendance →",
+                                              }),
+                                            ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-lg font-black text-slate-900 my-0.5",
+                                              "text-lg font-black text-slate-900",
                                             children: R,
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[9px] font-bold text-slate-600 underline",
-                                            children: "Mark attendance →",
                                           }),
                                         ],
                                       }),
