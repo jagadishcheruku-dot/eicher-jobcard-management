@@ -2499,6 +2499,7 @@ function gY() {
         return {};
       }
     }),
+    [partSearchInput, setPartSearchInput] = ce.useState(""),
     [G0, bc] = ce.useState({
       text: "No customer file uploaded yet.",
       isSuccess: !1,
@@ -5352,9 +5353,39 @@ function gY() {
       const b = Ct(d);
       return b && Wo[b] ? Wo[b] : null;
     },
+    // Get filtered part suggestions (max 10) based on search input
+    getPartSuggestions = (searchInput) => {
+      if (!searchInput || !Wo) return [];
+      const query = String(searchInput).toLowerCase().trim();
+      const suggestions = [];
+
+      Object.values(Wo).forEach((spare) => {
+        if (suggestions.length >= 10) return; // Limit to 10 results
+
+        const partNo = String(spare.__partNoDisplay || Kp(spare, "partNo") || "").toLowerCase().trim();
+        const desc = String(Kp(spare, "desc") || "").toLowerCase().trim();
+        const rate = Kp(spare, "rate") || "";
+
+        // Match by part number or description
+        if (partNo.includes(query) || desc.includes(query)) {
+          suggestions.push({
+            partNo: spare.__partNoDisplay || Kp(spare, "partNo") || "",
+            desc: Kp(spare, "desc") || "",
+            rate: rate,
+            displayText: desc ? `${desc} (${partNo})` : partNo,
+            value: spare.__partNoDisplay || Kp(spare, "partNo") || ""
+          });
+        }
+      });
+
+      return suggestions;
+    },
     Tg = (d, b) => {
       let v = [...ri];
       v[d].partNo = b;
+
+      // Update part search input for datalist filtering
+      setPartSearchInput(b);
 
       // Extract part number from various formats
       const j = O1(b);
@@ -14933,28 +14964,18 @@ ${b}`));
                                             children: [
                                               i.jsx("datalist", {
                                                 id: "partNoList",
-                                                children: Object.values(Wo).map(
-                                                  (d, b) => {
-                                                    const v =
-                                                        d.__partNoDisplay ||
-                                                        Kp(d, "partNo") ||
-                                                        "",
-                                                      j = Kp(d, "desc") || "",
-                                                      I = Kp(d, "rate") || "";
+                                                children: (getPartSuggestions(partSearchInput) || []).map(
+                                                  (suggestion, idx) => {
                                                     return i.jsx(
-                                                      wR.Fragment,
+                                                      "option",
                                                       {
-                                                        key: `p-${b}`,
-                                                        children:
-                                                          v &&
-                                                          i.jsx("option", {
-                                                            value: v,
-                                                            children: j
-                                                              ? `${j} (₹${I || "0"})`
-                                                              : v,
-                                                          }),
+                                                        key: `p-${idx}`,
+                                                        value: suggestion.value,
+                                                        children: suggestion.displayText
+                                                          ? `${suggestion.displayText} (₹${suggestion.rate || "0"})`
+                                                          : suggestion.value,
                                                       },
-                                                      `p-${b}`,
+                                                      `p-${idx}`,
                                                     );
                                                   },
                                                 ),
