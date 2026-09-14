@@ -16523,7 +16523,7 @@ ${b}`));
                                                             "tr",
                                                             {
                                                               className:
-                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[30px]",
+                                                                "border-b border-blue-900 bg-blue-100/60 font-bold text-blue-950 h-[23px]",
                                                               children: [
                                                                 i.jsx("th", {
                                                                   className:
@@ -16574,7 +16574,7 @@ ${b}`));
                                                                   key:
                                                                     d.id || b,
                                                                   className:
-                                                                    "border-b border-blue-900/60 h-[27px] leading-tight hover:bg-blue-50/20",
+                                                                    "border-b border-blue-900/60 h-[21px] leading-tight hover:bg-blue-50/20",
                                                                   children: [
                                                                     i.jsx(
                                                                       "td",

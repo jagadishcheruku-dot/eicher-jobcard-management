@@ -56,11 +56,13 @@
     break-inside: avoid !important;
   }
 
-  /* CARD PAGE 1 - A4 Container that fills full page without gaps */
+  /* CARD PAGE 1 - Locked A4 Container: always exactly one page */
   .card-p1 {
     width: 100% !important;
     max-width: 190mm !important;
+    height: 276mm !important;
     min-height: 276mm !important;
+    max-height: 276mm !important;
     padding: 2mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
@@ -70,6 +72,7 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
+    overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: always !important;
@@ -79,11 +82,14 @@
     color-adjust: exact !important;
   }
 
-  /* CARD PAGE 2 - A4 Container that fills full page without gaps */
+  /* CARD PAGE 2 - Locked A4 Container: always exactly one page */
   .card-p2 {
     width: 100% !important;
     max-width: 190mm !important;
+    height: 276mm !important;
     min-height: 276mm !important;
+    max-height: 276mm !important;
+    overflow: hidden !important;
     padding: 2.5mm 3.5mm !important;
     margin: 0 auto !important;
     background-color: #ffffff !important;
