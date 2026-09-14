@@ -897,11 +897,11 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
     return (
       <th
         key={colKey}
-        className={`bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10.5px] border-r border-b-2 border-slate-300 p-2 select-none whitespace-nowrap group hover:bg-slate-200 transition-colors relative ${
+        className={`bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[9.5px] border-r border-b-2 border-slate-300 p-1 select-none whitespace-nowrap group hover:bg-slate-200 transition-colors relative ${
           widthClass || "min-w-[120px]"
         }`}
       >
-        <div className="flex items-center justify-between gap-1.5">
+        <div className="flex items-center justify-between gap-1">
           <button
             type="button"
             onClick={() => {
@@ -918,7 +918,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
             <span>{label}</span>
             {isSorted && (
               <span className="text-emerald-700">
-                {sortDir === "asc" ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                {sortDir === "asc" ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
               </span>
             )}
           </button>
@@ -942,7 +942,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                 setFilterSearchText("");
               }
             }}
-            className={`p-1 rounded transition-colors ${
+            className={`p-0.5 rounded transition-colors ${
               isFiltersLocked
                 ? "cursor-not-allowed opacity-60 text-slate-400"
                 : "cursor-pointer"
@@ -953,7 +953,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
             }`}
             title={isFiltersLocked ? "🔒 Filters Locked" : `Filter by ${label}`}
           >
-            <Filter className="w-3 h-3" />
+            <Filter className="w-2.5 h-2.5" />
           </button>
         </div>
 
@@ -1496,8 +1496,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                             : "Status: Open (Enter Closed Date & Bill No to close)"
                         }
                       >
-                        <span>{isClosed ? "🔒" : "🟢"}</span>
-                        <span>{isClosed ? "Closed" : "Open"}</span>
+                        <span className="text-sm">{isClosed ? "🔒" : "🟢"}</span>
                       </button>
                     </td>
 
