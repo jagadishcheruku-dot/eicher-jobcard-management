@@ -15758,32 +15758,52 @@ ${b}`));
                                                     i.jsxs("div", {
                                                       className: "flex-1",
                                                       children: [
-                                                        i.jsx("div", {
-                                                          className:
-                                                            "inline-block bg-red-600 px-4 py-2 rounded-lg mb-3 border-2 border-red-700",
-                                                          children: i.jsxs("div", {
-                                                            className:
-                                                              "flex items-center gap-2",
-                                                            children: [
-                                                              i.jsx("span", {
-                                                                className:
-                                                                  "text-2xl text-green-400",
-                                                                children: "🔧",
-                                                              }),
-                                                              i.jsx("span", {
-                                                                className:
-                                                                  "text-lg font-black text-green-400 tracking-tight",
-                                                                children:
-                                                                  "SRI GAYATHRI",
-                                                              }),
-                                                            ],
-                                                          }),
-                                                        }),
-                                                        i.jsx("div", {
-                                                          className:
-                                                            "text-xl md:text-2xl font-black text-blue-900 tracking-tight leading-none mb-0.5",
-                                                          children:
-                                                            "AUTOMOTIVES",
+                                                        i.jsxs("div", {
+                                                          className: "flex items-center gap-3 mb-2",
+                                                          children: [
+                                                            i.jsx("svg", {
+                                                              width: "48",
+                                                              height: "48",
+                                                              viewBox: "0 0 100 100",
+                                                              className: "flex-shrink-0",
+                                                              children: [
+                                                                i.jsx("circle", {
+                                                                  cx: "50",
+                                                                  cy: "50",
+                                                                  r: "48",
+                                                                  fill: "#DC2626",
+                                                                  key: "bg",
+                                                                }),
+                                                                i.jsx("text", {
+                                                                  x: "50",
+                                                                  y: "60",
+                                                                  textAnchor: "middle",
+                                                                  fontSize: "50",
+                                                                  fontWeight: "900",
+                                                                  fill: "white",
+                                                                  fontFamily: "Arial, sans-serif",
+                                                                  children: "E",
+                                                                  key: "text",
+                                                                }),
+                                                              ],
+                                                            }),
+                                                            i.jsxs("div", {
+                                                              children: [
+                                                                i.jsx("div", {
+                                                                  className:
+                                                                    "text-xl font-black text-blue-900 tracking-tight leading-none",
+                                                                  children:
+                                                                    "SRI GAYATHRI",
+                                                                }),
+                                                                i.jsx("div", {
+                                                                  className:
+                                                                    "text-lg font-black text-blue-900 tracking-tight leading-none",
+                                                                  children:
+                                                                    "AUTOMOTIVES",
+                                                                }),
+                                                              ],
+                                                            }),
+                                                          ],
                                                         }),
                                                         i.jsx("div", {
                                                           className:
