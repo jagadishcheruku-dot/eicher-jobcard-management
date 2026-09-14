@@ -11396,11 +11396,11 @@ ${b}`));
                                                 value: lookupSearchText,
                                                 onChange: (e) => setLookupSearchText(e.target.value),
                                                 className:
-                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-red-300 rounded-lg outline-none focus:border-red-500 focus:ring-1 focus:ring-red-300 bg-white text-slate-900",
+                                                  "w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-600 rounded-lg outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-400 bg-slate-800 text-white placeholder-slate-400",
                                               }),
                                               lookupSearchText.trim() && i.jsx("div", {
                                                 className:
-                                                  "space-y-1 max-h-48 overflow-y-auto bg-white rounded border border-red-200 p-2",
+                                                  "space-y-1 max-h-48 overflow-y-auto bg-slate-800 rounded border border-slate-700 p-2",
                                                 children: _a.filter((cust) => {
                                                   const q = lookupSearchText.toLowerCase();
                                                   const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
@@ -11416,21 +11416,21 @@ ${b}`));
                                                       setLookupSelectedCustomer(cust);
                                                     },
                                                     className:
-                                                      "p-1.5 bg-red-50 hover:bg-red-100 rounded text-[8px] cursor-pointer border-l-2 border-red-500 transition-all",
+                                                      "p-1.5 bg-slate-700 hover:bg-slate-600 rounded text-[8px] cursor-pointer border-l-2 border-slate-500 transition-all",
                                                     children: [
                                                       i.jsx("div", {
                                                         className:
-                                                          "font-bold text-red-900",
+                                                          "font-bold text-slate-100",
                                                         children: custName,
                                                       }),
                                                       i.jsx("div", {
                                                         className:
-                                                          "text-red-700",
+                                                          "text-slate-300",
                                                         children: `📱 ${custPhone}`,
                                                       }),
                                                       i.jsx("div", {
                                                         className:
-                                                          "text-red-600",
+                                                          "text-slate-400",
                                                         children: `🚗 ${custChassis}`,
                                                       }),
                                                     ],
@@ -11598,14 +11598,14 @@ ${b}`));
                                           className: "flex items-center justify-between",
                                           children: i.jsx("h4", {
                                             className: "font-black text-slate-900 text-xs",
-                                            children: "Job Card History"
+                                            children: "Service & Job Card History"
                                           })
                                         }),
                                         i.jsx("div", {
-                                          className: "py-2 text-center text-slate-500 bg-white rounded-lg border border-slate-200",
+                                          className: "py-3 text-center text-slate-500 bg-white rounded-lg border border-slate-200",
                                           children: i.jsx("p", {
                                             className: "text-xs font-bold text-slate-600",
-                                            children: "View full customer history by clicking 'View Full Details' below"
+                                            children: "Click 'View Full Details' to see complete job card history"
                                           })
                                         })
                                       ]
