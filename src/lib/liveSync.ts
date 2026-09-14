@@ -23,8 +23,9 @@ const asSnapshot = (rows: any[]): LiveSnapshot => ({
   forEach: (cb) => rows.map(asDoc).forEach(cb),
 });
 
-// A bulk upload fires a change per row, so re-reads are coalesced.
-const SETTLE_MS = 600;
+// A burst of changes — a bulk upload sends one per row — is coalesced into a
+// single render.
+const SETTLE_MS = 400;
 
 export function onLiveSnapshot(
   ref: LiveRef,
@@ -33,29 +34,77 @@ export function onLiveSnapshot(
 ) {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  // The table is read once and then kept up to date from the change events
+  // themselves. Re-reading it on every change would have every open browser
+  // pull all 1458 job cards each time one of them was edited.
+  let rows: any[] = [];
+  const indexOf = new Map<string, number>();
 
-  const emit = async () => {
+  const reindex = () => {
+    indexOf.clear();
+    rows.forEach((row, i) => indexOf.set(String(row.id), i));
+  };
+
+  const publish = () => {
+    if (!stopped) onNext(asSnapshot(rows));
+  };
+
+  const schedulePublish = () => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(publish, SETTLE_MS);
+  };
+
+  const apply = (payload: any) => {
+    const row = payload.new && Object.keys(payload.new).length ? payload.new : null;
+    const gone = payload.old ?? null;
+
+    if (payload.eventType === 'DELETE' || (!row && gone)) {
+      const id = String(gone?.id ?? '');
+      const at = indexOf.get(id);
+      if (at !== undefined) {
+        rows.splice(at, 1);
+        reindex();
+        schedulePublish();
+      }
+      return;
+    }
+    if (!row) return;
+
+    const id = String(row.id);
+    const at = indexOf.get(id);
+    if (at === undefined) {
+      indexOf.set(id, rows.length);
+      rows.push(row);
+    } else {
+      rows[at] = row;
+    }
+    schedulePublish();
+  };
+
+  const load = async () => {
     try {
-      const rows = await readTableRows(ref.table);
-      if (!stopped) onNext(asSnapshot(rows));
+      rows = await readTableRows(ref.table);
+      reindex();
+      publish();
     } catch (err) {
       if (!stopped) onError?.(err);
     }
   };
 
-  emit();
+  load();
 
   const channel = supabase
     .channel(`live:${ref.table}`)
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: ref.table },
-      () => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(emit, SETTLE_MS);
-      }
+      apply
     )
-    .subscribe();
+    .subscribe((status) => {
+      // A dropped connection can miss changes, so the table is re-read once
+      // the subscription comes back rather than left to drift.
+      if (status === 'SUBSCRIBED' && rows.length > 0) load();
+    });
 
   return () => {
     stopped = true;
