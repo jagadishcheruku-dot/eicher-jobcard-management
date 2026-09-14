@@ -503,13 +503,22 @@ export const FreeServiceFollowupView: React.FC<FreeServiceFollowupViewProps> = (
         </div>
       </div>
 
-      {/* Enhanced Search Header */}
+      {/* Enhanced Search Header with Eicher Logo */}
       <div className="w-full bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl shadow-lg p-4 mb-3">
         <div className="flex items-center justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="text-3xl">🚜</div>
+          <div className="flex items-center gap-3">
+            {/* Eicher Logo SVG */}
+            <svg width="60" height="60" viewBox="0 0 100 100" className="flex-shrink-0">
+              {/* Outer oval border */}
+              <ellipse cx="50" cy="50" rx="48" ry="42" fill="none" stroke="#DC2626" strokeWidth="4"/>
+              <ellipse cx="50" cy="50" rx="45" ry="39" fill="none" stroke="#991B1B" strokeWidth="2"/>
+              {/* Inner red fill */}
+              <ellipse cx="50" cy="50" rx="40" ry="35" fill="#DC2626"/>
+              {/* "E" letter */}
+              <text x="50" y="62" fontSize="50" fontWeight="bold" fill="white" textAnchor="middle" fontFamily="Arial, sans-serif" fontStyle="italic">E</text>
+            </svg>
             <div>
-              <h2 className="text-white font-black text-lg">EICHER CUSTOMER LOOKUP</h2>
+              <h2 className="text-white font-black text-lg">{isTe ? "ఐషర్ కస్టమర్ లుకప్" : "EICHER CUSTOMER LOOKUP"}</h2>
               <p className="text-slate-300 text-[10px]">{isTe ? "చాసిస్ నం, కస్టమర్ పేరు లేదా ఫోన్ నంబర్ వెతకండి" : "Search by Chassis No, Customer Name or Mobile Number"}</p>
             </div>
           </div>
