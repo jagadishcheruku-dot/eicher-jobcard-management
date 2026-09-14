@@ -140,6 +140,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
   const [activeFilterCol, setActiveFilterCol] = useState<string | null>(null);
   const [filterSearchText, setFilterSearchText] = useState<string>("");
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
 
   // Lock Filters feature (🔒 / 🔓)
   const [isFiltersLocked, setIsFiltersLocked] = useState<boolean>(() => {
@@ -1533,6 +1534,32 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     );
   };
 
+  const isDateColumn = (colKey: string): boolean => {
+    return colKey === "Date of del" || colKey === "Date of Delivery" || colKey === "DOD" || colKey === "Last Service Date";
+  };
+
+  const groupDatesByYearMonth = (colKey: string) => {
+    const grouped: Record<string, Set<string>> = {};
+    customers.forEach((cust) => {
+      const dateStr = getColDisplayValue(cust, colKey) || "";
+      if (dateStr && dateStr !== "(Blank)") {
+        const parts = dateStr.split("-");
+        if (parts.length >= 3) {
+          const day = parts[0];
+          const month = parts[1];
+          const year = parts[2];
+          if (!grouped[year]) grouped[year] = new Set();
+          grouped[year].add(`${month}-${year}`);
+        }
+      }
+    });
+    const result: Record<string, string[]> = {};
+    Object.keys(grouped).sort().reverse().forEach((year) => {
+      result[year] = Array.from(grouped[year]).sort();
+    });
+    return result;
+  };
+
   const handleToggleColumnFilterValue = (colKey: string, val: string) => {
     setColumnFilters((prev) => {
       const curr = prev[colKey] || [];
@@ -2155,30 +2182,89 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                               placeholder="Search values..."
                               className="w-full px-2 py-1 text-xs border border-slate-300 rounded mb-2 outline-none focus:border-purple-600"
                             />
-                            <div className="max-h-40 overflow-y-auto space-y-1 mb-2">
-                              {getUniqueColumnValues(col.key)
-                                .filter((v) =>
-                                  v.toLowerCase().includes(filterSearchText.toLowerCase())
-                                )
-                                .map((val) => {
-                                  const isChecked = (columnFilters[col.key] || []).includes(val);
+                            <div className="max-h-60 overflow-y-auto space-y-0.5 mb-2">
+                              {isDateColumn(col.key) ? (
+                                Object.entries(groupDatesByYearMonth(col.key)).map(([year, months]) => {
+                                  const isExpanded = expandedYears.has(year);
+                                  const filteredMonths = months.filter(m => m.toLowerCase().includes(filterSearchText.toLowerCase()));
                                   return (
-                                    <label
-                                      key={val}
-                                      className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs"
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() =>
-                                          handleToggleColumnFilterValue(col.key, val)
-                                        }
-                                        className="rounded text-purple-600"
-                                      />
-                                      <span className="truncate">{val}</span>
-                                    </label>
+                                    <div key={year}>
+                                      <div
+                                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs font-semibold"
+                                        onClick={() => {
+                                          setExpandedYears((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(year)) next.delete(year);
+                                            else next.add(year);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        <span className="text-purple-600">{isExpanded ? "▼" : "▶"}</span>
+                                        <span>{year}</span>
+                                      </div>
+                                      {isExpanded && filteredMonths.length > 0 && (
+                                        <div className="ml-4 space-y-0.5">
+                                          {filteredMonths.map((monthYear) => {
+                                            const dates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[1]}`));
+                                            return (
+                                              <label key={monthYear} className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs">
+                                                <input
+                                                  type="checkbox"
+                                                  checked={dates.some(d => (columnFilters[col.key] || []).includes(d))}
+                                                  onChange={() => {
+                                                    setColumnFilters((prev) => {
+                                                      const curr = prev[col.key] || [];
+                                                      const monthDates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear.split("-")[0]}`));
+                                                      const allSelected = monthDates.every(d => curr.includes(d));
+                                                      const updated = allSelected
+                                                        ? curr.filter(x => !monthDates.includes(x))
+                                                        : [...new Set([...curr, ...monthDates])];
+                                                      if (updated.length === 0) {
+                                                        const next = { ...prev };
+                                                        delete next[col.key];
+                                                        return next;
+                                                      }
+                                                      return { ...prev, [col.key]: updated };
+                                                    });
+                                                    setCurrentPage(1);
+                                                  }}
+                                                  className="rounded text-purple-600"
+                                                />
+                                                <span className="truncate">{monthYear.split("-").reverse().join("/")}</span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
                                   );
-                                })}
+                                })
+                              ) : (
+                                getUniqueColumnValues(col.key)
+                                  .filter((v) =>
+                                    v.toLowerCase().includes(filterSearchText.toLowerCase())
+                                  )
+                                  .map((val) => {
+                                    const isChecked = (columnFilters[col.key] || []).includes(val);
+                                    return (
+                                      <label
+                                        key={val}
+                                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs"
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={isChecked}
+                                          onChange={() =>
+                                            handleToggleColumnFilterValue(col.key, val)
+                                          }
+                                          className="rounded text-purple-600"
+                                        />
+                                        <span className="truncate">{val}</span>
+                                      </label>
+                                    );
+                                  })
+                              )}
                             </div>
                             <div className="flex items-center justify-between pt-1.5 border-t border-slate-150 text-[11px] font-bold">
                               <button
