@@ -11839,7 +11839,7 @@ ${b}`));
                                       i.jsxs(
                                         "div",
                                         {
-                                          className: `p-2.5 rounded-xl border ${S.color} text-center hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between`,
+                                          className: `p-2.5 rounded-xl border ${S.color} flex items-center justify-between hover:shadow-sm transition-all cursor-pointer`,
                                           onClick: () => {
                                             if (
                                               S.filter === "all_jc" ||
@@ -11876,20 +11876,23 @@ ${b}`));
                                             }
                                           },
                                           children: [
-                                            i.jsx("div", {
-                                              className:
-                                                "text-[9.5px] font-extrabold uppercase leading-tight",
-                                              children: S.label,
+                                            i.jsxs("div", {
+                                              children: [
+                                                i.jsx("div", {
+                                                  className:
+                                                    "text-[10px] font-extrabold uppercase",
+                                                  children: S.label,
+                                                }),
+                                                i.jsx("div", {
+                                                  className:
+                                                    "text-[9px] font-bold underline opacity-70",
+                                                  children: "View list",
+                                                }),
+                                              ],
                                             }),
                                             i.jsx("div", {
-                                              className:
-                                                "text-base font-black my-1",
+                                              className: "text-lg font-black",
                                               children: S.value,
-                                            }),
-                                            i.jsx("span", {
-                                              className:
-                                                "text-[8.5px] font-bold underline opacity-80",
-                                              children: "View list",
                                             }),
                                           ],
                                         },
@@ -12027,32 +12030,25 @@ ${b}`));
                                           onClick: () => {
                                             (u("reports"), on(S.kpi));
                                           },
-                                          className: `${S.color} border p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group`,
+                                          className: `${S.color} border p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group`,
                                           children: [
-                                            i.jsx("div", {
-                                              className:
-                                                "text-[9.5px] font-extrabold uppercase tracking-wider",
-                                              children: S.label,
-                                            }),
                                             i.jsxs("div", {
-                                              className: "my-1",
                                               children: [
                                                 i.jsx("div", {
                                                   className:
-                                                    "text-sm font-black leading-tight",
-                                                  children: S.value,
+                                                    "text-[10px] font-extrabold uppercase tracking-wider",
+                                                  children: S.label,
                                                 }),
-                                                i.jsx("span", {
+                                                i.jsx("div", {
                                                   className:
-                                                    "text-[8.5px] opacity-75 font-bold",
-                                                  children: S.sub,
+                                                    "text-[9px] font-bold underline opacity-70 group-hover:opacity-100",
+                                                  children: "View report",
                                                 }),
                                               ],
                                             }),
                                             i.jsx("div", {
-                                              className:
-                                                "text-[8.5px] font-bold underline opacity-80 group-hover:opacity-100",
-                                              children: "View report",
+                                              className: "text-lg font-black",
+                                              children: S.value,
                                             }),
                                           ],
                                         },
@@ -12140,51 +12136,35 @@ ${b}`));
                                         onClick: () =>
                                           u("followup"),
                                         className:
-                                          "bg-gradient-to-br from-teal-50 to-teal-100/50 border border-teal-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-teal-50 to-teal-100/50 border border-teal-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-teal-900 uppercase",
-                                                children: "Free Service Due",
-                                              }),
-                                              i.jsx("span", {
-                                                className:
-                                                  "w-1.5 h-1.5 rounded-full bg-teal-600",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-teal-950",
-                                                children: Object.values(
-                                                  ps,
-                                                ).reduce(
-                                                  (S, ie) =>
-                                                    S +
-                                                    ((ie == null
-                                                      ? void 0
-                                                      : ie.length) || 0),
-                                                  0,
-                                                ),
+                                                  "text-[10px] font-extrabold text-teal-900 uppercase",
+                                                children: "Free Service Due",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-teal-800 font-bold",
-                                                children: "Pending follow-ups",
+                                                  "text-[9px] font-bold text-teal-700 underline",
+                                                children: "View tree",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-teal-700 underline",
-                                            children: "View tree",
+                                              "text-lg font-black text-teal-950",
+                                            children: Object.values(
+                                              ps,
+                                            ).reduce(
+                                              (S, ie) =>
+                                                S +
+                                                ((ie == null
+                                                  ? void 0
+                                                  : ie.length) || 0),
+                                              0,
+                                            ),
                                           }),
                                         ],
                                       }),
@@ -12196,44 +12176,28 @@ ${b}`));
                                             Vn(ns));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-amber-900 uppercase",
-                                                children: "Calls Today",
-                                              }),
-                                              i.jsx(tl, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-amber-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-amber-950",
-                                                children: Rn.filter(
-                                                  (S) => S.callDate === ns,
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-amber-900 uppercase",
+                                                children: "Calls Today",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-amber-800 font-bold",
-                                                children: "Logged today",
+                                                  "text-[9px] font-bold text-amber-700 underline",
+                                                children: "View logs",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-amber-700 underline",
-                                            children: "View logs",
+                                              "text-lg font-black text-amber-950",
+                                            children: Rn.filter(
+                                              (S) => S.callDate === ns,
+                                            ).length,
                                           }),
                                         ],
                                       }),
@@ -12244,50 +12208,30 @@ ${b}`));
                                             G("today"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-red-900 uppercase",
-                                                children: "Due Today",
-                                              }),
-                                              zn.filter(
-                                                (S) =>
-                                                  S.scheduledStatus === "today",
-                                              ).length > 0 &&
-                                                i.jsx("span", {
-                                                  className:
-                                                    "w-2 h-2 rounded-full bg-red-600 animate-ping",
-                                                }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-red-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "today",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-red-900 uppercase",
+                                                children: "Due Today",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-red-800 font-bold",
-                                                children: "Must call today",
+                                                  "text-[9px] font-bold text-red-700 underline",
+                                                children: "View due",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-red-700 underline",
-                                            children: "View due",
+                                              "text-lg font-black text-red-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "today",
+                                            ).length,
                                           }),
                                         ],
                                       }),
@@ -12298,46 +12242,30 @@ ${b}`));
                                             G("overdue"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-orange-900 uppercase",
-                                                children: "Overdue Calls",
-                                              }),
-                                              i.jsx(gu, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-orange-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-orange-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "overdue",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-orange-900 uppercase",
+                                                children: "Overdue Calls",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-orange-800 font-bold",
-                                                children: "Past due date",
+                                                  "text-[9px] font-bold text-orange-700 underline",
+                                                children: "View overdue",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-orange-700 underline",
-                                            children: "View overdue",
+                                              "text-lg font-black text-orange-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "overdue",
+                                            ).length,
                                           }),
                                         ],
                                       }),
@@ -12348,46 +12276,30 @@ ${b}`));
                                             G("upcoming"));
                                         },
                                         className:
-                                          "bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between group",
+                                          "bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
                                         children: [
                                           i.jsxs("div", {
-                                            className:
-                                              "flex items-center justify-between",
-                                            children: [
-                                              i.jsx("span", {
-                                                className:
-                                                  "text-[9.5px] font-extrabold text-blue-900 uppercase",
-                                                children: "Upcoming",
-                                              }),
-                                              i.jsx(bu, {
-                                                className:
-                                                  "w-3.5 h-3.5 text-blue-700",
-                                              }),
-                                            ],
-                                          }),
-                                          i.jsxs("div", {
-                                            className: "my-1",
                                             children: [
                                               i.jsx("div", {
                                                 className:
-                                                  "text-base font-black text-blue-950",
-                                                children: zn.filter(
-                                                  (S) =>
-                                                    S.scheduledStatus ===
-                                                    "upcoming",
-                                                ).length,
+                                                  "text-[10px] font-extrabold text-blue-900 uppercase",
+                                                children: "Upcoming",
                                               }),
-                                              i.jsx("span", {
+                                              i.jsx("div", {
                                                 className:
-                                                  "text-[8.5px] text-blue-800 font-bold",
-                                                children: "Future scheduled",
+                                                  "text-[9px] font-bold text-blue-700 underline",
+                                                children: "View upcoming",
                                               }),
                                             ],
                                           }),
                                           i.jsx("div", {
                                             className:
-                                              "text-[8.5px] font-bold text-blue-700 underline",
-                                            children: "View upcoming",
+                                              "text-lg font-black text-blue-950",
+                                            children: zn.filter(
+                                              (S) =>
+                                                S.scheduledStatus ===
+                                                "upcoming",
+                                            ).length,
                                           }),
                                         ],
                                       }),
