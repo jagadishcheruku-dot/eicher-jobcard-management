@@ -10,7 +10,9 @@ import {
   Trash2,
   Eye,
   Printer,
-  History
+  History,
+  ChevronLeft,
+  MoreVertical
 } from "lucide-react";
 
 export interface RowActionButtonsProps {
@@ -38,6 +40,8 @@ export interface RowActionButtonsProps {
 }
 
 export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
+  isExpanded = false,
+  onToggleExpand,
   language = "te",
   onCall,
   onNewJobCard,
@@ -59,8 +63,28 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
 }) => {
   const isTe = language === "te";
 
+  // Collapsed: show only a small toggle button. Clicking it reveals the
+  // full action row to its left; clicking again collapses it back.
+  if (!isExpanded && onToggleExpand) {
+    return (
+      <div className="flex items-center justify-end shrink-0 py-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className="w-7 h-7 p-1.5 bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white rounded-lg border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title={isTe ? "చర్యలు చూపించు" : "Show actions"}
+        >
+          <MoreVertical className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-center gap-1 flex-nowrap overflow-x-auto max-w-full mx-auto py-1 shrink-0 scrollbar-none">
+    <div className="flex items-center justify-end gap-1 flex-nowrap overflow-x-auto max-w-full py-1 shrink-0 scrollbar-none">
       {/* 1. View */}
       {onView && (
         <button
@@ -213,6 +237,21 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
           title={isTe ? "తొలగించు" : "Delete"}
         >
           <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      )}
+
+      {/* Collapse back to the compact toggle */}
+      {onToggleExpand && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleExpand();
+          }}
+          className="w-7 h-7 p-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer"
+          title={isTe ? "మూసివేయి" : "Collapse"}
+        >
+          <ChevronLeft className="w-3.5 h-3.5" />
         </button>
       )}
     </div>
