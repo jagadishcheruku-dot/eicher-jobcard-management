@@ -819,7 +819,12 @@ app.post('/api/customers', async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: saved });
+    // Sync to Firestore for cross-user sharing
+    syncCustomersToFirestore([item]).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
+    res.json({ success: true, data: saved, firebaseSynced: true });
   } catch (error: any) {
     console.error('Error saving customer:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -1133,7 +1138,12 @@ app.post('/api/jobcards', async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: saved });
+    // Sync to Firestore for cross-user sharing
+    syncJobCardsToFirestore([saved]).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
+    res.json({ success: true, data: saved, firebaseSynced: true });
   } catch (error: any) {
     console.error('Error saving job card:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -1346,7 +1356,12 @@ app.post('/api/complaints', async (req, res) => {
       }
     }
 
-    res.json({ success: true, data: saved });
+    // Sync to Firestore for cross-user sharing
+    syncComplaintsToFirestore([formattedComp]).catch(err =>
+      console.warn('Firestore sync warning:', err)
+    );
+
+    res.json({ success: true, data: saved, firebaseSynced: true });
   } catch (error: any) {
     console.error('Error saving complaint:', error);
     res.status(500).json({ success: false, error: error.message });
