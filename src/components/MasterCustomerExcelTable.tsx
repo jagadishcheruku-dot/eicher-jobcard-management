@@ -734,36 +734,51 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     return Array.from(set);
   };
 
+  // Fast chassis -> job card index, built once per allCards change instead of
+  // re-scanning every card for every customer (was O(customers * cards), froze
+  // the browser tab once real data volume hit a few thousand records).
+  const cardChassisIndex = useMemo(() => {
+    const byVariant = new Map<string, any[]>();
+    const byDigits5 = new Map<string, any[]>();
+    (allCards || []).forEach((card) => {
+      const variants = getCardChassisVariants(card);
+      variants.forEach((v) => {
+        if (!byVariant.has(v)) byVariant.set(v, []);
+        byVariant.get(v)!.push(card);
+        const digits = v.replace(/\D/g, "");
+        if (digits.length >= 5) {
+          const key = digits.slice(-5);
+          if (!byDigits5.has(key)) byDigits5.set(key, []);
+          byDigits5.get(key)!.push(card);
+        }
+      });
+    });
+    return { byVariant, byDigits5 };
+  }, [allCards]);
+
   // Helper to get matching job cards for a customer strictly matched by chassis number
   const getCustomerJobCards = (cust: any) => {
     if (!cust || !allCards || allCards.length === 0) return [];
     const custChassisList = getCustChassisVariants(cust);
     if (custChassisList.length === 0) return [];
 
-    return allCards.filter((card) => {
-      const cardChassisList = getCardChassisVariants(card);
-      if (cardChassisList.length === 0) return false;
-
-      for (const cCh of custChassisList) {
-        for (const kCh of cardChassisList) {
-          if (cCh === kCh) return true;
-          // Match standard chassis / VIN suffix (last 6 or 7 characters)
-          if (cCh.length >= 6 && kCh.length >= 6 && cCh.slice(-6) === kCh.slice(-6)) {
-            return true;
-          }
-          if (cCh.length >= 5 && kCh.length >= 5 && (cCh.includes(kCh) || kCh.includes(cCh))) {
-            return true;
-          }
-          // Pure digits match if length >= 5
-          const cDig = cCh.replace(/\D/g, "");
-          const kDig = kCh.replace(/\D/g, "");
-          if (cDig.length >= 5 && kDig.length >= 5 && (cDig === kDig || cDig.slice(-5) === kDig.slice(-5))) {
-            return true;
-          }
-        }
+    const { byVariant, byDigits5 } = cardChassisIndex;
+    const seen = new Set<any>();
+    const result: any[] = [];
+    const add = (card: any) => {
+      if (!seen.has(card)) {
+        seen.add(card);
+        result.push(card);
       }
-      return false;
+    };
+    custChassisList.forEach((cCh) => {
+      (byVariant.get(cCh) || []).forEach(add);
+      const digits = cCh.replace(/\D/g, "");
+      if (digits.length >= 5) {
+        (byDigits5.get(digits.slice(-5)) || []).forEach(add);
+      }
     });
+    return result;
   };
 
   // Pre-calculate Duplicates set
