@@ -9348,48 +9348,80 @@ ${b}`));
           `SriGayathri_Service_Followup_${new Date().toISOString().split("T")[0]}.xlsx`,
         ));
     },
-    ph = async (d) => {
+    ph = async (custOrChassis) => {
+      // Accepts either the full customer record (preferred - works even for
+      // a row with no chassis, such as a stray call-log artifact) or a bare
+      // chassis string (legacy call signature).
+      const cust = custOrChassis && typeof custOrChassis === "object" ? custOrChassis : null;
+      const chassisStr = String(
+        (cust && (cust["Chassis no"] || cust.chassisNo || cust.chassis)) || custOrChassis || "",
+      ).trim();
+      const label =
+        chassisStr ||
+        (cust &&
+          (cust.custName || cust["Customer Name"] || cust.mobileNumber || cust["Mobile Number"])) ||
+        "this record";
+      if (!cust && !chassisStr) return;
       if (
-        d &&
-        window.confirm(
-          `Are you sure you want to delete customer with chassis "${d}"? This will remove them from the database.`,
+        !window.confirm(
+          `Are you sure you want to delete customer "${label}"? This will remove them from the database.`,
         )
       )
-        try {
-          const b = { ...zr },
-            v = Ct(d);
-          delete b[v];
-          Object.keys(b).forEach((k) => {
-            const row = b[k];
-            if (row) {
-              const rCh = Ct(row["Chassis no"] || row.chassisNo || row.chassis || "");
-              if (rCh === v) delete b[k];
-            }
-          });
-          Pi(b);
-          ui(Dc, b);
-          try { localStorage.setItem("jobcard_sg_customer_v2", JSON.stringify(b)); } catch {}
-          Rs.saveCustomersBulk(Object.values(b), true).catch(console.warn);
-          if (kt) {
-            try { xS(Qs(kt, "customers", v)).catch(() => {}); } catch {}
-          }
-          if (mr && ss)
-            try {
-              (await Fb(ss, "Customers", d),
-                alert(
-                  "✅ Customer deleted successfully from Database and Google Sheets!",
-                ));
-            } catch (j) {
-              (console.error("Error deleting customer from Sheets:", j),
-                alert(
-                  "⚠️ Customer deleted from database, but failed to remove from Google Sheets.",
-                ));
-            }
-          else alert("✅ Customer deleted successfully from Database!");
-        } catch (b) {
-          (console.error("Error deleting customer record:", b),
-            alert("❌ Failed to delete customer record."));
+        return;
+      try {
+        // The row passed in is one of zr's own values, so it can be found by
+        // reference; fall back to a chassis match for the legacy signature.
+        let mapKey = cust ? Object.keys(zr).find((k) => zr[k] === cust) || null : null;
+        if (!mapKey && chassisStr) {
+          const v = Ct(chassisStr);
+          mapKey =
+            Object.keys(zr).find(
+              (k) => Ct(zr[k]?.["Chassis no"] || zr[k]?.chassisNo || zr[k]?.chassis || "") === v,
+            ) || null;
         }
+        const target = (mapKey && zr[mapKey]) || cust;
+        // Prefer the real database row id carried on the record since it was
+        // fetched - the chassis string alone can't identify a row that never
+        // had a chassis, which used to make this a silent no-op for exactly
+        // the blank/junk rows this button is meant to remove.
+        const rowId = (target && (target.id || target._id)) || chassisStr || null;
+
+        const b = { ...zr };
+        if (mapKey) delete b[mapKey];
+        Pi(b);
+        ui(Dc, b);
+        try { localStorage.setItem("jobcard_sg_customer_v2", JSON.stringify(b)); } catch {}
+
+        let dbOk = true;
+        if (rowId) {
+          const res = await Rs.deleteCustomer(rowId);
+          dbOk = !!(res && res.success);
+          if (!dbOk) console.warn("Customer delete did not confirm success:", res);
+        }
+        if (kt) {
+          try { xS(Qs(kt, "customers", Ct(chassisStr))).catch(() => {}); } catch {}
+        }
+        if (mr && ss)
+          try {
+            (await Fb(ss, "Customers", chassisStr),
+              alert(
+                "✅ Customer deleted successfully from Database and Google Sheets!",
+              ));
+          } catch (j) {
+            (console.error("Error deleting customer from Sheets:", j),
+              alert(
+                "⚠️ Customer deleted from database, but failed to remove from Google Sheets.",
+              ));
+          }
+        else if (dbOk) alert("✅ Customer deleted successfully from Database!");
+        else
+          alert(
+            "⚠️ Removed from this screen, but the database did not confirm the delete - it may come back after a refresh. Please try again or use \"Clean Junk Rows\".",
+          );
+      } catch (b) {
+        (console.error("Error deleting customer record:", b),
+          alert("❌ Failed to delete customer record."));
+      }
     },
     hu = (d) => {
       const b = d["Chassis no"] || d.__chassisDisplay || be(d, "chassis") || "",
@@ -20002,7 +20034,7 @@ ${b}`));
                                                               return;
                                                             }
                                                             bc({ text: `⏳ Deleting ${junkIds.length} junk rows...`, isSuccess: !1 });
-                                                            await Rs.deleteCustomersByIds(junkIds);
+                                                            const delRes = await Rs.deleteCustomersByIds(junkIds);
                                                             const fresh = await Rs.getCustomers();
                                                             const freshMap = buildCustMap(fresh || []);
                                                             Pi(freshMap);
@@ -20010,7 +20042,12 @@ ${b}`));
                                                             try {
                                                               localStorage.setItem("jobcard_sg_customer_v2", JSON.stringify(freshMap));
                                                             } catch {}
-                                                            bc({ text: `✅ Deleted ${junkIds.length} junk rows permanently.`, isSuccess: !0 });
+                                                            if (delRes && delRes.success) {
+                                                              bc({ text: `✅ Deleted ${junkIds.length} junk rows permanently.`, isSuccess: !0 });
+                                                            } else {
+                                                              console.warn("Junk cleanup: delete did not confirm success", delRes);
+                                                              bc({ text: `⚠️ Delete did not confirm on the database - some rows may return after a refresh. Try again, or check console for details.`, isSuccess: !1 });
+                                                            }
                                                           } catch (err) {
                                                             console.error("Junk cleanup error:", err);
                                                             bc({ text: "⚠️ Cleanup failed. Check console.", isSuccess: !1 });

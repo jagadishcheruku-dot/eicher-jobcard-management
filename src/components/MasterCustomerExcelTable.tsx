@@ -79,7 +79,7 @@ export interface MasterCustomerExcelTableProps {
   allCards?: any[];
   language?: "te" | "en";
   onSave: (chassisNo: string, updatedFields: any) => void;
-  onDelete?: (chassisNo: string) => void;
+  onDelete?: (customer: any) => void;
   onView?: (customer: any) => void;
   onEdit?: (customer: any) => void;
   onNewJobCard?: (customer: any) => void;
@@ -2513,8 +2513,13 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                           setCallPreferredDate("");
                         }}
                         onDelete={() => {
-                          if (chassisNo && window.confirm(isTe ? `కస్టమర్ ${chassisNo} ని తొలగించాలనుకుంటున్నారా?` : `Are you sure you want to delete customer ${chassisNo}?`)) {
-                            if (onDelete) onDelete(chassisNo);
+                          const label =
+                            chassisNo ||
+                            getColDisplayValue(cust, "Customer Name") ||
+                            getColDisplayValue(cust, "Mobile Number") ||
+                            "this row";
+                          if (window.confirm(isTe ? `కస్టమర్ ${label} ని తొలగించాలనుకుంటున్నారా?` : `Are you sure you want to delete customer ${label}?`)) {
+                            if (onDelete) onDelete(cust as any);
                           }
                         }}
                       />

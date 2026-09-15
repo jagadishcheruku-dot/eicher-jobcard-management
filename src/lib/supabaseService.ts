@@ -177,16 +177,32 @@ async function upsertRows(table: string, rows: any[]): Promise<{ written: number
   return { written };
 }
 
+// Postgrest reports success (no error) even when a delete matched zero rows
+// - a mismatched id or a policy silently filtering the row both look
+// identical to "done" unless the affected rows are actually counted, so this
+// asks for them back via .select() and treats "matched fewer than asked"
+// as a real failure instead of a false positive.
 async function deleteIds(table: string, rowIds: string[]): Promise<boolean> {
+  if (rowIds.length === 0) return true;
   try {
+    let removed = 0;
     for (let start = 0; start < rowIds.length; start += WRITE_CHUNK) {
-      const { error } = await supabase
+      const batch = rowIds.slice(start, start + WRITE_CHUNK);
+      const { data, error } = await supabase
         .from(table)
         .delete()
-        .in('id', rowIds.slice(start, start + WRITE_CHUNK));
+        .in('id', batch)
+        .select('id');
       if (error) throw error;
+      removed += (data ?? []).length;
     }
     readCache.delete(table);
+    if (removed < rowIds.length) {
+      console.warn(
+        `Supabase delete (${table}): asked to delete ${rowIds.length} row(s) but only ${removed} matched - the rest were not removed (id mismatch, or a row level security policy without DELETE for anon/authenticated).`
+      );
+      return false;
+    }
     return true;
   } catch (err) {
     console.warn(`Supabase delete (${table}) failed:`, err);
