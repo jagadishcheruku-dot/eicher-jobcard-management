@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 // what the row level security policies allow. Environment variables override
 // it so a different project can be pointed at without a code change.
 const DEFAULT_URL = 'https://cpgwveltwuoniwzgfhwo.supabase.co';
-const DEFAULT_KEY = 'sb_publishable_DuIbPusPTliL1jpTWLcveg_qgRQ53ci';
+const DEFAULT_KEY = 'sb_publishable_xIhr-lmqpKbh3khMR2qbiA_ngVLX9Sc';
 
 const url = import.meta.env.VITE_SUPABASE_URL || DEFAULT_URL;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_KEY;
