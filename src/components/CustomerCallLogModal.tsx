@@ -418,45 +418,69 @@ Supervisor: ${supervisor || "—"}`;
             )}
           </div>
 
-          {/* Past Call History & Remarks */}
-          {existingFollowups.length > 0 && (
-            <div className="border border-amber-200 rounded-xl p-3 space-y-2 bg-amber-50/40">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-amber-950 font-black text-xs">
-                  <PhoneCall className="w-3.5 h-3.5 text-amber-600" />
-                  <span>{isTe ? "గత కాల్స్ & రిమార్క్స్ చరిత్ర" : "Past Call Logs & Remarks"} ({existingFollowups.length})</span>
-                </div>
-                {existingFollowups[0]?.callDate && (
-                  <span className="text-[10px] font-bold text-slate-500">
-                    {isTe ? "చివరి కాల్:" : "Last called:"} {formatDisplayDate(existingFollowups[0].callDate)}
-                  </span>
-                )}
+          {/* Past Call / Telecalling History */}
+          <div className="border border-amber-200 rounded-xl p-3.5 space-y-2.5 bg-amber-50/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <PhoneCall className="w-4 h-4 text-amber-700" />
+                <h4 className="font-black text-slate-900 text-xs">
+                  {isTe ? "టెలికాలింగ్ చరిత్ర" : "Telecalling History"} ({existingFollowups.length})
+                </h4>
               </div>
-              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                {existingFollowups.map((h, i) => (
-                  <div key={h.id || i} className="bg-white border border-amber-200/80 rounded-lg p-2 text-xs space-y-1 shadow-2xs">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-600">
-                      <span className="text-amber-900">📅 {formatDisplayDate(h.callDate || todayStr)}</span>
-                      <span>By: {h.calledBy || "Staff"}</span>
-                      {h.status && (
-                        <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold">
-                          {h.status}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-slate-800 font-medium">
-                      "{h.remarks || h.notes || "No remarks"}"
-                    </p>
-                    {h.nextCallDate && (
-                      <div className="text-[10px] text-blue-700 font-bold">
-                        {isTe ? "తదుపరి ఫాలో-అప్:" : "Next follow-up:"} {formatDisplayDate(h.nextCallDate)}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {existingFollowups[0]?.callDate && (
+                <span className="text-[10px] font-bold text-slate-500">
+                  {isTe ? "చివరి కాల్:" : "Last called:"} {formatDisplayDate(existingFollowups[0].callDate)}
+                </span>
+              )}
             </div>
-          )}
+
+            {existingFollowups.length === 0 ? (
+              <div className="py-3.5 text-center text-slate-500 bg-white rounded-lg border border-amber-200">
+                <p className="text-xs font-bold text-slate-600">
+                  {isTe ? "ఈ కస్టమర్‌కి గతంలో ఎలాంటి కాల్స్ లాగ్ చేయలేదు." : "No calls logged yet for this customer."}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-amber-200 rounded-lg bg-white max-h-48 overflow-y-auto">
+                <table className="w-full text-xs text-left text-slate-900 border-collapse">
+                  <thead className="bg-amber-100 font-black text-amber-950 border-b border-amber-200 text-[11px] sticky top-0">
+                    <tr>
+                      <th className="py-1.5 px-2.5">{isTe ? "తేదీ" : "Date"}</th>
+                      <th className="py-1.5 px-2.5">{isTe ? "కాల్ చేసినవారు" : "Called By"}</th>
+                      <th className="py-1.5 px-2.5">{isTe ? "స్థితి" : "Status"}</th>
+                      <th className="py-1.5 px-2.5">{isTe ? "రిమార్క్స్" : "Remarks"}</th>
+                      <th className="py-1.5 px-2.5">{isTe ? "తదుపరి కాల్" : "Next Call"}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-100">
+                    {existingFollowups.map((h, i) => (
+                      <tr key={h.id || i} className="hover:bg-amber-50/60">
+                        <td className="py-1.5 px-2.5 font-mono font-bold text-amber-900 whitespace-nowrap">
+                          {formatDisplayDate(h.callDate || todayStr)}
+                        </td>
+                        <td className="py-1.5 px-2.5 text-slate-700 whitespace-nowrap">
+                          {h.calledBy || "Staff"}
+                        </td>
+                        <td className="py-1.5 px-2.5">
+                          {h.status && (
+                            <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold whitespace-nowrap">
+                              {h.status}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1.5 px-2.5 text-slate-800 font-medium min-w-[160px]">
+                          {h.remarks || h.notes || "—"}
+                        </td>
+                        <td className="py-1.5 px-2.5 font-mono text-blue-700 font-bold whitespace-nowrap">
+                          {h.nextCallDate ? formatDisplayDate(h.nextCallDate) : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
 
           {/* 3. Call Logger Form */}
           <form onSubmit={handleSaveCallLogSubmit} className="bg-purple-50/50 border border-purple-200 rounded-xl p-3.5 space-y-3">
