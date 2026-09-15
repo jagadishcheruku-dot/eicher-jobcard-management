@@ -33,7 +33,6 @@ import {
   TrendingUp,
   Users,
   AlertTriangle,
-  ExternalLink,
   ChevronRight,
   ShieldCheck,
   MapPin,
@@ -185,7 +184,6 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
 
   const [selectedCallCustomer, setSelectedCallCustomer] = useState<any | null>(null);
   const [selectedHistoryCustomer, setSelectedHistoryCustomer] = useState<any | null>(null);
-  const [selectedChassisModal, setSelectedChassisModal] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Edit Customer Modal State
@@ -1695,28 +1693,6 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       ? "py-2.5 px-3 text-sm"
       : "py-1.5 px-2 text-xs";
 
-  // Selected Chassis Job Cards lookup (strictly matched by chassis number)
-  const selectedChassisCustomer = useMemo(() => {
-    if (!selectedChassisModal) return null;
-    const targetNorm = normalizeChassisStr(selectedChassisModal);
-    return customers.find((c) => {
-      const variants = getCustChassisVariants(c);
-      return variants.includes(targetNorm) || variants.some(v => v === targetNorm || (v.length >= 6 && targetNorm.length >= 6 && v.slice(-6) === targetNorm.slice(-6)));
-    }) || null;
-  }, [selectedChassisModal, customers]);
-
-  const selectedChassisCards = useMemo(() => {
-    if (!selectedChassisModal) return [];
-    if (selectedChassisCustomer) {
-      return getCustomerJobCards(selectedChassisCustomer);
-    }
-    const targetNorm = normalizeChassisStr(selectedChassisModal);
-    return allCards.filter((card) => {
-      const cardVariants = getCardChassisVariants(card);
-      return cardVariants.some(v => v === targetNorm || (v.length >= 6 && targetNorm.length >= 6 && v.slice(-6) === targetNorm.slice(-6)));
-    });
-  }, [selectedChassisModal, selectedChassisCustomer, allCards]);
-
   return (
     <div className="w-full space-y-3 bg-white shadow-sm p-3 md:p-4 rounded-3xl print:p-0 print:border-none print:shadow-none">
       {/* Toast message popup */}
@@ -2602,14 +2578,14 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setSelectedChassisModal(chassisVal);
+                                  setSelectedCallCustomer(cust);
                                 }}
                                 className={`font-mono font-bold text-xs px-2 py-0.5 rounded border shadow-2xs whitespace-nowrap cursor-pointer transition-all hover:scale-105 hover:ring-2 hover:ring-purple-400 ${
                                   isOutOfWty
                                     ? "text-red-700 bg-red-100/90 border-red-300 font-extrabold hover:bg-red-200"
                                     : "text-slate-900 bg-slate-100 border-slate-200 hover:bg-purple-100"
                                 }`}
-                                title={isTe ? "జాబ్ కార్డులు & కస్టమర్ వివరాలు చూడటానికి క్లిక్ చేయండి" : "Click to view Job Cards & Customer details"}
+                                title={isTe ? "కస్టమర్ హిస్టరీ కార్డ్ చూడటానికి క్లిక్ చేయండి" : "Click to view customer history card"}
                               >
                                 {chassisVal || "—"}
                               </button>
@@ -2625,7 +2601,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setSelectedChassisModal(chassisVal);
+                                    setSelectedCallCustomer(cust);
                                   }}
                                   className="bg-purple-100 hover:bg-purple-200 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-purple-300 shadow-2xs whitespace-nowrap cursor-pointer transition-transform hover:scale-105"
                                   title={isTe ? `${custJobCards.length} జాబ్ కార్డులు ఉన్నాయి. వివరాలు చూడటానికి క్లిక్ చేయండి` : `${custJobCards.length} Job Cards recorded. Click to view details`}
@@ -3143,269 +3119,6 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         } : undefined}
       />
 
-      {/* DEDICATED CHASSIS JOB CARDS MODAL */}
-      {selectedChassisModal && (() => {
-        const cust = selectedChassisCustomer;
-        const cards = selectedChassisCards;
-        const custName = cust ? getColDisplayValue(cust, "Customer Name") : "—";
-        const fatherName = cust ? getColDisplayValue(cust, "FATHER NAME") : "";
-        const mobile = cust ? getColDisplayValue(cust, "Mobile Number") : "—";
-        const village = cust ? getColDisplayValue(cust, "VILLAGE") : "—";
-        const mandal = cust ? getColDisplayValue(cust, "Mandal") : "—";
-        const model = cust ? getColDisplayValue(cust, "Model") : "—";
-        const engineNo = cust ? getColDisplayValue(cust, "Engine No:") : "—";
-        const delDate = cust ? getColDisplayValue(cust, "Date of del") : "—";
-        const isOutOfWty = cust ? isDeliveryOutOfWarranty(cust) : false;
-
-        return (
-          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 md:p-6 overflow-y-auto animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl border-2 border-purple-300 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-purple-950 via-purple-900 to-indigo-950 text-white p-4 flex items-center justify-between shrink-0 border-b border-purple-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-700/50 flex items-center justify-center text-purple-200 border border-purple-500/40 shrink-0">
-                    <Wrench className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-black tracking-tight text-white flex items-center gap-1.5">
-                        <span>🚜 {isTe ? "ఛాసిస్ నెం:" : "Chassis No:"}</span>
-                        <span className="font-mono bg-purple-800/80 px-2.5 py-0.5 rounded-lg border border-purple-600 text-amber-300">
-                          {selectedChassisModal}
-                        </span>
-                      </h3>
-                      <span className="bg-purple-800 text-purple-200 text-xs font-black px-2.5 py-0.5 rounded-full border border-purple-600">
-                        {cards.length} {isTe ? "జాబ్ కార్డులు లభించాయి" : "Job Cards Recorded"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-purple-200/80 font-medium mt-0.5">
-                      {custName} {fatherName ? `(S/o ${fatherName})` : ""} • {village} {mandal ? `, ${mandal}` : ""}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedChassisModal(null)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Customer Details Ribbon */}
-              <div className="bg-purple-50/70 border-b border-purple-200 p-3.5 shrink-0 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "కస్టమర్" : "Customer"}</span>
-                  <span className="font-bold text-slate-900 truncate block">{custName}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "మొబైల్ నెం." : "Mobile"}</span>
-                  <span className="font-mono font-bold text-slate-900">{mobile}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "మోడల్" : "Model"}</span>
-                  <span className="font-bold text-indigo-900">{model}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "ఇంజన్ నెం." : "Engine No"}</span>
-                  <span className="font-mono text-slate-800">{engineNo}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "డెలివరీ తేదీ" : "Delivery Date"}</span>
-                  <span className="font-mono font-bold text-slate-900">{delDate}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "వారంటీ స్థితి" : "Warranty"}</span>
-                  {isOutOfWty ? (
-                    <span className="inline-block bg-red-100 text-red-800 border border-red-300 font-black text-[10px] px-2 py-0.5 rounded-md">
-                      {isTe ? "ముగిసింది" : "Out of Wty"}
-                    </span>
-                  ) : (
-                    <span className="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 font-black text-[10px] px-2 py-0.5 rounded-md">
-                      {isTe ? "వారంటీలో ఉంది" : "In Warranty"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Job Cards Body */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <span>📋 {isTe ? "ఈ ఛాసిస్ నెంబర్ పై రికార్డ్ అయిన జాబ్ కార్డులు:" : "Recorded Job Cards for this Chassis:"}</span>
-                    <span className="bg-purple-100 text-purple-900 text-xs font-black px-2 py-0.5 rounded-full">
-                      {cards.length}
-                    </span>
-                  </h4>
-
-                  <div className="flex items-center gap-2">
-                    {onNewJobCard && cust && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const targetCust = cust;
-                          setSelectedChassisModal(null);
-                          onNewJobCard(targetCust);
-                        }}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>{isTe ? "+ కొత్త జాబ్ కార్డ్" : "+ New Job Card"}</span>
-                      </button>
-                    )}
-                    {onViewJobCardsForChassis && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const ch = selectedChassisModal;
-                          setSelectedChassisModal(null);
-                          onViewJobCardsForChassis(ch);
-                        }}
-                        className="px-3 py-1.5 bg-purple-800 hover:bg-purple-900 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>{isTe ? "🔍 జాబ్ కార్డుల టేబుల్‌లో తెరవండి" : "🔍 Open in Job Cards Table"}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {cards.length === 0 ? (
-                  <div className="p-8 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 space-y-3">
-                    <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center mx-auto">
-                      <Wrench className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">
-                        {isTe ? "ఈ ఛాసిస్ నెంబర్ పై ఎలాంటి జాబ్ కార్డులు నమోదు కాలేదు." : "No Job Cards found matching this chassis number."}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {isTe ? "ఈ కస్టమర్ ట్రాక్టర్‌కు కొత్త జాబ్ కార్డ్ నమోదు చేయడానికి పైనున్న '+ కొత్త జాబ్ కార్డ్' బటన్ నొక్కండి." : "Click '+ New Job Card' to record a new service for this tractor."}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-xs bg-white">
-                    <table className="w-full text-xs text-left text-slate-900 border-collapse">
-                      <thead className="bg-slate-100 font-black text-slate-800 border-b border-slate-200 text-[11px]">
-                        <tr>
-                          <th className="py-2.5 px-3">Job No</th>
-                          <th className="py-2.5 px-3">Date</th>
-                          <th className="py-2.5 px-3">Service Type</th>
-                          <th className="py-2.5 px-3">Hours Run</th>
-                          <th className="py-2.5 px-3">Technician / Mechanic</th>
-                          <th className="py-2.5 px-3">Bill Amount (₹)</th>
-                          <th className="py-2.5 px-3">Status</th>
-                          <th className="py-2.5 px-3 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-150">
-                        {cards.map((card, idx) => (
-                          <tr key={card.id || idx} className="hover:bg-purple-50/60 transition-colors">
-                            <td className="py-2.5 px-3 font-bold font-mono text-purple-950">
-                              <div className="flex flex-col">
-                                <span>{card.jobNo || card.onlineJobCardNo || card.onlineJobNo || card.jobCardNo || `JC-${idx + 1}`}</span>
-                                {card.onlineJobCardNo && card.jobNo && card.onlineJobCardNo !== card.jobNo && (
-                                  <span className="text-[10px] text-slate-500 font-normal">
-                                    Online: {card.onlineJobCardNo}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-3 font-mono text-slate-800">
-                              {formatDisplayDate(card.jobDate || card.complaintDate || card.date)}
-                            </td>
-                            <td className="py-2.5 px-3 font-bold text-slate-900">
-                              <div className="flex flex-col">
-                                <span>{card.serviceType || "General Service"}</span>
-                                {card.freeServiceList && (
-                                  <span className="text-[10px] text-emerald-700 font-medium">
-                                    {card.freeServiceList}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2.5 px-3 font-mono font-bold text-slate-800">
-                              {card.hourMeter || card.hoursRun || card.hrsRun || "—"}
-                            </td>
-                            <td className="py-2.5 px-3 text-slate-700">
-                              {card.mechanic || card.technicianName || card.mechanicName || card.technician || "—"}
-                            </td>
-                            <td className="py-2.5 px-3 font-mono font-bold text-purple-950 text-sm">
-                              ₹{Number(card.grandTotal || card.gTotal || card.totalAmount || card.billAmount || 0).toLocaleString()}
-                            </td>
-                            <td className="py-2.5 px-3">
-                              <span
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase inline-block ${
-                                  card.status === "Closed"
-                                    ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                                    : "bg-amber-100 text-amber-900 border border-amber-300"
-                                }`}
-                              >
-                                {card.status || "Open"}
-                              </span>
-                            </td>
-                            <td className="py-2.5 px-3 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {onViewCard && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedChassisModal(null);
-                                      onViewCard(card);
-                                    }}
-                                    className="px-2.5 py-1 bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold rounded-lg text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
-                                    title="View Full Job Card"
-                                  >
-                                    <Eye className="w-3.5 h-3.5" />
-                                    <span>{isTe ? "వివరాలు" : "View"}</span>
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="bg-slate-100 p-3.5 flex items-center justify-between border-t border-slate-200 shrink-0">
-                <div className="flex items-center gap-2">
-                  {cust && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const target = cust;
-                        setSelectedChassisModal(null);
-                        setSelectedCallCustomer(target);
-                        setCallStatus("Interested");
-                        setCallNotes("");
-                        setCallPreferredDate("");
-                      }}
-                      className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-xl border border-amber-300 inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                    >
-                      <PhoneCall className="w-3.5 h-3.5 text-amber-700" />
-                      <span>{isTe ? "📞 టెలికాలింగ్ లాగ్ చేయండి" : "📞 Log Telecall"}</span>
-                    </button>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedChassisModal(null)}
-                  className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl cursor-pointer shadow-sm transition-colors"
-                >
-                  {isTe ? "మూసివేయి (Close)" : "Close"}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 };

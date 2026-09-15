@@ -278,7 +278,7 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
 
   // Get latest mechanic from related cards
   const latestMechanic = relatedCards.length > 0
-    ? (relatedCards[0]?.mechanicName || relatedCards[0]?.technician || "—")
+    ? (relatedCards[0]?.mechanic || relatedCards[0]?.technicianName || relatedCards[0]?.mechanicName || relatedCards[0]?.technician || "—")
     : "—";
 
   // Handle Copy
@@ -547,7 +547,7 @@ Supervisor: ${supervisor || "—"}`;
                           {card.hoursRun || card.hourMeter || "—"}
                         </td>
                         <td className="py-1.5 px-2.5 text-slate-700">
-                          {card.mechanicName || card.technician || "—"}
+                          {card.mechanic || card.technicianName || card.mechanicName || card.technician || "—"}
                         </td>
                         <td className="py-1.5 px-2.5 font-mono font-bold text-purple-950">
                           ₹{Number(card.grandTotal || card.totalAmount || 0).toLocaleString()}
