@@ -5460,8 +5460,8 @@ function gY() {
         const desc = String(Kp(spare, "desc") || "").toLowerCase().trim();
         const rate = Kp(spare, "rate") || "";
 
-        // Match by part number or description
-        if (partNo.includes(query) || desc.includes(query)) {
+        // Match by part number only (not description/name)
+        if (partNo.includes(query)) {
           suggestions.push({
             partNo: spare.__partNoDisplay || Kp(spare, "partNo") || "",
             desc: Kp(spare, "desc") || "",
