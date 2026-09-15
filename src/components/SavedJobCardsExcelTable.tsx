@@ -1824,7 +1824,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                       return (
                         <td
                           key={col.key}
-                          className={`${cellPadding} border-r border-slate-200 p-0.5 relative min-w-0 ${
+                          className={`${cellPadding} border-r border-slate-200 relative min-w-0 ${
                             isDirty ? "bg-amber-50/60 ring-1 ring-amber-300" : ""
                           }`}
                         >
@@ -1850,7 +1850,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                                   : "Bill #"
                                 : ""
                             }
-                            className={`w-full min-w-0 text-xs transition-all outline-none rounded px-1.5 py-1 ${
+                            className={`w-full min-w-0 text-xs leading-tight transition-all outline-none rounded px-1.5 py-0 ${
                               isOnlineJCEmpty
                                 ? "bg-rose-50 hover:bg-white focus:bg-white text-rose-900 border border-rose-300 focus:border-rose-600 focus:ring-1 focus:ring-rose-500 font-mono font-black placeholder:text-rose-400 placeholder:font-sans"
                                 : isOnlineJC

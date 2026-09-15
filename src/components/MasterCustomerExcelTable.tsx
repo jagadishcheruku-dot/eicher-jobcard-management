@@ -2511,56 +2511,36 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                 const chassisNo = getColDisplayValue(cust, "Chassis no");
                 const isDuplicate = chassisNo && duplicateSet.has(chassisNo.toUpperCase().trim());
 
-                // Calculate Delivery Warranty Status (2 Years from delivery date)
-                const custDelTs = getCustomerDeliveryTimestamp(cust);
-                const isOutOfWty = custDelTs > 0 && isDeliveryOutOfWarranty(custDelTs, 2);
-
                 return (
                   <tr
                     key={key}
                     className={`transition-colors group ${
                       isDuplicate
                         ? "bg-amber-50/40 hover:bg-amber-100"
-                        : isOutOfWty
-                        ? "bg-red-50/25 hover:bg-red-100"
                         : "hover:bg-indigo-100"
                     }`}
                   >
                     {/* Row Index */}
                     <td
-                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 sticky left-0 z-10 transition-colors ${
-                        isOutOfWty
-                          ? "text-red-700 bg-red-50 group-hover:bg-red-100"
-                          : "text-slate-400 bg-slate-50 group-hover:bg-indigo-100"
-                      }`}
+                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 sticky left-0 z-10 transition-colors text-slate-400 bg-slate-50 group-hover:bg-indigo-100`}
                     >
-                      <div className="flex flex-col items-center justify-center gap-0.5">
-                        <div className="flex items-center justify-center gap-1">
-                          {canDelete && (
-                            <input
-                              type="checkbox"
-                              checked={selectedRowKeys.has(key)}
-                              onChange={() => {
-                                setSelectedRowKeys((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(key)) next.delete(key);
-                                  else next.add(key);
-                                  return next;
-                                });
-                              }}
-                              className="w-3 h-3 rounded cursor-pointer shrink-0"
-                            />
-                          )}
-                          <span>{globalIdx}</span>
-                        </div>
-                        {isOutOfWty && (
-                          <span
-                            className="text-[8px] font-black uppercase text-red-600 tracking-tighter leading-none"
-                            title={isTe ? "వారంటీ ముగిసింది (>2 సంవత్సరాలు)" : "Out of Warranty (>2 Years)"}
-                          >
-                            OOW
-                          </span>
+                      <div className="flex items-center justify-center gap-1">
+                        {canDelete && (
+                          <input
+                            type="checkbox"
+                            checked={selectedRowKeys.has(key)}
+                            onChange={() => {
+                              setSelectedRowKeys((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(key)) next.delete(key);
+                                else next.add(key);
+                                return next;
+                              });
+                            }}
+                            className="w-3 h-3 rounded cursor-pointer shrink-0"
+                          />
                         )}
+                        <span>{globalIdx}</span>
                       </div>
                     </td>
 
@@ -2580,23 +2560,11 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                 onClick={() => {
                                   setSelectedCallCustomer(cust);
                                 }}
-                                className={`font-mono font-bold text-xs px-2 py-0.5 rounded border shadow-2xs whitespace-nowrap cursor-pointer transition-all hover:scale-105 hover:ring-2 hover:ring-purple-400 ${
-                                  isOutOfWty
-                                    ? "text-red-700 bg-red-100/90 border-red-300 font-extrabold hover:bg-red-200"
-                                    : "text-slate-900 bg-slate-100 border-slate-200 hover:bg-purple-100"
-                                }`}
+                                className="font-mono font-bold text-xs px-2 py-0.5 rounded border shadow-2xs whitespace-nowrap cursor-pointer transition-all hover:scale-105 hover:ring-2 hover:ring-purple-400 text-slate-900 bg-slate-100 border-slate-200 hover:bg-purple-100"
                                 title={isTe ? "కస్టమర్ హిస్టరీ కార్డ్ చూడటానికి క్లిక్ చేయండి" : "Click to view customer history card"}
                               >
                                 {chassisVal || "—"}
                               </button>
-                              {isOutOfWty && (
-                                <span
-                                  className="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 shadow-2xs"
-                                  title={isTe ? "వారంటీ ముగిసింది (డెలివరీ అయి 2 సంవత్సరాలు దాటింది)" : "Out of 2-Year Warranty"}
-                                >
-                                  {isTe ? "వారంటీ ముగిసింది" : "OUT OF WTY"}
-                                </span>
-                              )}
                               {custJobCards.length > 0 && (
                                 <button
                                   type="button"
@@ -2633,36 +2601,15 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                 onChange={(e) =>
                                   handleFieldChange(cust, rowUniqueIndex, col.key, e.target.value)
                                 }
-                                className={`w-full text-xs rounded px-1.5 py-1 outline-none transition-all font-mono ${
-                                  isOutOfWty
-                                    ? "text-red-600 font-black bg-red-50/40 hover:bg-white focus:bg-white border border-transparent hover:border-red-300 focus:border-red-600"
-                                    : "text-slate-900 font-bold bg-slate-50/50 hover:bg-white focus:bg-white border border-transparent hover:border-purple-300 focus:border-purple-600"
-                                }`}
+                                className="w-full text-xs leading-tight rounded px-1.5 py-0 outline-none transition-all font-mono text-slate-900 font-bold bg-slate-50/50 hover:bg-white focus:bg-white border border-transparent hover:border-purple-300 focus:border-purple-600"
                                 placeholder="DD-MMM-YYYY"
                               />
-                              {custDelTs > 0 && (
-                                isOutOfWty ? (
-                                  <span
-                                    className="bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded border border-red-300 uppercase tracking-wider shrink-0 whitespace-nowrap"
-                                    title={isTe ? "డెలివరీ నుండి 2 ఏళ్లు దాటింది (వారంటీ ముగిసింది)" : "> 2 Years from Delivery (Out of Warranty)"}
-                                  >
-                                    &gt;2Y
-                                  </span>
-                                ) : (
-                                  <span
-                                    className="bg-emerald-50 text-emerald-700 text-[9px] font-black px-1.5 py-0.5 rounded border border-emerald-300 uppercase tracking-wider shrink-0 whitespace-nowrap"
-                                    title={isTe ? "డెలివరీ నుండి 2 ఏళ్ల లోపు (వారంటీ ఉంది)" : "≤ 2 Years from Delivery (In Warranty)"}
-                                  >
-                                    ≤2Y
-                                  </span>
-                                )
-                              )}
                             </div>
                           </td>
                         );
                       }
 
-                      // Standard Inline Editable Cell for all other columns (Red if OOW, Black if In Warranty)
+                      // Standard Inline Editable Cell for all other columns
                       return (
                         <td
                           key={col.key}
@@ -2674,11 +2621,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                             onChange={(e) =>
                               handleFieldChange(cust, rowUniqueIndex, col.key, e.target.value)
                             }
-                            className={`w-full text-xs rounded px-1.5 py-1 outline-none transition-all ${
-                              isOutOfWty
-                                ? "text-red-600 font-bold bg-red-50/20 hover:bg-white focus:bg-white border border-transparent hover:border-red-300 focus:border-red-600"
-                                : "text-slate-900 font-medium bg-slate-50/50 hover:bg-white focus:bg-white border border-transparent hover:border-purple-300 focus:border-purple-600"
-                            }`}
+                            className="w-full text-xs leading-tight rounded px-1.5 py-0 outline-none transition-all text-slate-900 font-medium bg-slate-50/50 hover:bg-white focus:bg-white border border-transparent hover:border-purple-300 focus:border-purple-600"
                           />
                         </td>
                       );
@@ -2690,11 +2633,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                     <td
                       className={`${cellPadding} text-center sticky right-0 ${
                         expandedRowKeys[rowUniqueIndex] ? "z-40" : "z-20"
-                      } ${
-                        isOutOfWty
-                          ? "bg-red-50/40 group-hover:bg-red-100"
-                          : "bg-white group-hover:bg-indigo-100"
-                      } shadow-md border-l border-slate-200`}
+                      } bg-white group-hover:bg-indigo-100 shadow-md border-l border-slate-200`}
                     >
                       <RowActionButtons
                         isExpanded={!!expandedRowKeys[rowUniqueIndex]}
