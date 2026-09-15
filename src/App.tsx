@@ -1086,12 +1086,14 @@ function buildCustMap(list) {
       delete N[k];
       return;
     }
-    // No chassis, no model, no phone match to fold into: this entry can't
-    // be linked to any real customer (a fully orphaned call-log artifact),
-    // so hide it from the list entirely instead of showing it as a
-    // near-empty row.
+    // No chassis, no model, no SL.NO: a real customer row from a master
+    // Excel upload always carries an SL.NO, so its absence here (even if a
+    // phone number happens to be present) marks this as a fully orphaned
+    // call-log artifact with nothing to merge into - hide it from the list
+    // entirely instead of showing it as a near-empty row.
     const model = String(rec.model || rec["Model"] || "").trim();
-    if (!model && !ph) {
+    const slNo = String(rec.slNo || rec["SL.NO"] || rec["SL. No"] || rec.sNo || "").trim();
+    if (!model && !slNo) {
       delete N[k];
     }
   });
@@ -19973,15 +19975,16 @@ ${b}`));
                                                               if (chassis) return;
                                                               const phone = Ct(r.mobileNumber || r["Mobile Number"] || r.ownerMob || r.phone || "");
                                                               const model = String(r.model || r["Model"] || "").trim();
+                                                              const slNo = String(r.slNo || r["SL.NO"] || r["SL. No"] || r.sNo || "").trim();
                                                               const targetId = phone && phoneToId[phone];
                                                               if (targetId && targetId !== r.id) {
                                                                 junkIds.push(r.id);
                                                                 mergeCount++;
-                                                              } else if (!model && !phone) {
-                                                                // No chassis, no model, no phone: this row can't be
-                                                                // linked to any real customer, so there is nothing to
-                                                                // merge it into - it's a leftover call-log artifact
-                                                                // from the legacy orphan-row bug and just gets removed.
+                                                              } else if (!model && !slNo) {
+                                                                // No chassis, no model, no SL.NO: a real customer row
+                                                                // from a master Excel upload always carries an SL.NO,
+                                                                // so its absence (regardless of phone) marks this as a
+                                                                // leftover call-log artifact with nothing to merge into.
                                                                 junkIds.push(r.id);
                                                                 orphanCount++;
                                                               }
@@ -19992,7 +19995,7 @@ ${b}`));
                                                             }
                                                             if (
                                                               !window.confirm(
-                                                                `Found ${junkIds.length} junk/orphan customer rows: ${mergeCount} duplicate a real customer's phone number, ${orphanCount} have no chassis/model/phone at all and can't be linked to any customer. Permanently delete them from the database? This cannot be undone.`,
+                                                                `Found ${junkIds.length} junk/orphan customer rows: ${mergeCount} duplicate a real customer's phone number, ${orphanCount} have no chassis/model/SL.NO at all and can't be linked to any customer. Permanently delete them from the database? This cannot be undone.`,
                                                               )
                                                             ) {
                                                               bc({ text: "Cleanup cancelled.", isSuccess: !0 });
