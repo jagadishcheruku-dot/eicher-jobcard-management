@@ -9423,6 +9423,42 @@ ${b}`));
           alert("❌ Failed to delete customer record."));
       }
     },
+    phBulk = async (list) => {
+      const items = Array.isArray(list) ? list.filter(Boolean) : [];
+      if (items.length === 0) return;
+      try {
+        const b = { ...zr };
+        const dbIds = [];
+        items.forEach((cust) => {
+          const mapKey = Object.keys(b).find((k) => b[k] === cust);
+          if (mapKey) delete b[mapKey];
+          const rowId =
+            (cust && (cust.id || cust._id)) ||
+            String(cust?.["Chassis no"] || cust?.chassisNo || cust?.chassis || "").trim();
+          if (rowId) dbIds.push(rowId);
+        });
+        Pi(b);
+        ui(Dc, b);
+        try { localStorage.setItem("jobcard_sg_customer_v2", JSON.stringify(b)); } catch {}
+
+        let dbOk = true;
+        if (dbIds.length > 0) {
+          const res = await Rs.deleteCustomersByIds(dbIds);
+          dbOk = !!(res && res.success);
+          if (!dbOk) console.warn("Bulk customer delete did not confirm success:", res);
+        }
+        if (dbOk) {
+          alert(`✅ Deleted ${items.length} customer record(s) successfully from Database!`);
+        } else {
+          alert(
+            "⚠️ Removed from this screen, but the database did not confirm the delete - some rows may come back after a refresh. Please try again or use \"Clean Junk Rows\".",
+          );
+        }
+      } catch (b) {
+        (console.error("Error deleting customer records (bulk):", b),
+          alert("❌ Failed to delete selected customer records."));
+      }
+    },
     hu = (d) => {
       const b = d["Chassis no"] || d.__chassisDisplay || be(d, "chassis") || "",
         v = Ct(b.toString());
@@ -22130,6 +22166,7 @@ ${b}`));
                                   canCreate: !currentSystemUser || currentSystemUser.canCreate !== false,
                                   onSave: handleUpdateCustomerMasterRow,
                                   onDelete: ph,
+                                  onBulkDelete: phBulk,
                                   onAddNewCustomer: T,
                                   onSaveCallLog: handleSaveCallLog,
                                   onNewJobCard: (cust) => {

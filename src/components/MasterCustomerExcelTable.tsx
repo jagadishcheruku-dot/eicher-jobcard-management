@@ -80,6 +80,7 @@ export interface MasterCustomerExcelTableProps {
   language?: "te" | "en";
   onSave: (chassisNo: string, updatedFields: any) => void;
   onDelete?: (customer: any) => void;
+  onBulkDelete?: (customers: any[]) => void;
   onView?: (customer: any) => void;
   onEdit?: (customer: any) => void;
   onNewJobCard?: (customer: any) => void;
@@ -99,6 +100,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   language = "te",
   onSave,
   onDelete,
+  onBulkDelete,
   onView,
   onEdit,
   onNewJobCard,
@@ -176,6 +178,9 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       [rowKey]: !prev[rowKey],
     }));
   };
+
+  // Row selection for bulk delete
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(new Set());
 
   const [selectedCallCustomer, setSelectedCallCustomer] = useState<any | null>(null);
   const [selectedHistoryCustomer, setSelectedHistoryCustomer] = useState<any | null>(null);
@@ -2098,14 +2103,84 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
         </div>
       </div>
 
+      {/* Bulk selection action bar */}
+      {selectedRowKeys.size > 0 && canDelete && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg">
+          <span className="text-xs font-bold text-rose-900">
+            {isTe
+              ? `${selectedRowKeys.size} వరుసలు ఎంపిక చేయబడ్డాయి`
+              : `${selectedRowKeys.size} row(s) selected`}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedRowKeys(new Set())}
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg border border-slate-300 cursor-pointer"
+            >
+              {isTe ? "ఎంపిక తీసివేయి" : "Clear"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const toDelete = processedCustomers.filter((c) =>
+                  selectedRowKeys.has(getRowKey(c, c.__origIndex || 0))
+                );
+                if (toDelete.length === 0) return;
+                const msg = isTe
+                  ? `${toDelete.length} కస్టమర్ రికార్డులను శాశ్వతంగా తొలగించాలనుకుంటున్నారా? ఇది వెనక్కి తీసుకోలేరు.`
+                  : `Permanently delete ${toDelete.length} customer record(s)? This cannot be undone.`;
+                if (window.confirm(msg)) {
+                  if (onBulkDelete) onBulkDelete(toDelete);
+                  setSelectedRowKeys(new Set());
+                }
+              }}
+              className="px-3 py-1 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>
+                {isTe
+                  ? `ఎంపిక చేసినవి తొలగించు (${selectedRowKeys.size})`
+                  : `Delete Selected (${selectedRowKeys.size})`}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 3. MAIN SPREADSHEET TABLE (Excel Style with Sticky Headers and Action Column) */}
       <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
         <table className="w-full border-collapse text-left text-slate-900 min-w-[2800px] text-xs">
           {/* Header Row */}
           <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
             <tr>
-              <th className="py-2 px-2 text-center w-12 min-w-[48px] border-r border-purple-800 bg-purple-950 font-mono text-[11px]">
-                #
+              <th className="py-2 px-1 text-center w-14 min-w-[56px] border-r border-purple-800 bg-purple-950 font-mono text-[11px]">
+                <div className="flex flex-col items-center justify-center gap-0.5">
+                  {canDelete && (
+                    <input
+                      type="checkbox"
+                      checked={
+                        paginatedCustomers.length > 0 &&
+                        paginatedCustomers.every((c) =>
+                          selectedRowKeys.has(getRowKey(c, c.__origIndex || 0))
+                        )
+                      }
+                      onChange={(e) => {
+                        setSelectedRowKeys((prev) => {
+                          const next = new Set(prev);
+                          paginatedCustomers.forEach((c) => {
+                            const k = getRowKey(c, c.__origIndex || 0);
+                            if (e.target.checked) next.add(k);
+                            else next.delete(k);
+                          });
+                          return next;
+                        });
+                      }}
+                      className="w-3.5 h-3.5 rounded cursor-pointer"
+                      title={isTe ? "ఈ పేజీలో అన్నీ ఎంపిక చేయండి" : "Select all on this page"}
+                    />
+                  )}
+                  <span>#</span>
+                </div>
               </th>
               {detailedCols.map((col) => {
                 const isFiltered = !!columnFilters[col.key];
@@ -2345,7 +2420,22 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                           : "text-slate-400 bg-slate-50/60"
                       }`}
                     >
-                      <div className="flex flex-col items-center justify-center">
+                      <div className="flex flex-col items-center justify-center gap-0.5">
+                        {canDelete && (
+                          <input
+                            type="checkbox"
+                            checked={selectedRowKeys.has(key)}
+                            onChange={() => {
+                              setSelectedRowKeys((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(key)) next.delete(key);
+                                else next.add(key);
+                                return next;
+                              });
+                            }}
+                            className="w-3.5 h-3.5 rounded cursor-pointer"
+                          />
+                        )}
                         <span>{globalIdx}</span>
                         {isOutOfWty && (
                           <span
