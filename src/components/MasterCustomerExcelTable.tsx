@@ -143,6 +143,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   const [activeFilterCol, setActiveFilterCol] = useState<string | null>(null);
   const [filterSearchText, setFilterSearchText] = useState<string>("");
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
   // Lock Filters feature (🔒 / 🔓)
   const [isFiltersLocked, setIsFiltersLocked] = useState<boolean>(() => {
@@ -1543,26 +1544,57 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
     return colKey === "Date of del" || colKey === "Date of Delivery" || colKey === "DOD" || colKey === "Last Service Date";
   };
 
-  const groupDatesByYearMonth = (colKey: string) => {
-    const grouped: Record<string, Set<string>> = {};
+  const MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Excel-style Year > Month > Day tree of a date column's actual values,
+  // newest year first and months/days in calendar order within each year.
+  const groupDatesHierarchy = (colKey: string) => {
+    const grouped: Record<string, Record<string, Set<string>>> = {};
     customers.forEach((cust) => {
       const dateStr = getColDisplayValue(cust, colKey) || "";
       if (dateStr && dateStr !== "(Blank)") {
         const parts = dateStr.split("-");
         if (parts.length >= 3) {
-          const day = parts[0];
-          const month = parts[1];
-          const year = parts[2];
-          if (!grouped[year]) grouped[year] = new Set();
-          grouped[year].add(`${month}-${year}`);
+          const [, month, year] = parts;
+          if (!grouped[year]) grouped[year] = {};
+          if (!grouped[year][month]) grouped[year][month] = new Set();
+          grouped[year][month].add(dateStr);
         }
       }
     });
-    const result: Record<string, string[]> = {};
-    Object.keys(grouped).sort().reverse().forEach((year) => {
-      result[year] = Array.from(grouped[year]).sort();
+    return Object.keys(grouped)
+      .sort()
+      .reverse()
+      .map((year) => ({
+        year,
+        months: Object.keys(grouped[year])
+          .sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b))
+          .map((month) => ({
+            month,
+            days: Array.from(grouped[year][month]).sort(
+              (a, b) => parseInt(a.split("-")[0], 10) - parseInt(b.split("-")[0], 10)
+            ),
+          })),
+      }));
+  };
+
+  // Adds or removes a whole batch of date values from a column's filter at
+  // once - used by the (Select All), year and month checkboxes so ticking
+  // one applies to every date it covers.
+  const setColumnFilterValues = (colKey: string, values: string[], select: boolean) => {
+    setColumnFilters((prev) => {
+      const curr = prev[colKey] || [];
+      const updated = select
+        ? Array.from(new Set([...curr, ...values]))
+        : curr.filter((v) => !values.includes(v));
+      if (updated.length === 0) {
+        const next = { ...prev };
+        delete next[colKey];
+        return next;
+      }
+      return { ...prev, [colKey]: updated };
     });
-    return result;
+    setCurrentPage(1);
   };
 
   const handleToggleColumnFilterValue = (colKey: string, val: string) => {
@@ -2250,6 +2282,34 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                                 <X className="w-3.5 h-3.5" />
                               </button>
                             </div>
+                            {isDateColumn(col.key) && (
+                              <div className="flex flex-col gap-0.5 pb-1.5 mb-1.5 border-b border-slate-150 text-[11px] font-bold text-slate-700">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSortCol(col.key);
+                                    setSortDir("asc");
+                                    setActiveFilterCol(null);
+                                  }}
+                                  className="flex items-center gap-1.5 px-1.5 py-1 hover:bg-purple-50 rounded cursor-pointer text-left"
+                                >
+                                  <ArrowUp className="w-3 h-3 text-purple-600" />
+                                  <span>{isTe ? "పాత నుండి కొత్తది" : "Sort Oldest to Newest"}</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSortCol(col.key);
+                                    setSortDir("desc");
+                                    setActiveFilterCol(null);
+                                  }}
+                                  className="flex items-center gap-1.5 px-1.5 py-1 hover:bg-purple-50 rounded cursor-pointer text-left"
+                                >
+                                  <ArrowDown className="w-3 h-3 text-purple-600" />
+                                  <span>{isTe ? "కొత్త నుండి పాతది" : "Sort Newest to Oldest"}</span>
+                                </button>
+                              </div>
+                            )}
                             <input
                               type="text"
                               value={filterSearchText}
@@ -2259,62 +2319,140 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                             />
                             <div className="max-h-60 overflow-y-auto space-y-0.5 mb-2">
                               {isDateColumn(col.key) ? (
-                                Object.entries(groupDatesByYearMonth(col.key)).map(([year, months]) => {
-                                  const isExpanded = expandedYears.has(year);
-                                  const filteredMonths = months.filter(m => m.toLowerCase().includes(filterSearchText.toLowerCase()));
-                                  return (
-                                    <div key={year}>
-                                      <div
-                                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs font-semibold"
-                                        onClick={() => {
-                                          setExpandedYears((prev) => {
-                                            const next = new Set(prev);
-                                            if (next.has(year)) next.delete(year);
-                                            else next.add(year);
-                                            return next;
-                                          });
-                                        }}
-                                      >
-                                        <span className="text-purple-600 font-bold text-sm">{isExpanded ? "−" : "+"}</span>
-                                        <span>{year}</span>
-                                      </div>
-                                      {isExpanded && filteredMonths.length > 0 && (
-                                        <div className="ml-4 space-y-0.5">
-                                          {filteredMonths.map((monthYear) => {
-                                            const dates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear}`));
-                                            return (
-                                              <label key={monthYear} className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={dates.length > 0 && dates.every(d => (columnFilters[col.key] || []).includes(d))}
-                                                  onChange={() => {
-                                                    setColumnFilters((prev) => {
-                                                      const curr = prev[col.key] || [];
-                                                      const monthDates = getUniqueColumnValues(col.key).filter(d => d.endsWith(`-${monthYear}`));
-                                                      const allSelected = monthDates.length > 0 && monthDates.every(d => curr.includes(d));
-                                                      const updated = allSelected
-                                                        ? curr.filter(x => !monthDates.includes(x))
-                                                        : [...new Set([...curr, ...monthDates])];
-                                                      if (updated.length === 0) {
-                                                        const next = { ...prev };
-                                                        delete next[col.key];
-                                                        return next;
-                                                      }
-                                                      return { ...prev, [col.key]: updated };
-                                                    });
-                                                    setCurrentPage(1);
-                                                  }}
-                                                  className="rounded text-purple-600"
-                                                />
-                                                <span className="truncate">{monthYear.split("-").reverse().join("/")}</span>
-                                              </label>
-                                            );
-                                          })}
+                                <>
+                                  {(() => {
+                                    const allDates = getUniqueColumnValues(col.key).filter((v) => v !== "(Blank)");
+                                    const allChecked =
+                                      allDates.length > 0 && allDates.every((d) => (columnFilters[col.key] || []).includes(d));
+                                    return (
+                                      <label className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs font-bold border-b border-slate-100 pb-1 mb-0.5">
+                                        <input
+                                          type="checkbox"
+                                          checked={allChecked}
+                                          onChange={() => setColumnFilterValues(col.key, allDates, !allChecked)}
+                                          className="rounded text-purple-600"
+                                        />
+                                        <span>{isTe ? "(అన్నీ ఎంపిక చేయండి)" : "(Select All)"}</span>
+                                      </label>
+                                    );
+                                  })()}
+                                  {groupDatesHierarchy(col.key)
+                                    .filter(({ year, months }) =>
+                                      !filterSearchText.trim() ||
+                                      year.includes(filterSearchText) ||
+                                      months.some((m) => m.month.toLowerCase().includes(filterSearchText.toLowerCase()))
+                                    )
+                                    .map(({ year, months }) => {
+                                    const isYearExpanded = expandedYears.has(year);
+                                    const yearDates = months.flatMap((m) => m.days);
+                                    const yearChecked =
+                                      yearDates.length > 0 && yearDates.every((d) => (columnFilters[col.key] || []).includes(d));
+                                    return (
+                                      <div key={year}>
+                                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded text-xs font-semibold">
+                                          <span
+                                            className="text-purple-600 font-bold text-sm w-3 text-center cursor-pointer shrink-0"
+                                            onClick={() => {
+                                              setExpandedYears((prev) => {
+                                                const next = new Set(prev);
+                                                if (next.has(year)) next.delete(year);
+                                                else next.add(year);
+                                                return next;
+                                              });
+                                            }}
+                                          >
+                                            {isYearExpanded ? "−" : "+"}
+                                          </span>
+                                          <input
+                                            type="checkbox"
+                                            checked={yearChecked}
+                                            onChange={() => setColumnFilterValues(col.key, yearDates, !yearChecked)}
+                                            className="rounded text-purple-600 shrink-0"
+                                          />
+                                          <span
+                                            className="cursor-pointer"
+                                            onClick={() => {
+                                              setExpandedYears((prev) => {
+                                                const next = new Set(prev);
+                                                if (next.has(year)) next.delete(year);
+                                                else next.add(year);
+                                                return next;
+                                              });
+                                            }}
+                                          >
+                                            {year}
+                                          </span>
                                         </div>
-                                      )}
-                                    </div>
-                                  );
-                                })
+                                        {isYearExpanded && (
+                                          <div className="ml-4 space-y-0.5">
+                                            {months.map(({ month, days }) => {
+                                              const monthKey = `${year}-${month}`;
+                                              const isMonthExpanded = expandedMonths.has(monthKey);
+                                              const monthChecked =
+                                                days.length > 0 && days.every((d) => (columnFilters[col.key] || []).includes(d));
+                                              return (
+                                                <div key={month}>
+                                                  <div className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded text-xs">
+                                                    <span
+                                                      className="text-purple-600 font-bold text-sm w-3 text-center cursor-pointer shrink-0"
+                                                      onClick={() => {
+                                                        setExpandedMonths((prev) => {
+                                                          const next = new Set(prev);
+                                                          if (next.has(monthKey)) next.delete(monthKey);
+                                                          else next.add(monthKey);
+                                                          return next;
+                                                        });
+                                                      }}
+                                                    >
+                                                      {isMonthExpanded ? "−" : "+"}
+                                                    </span>
+                                                    <input
+                                                      type="checkbox"
+                                                      checked={monthChecked}
+                                                      onChange={() => setColumnFilterValues(col.key, days, !monthChecked)}
+                                                      className="rounded text-purple-600 shrink-0"
+                                                    />
+                                                    <span
+                                                      className="cursor-pointer"
+                                                      onClick={() => {
+                                                        setExpandedMonths((prev) => {
+                                                          const next = new Set(prev);
+                                                          if (next.has(monthKey)) next.delete(monthKey);
+                                                          else next.add(monthKey);
+                                                          return next;
+                                                        });
+                                                      }}
+                                                    >
+                                                      {month}
+                                                    </span>
+                                                  </div>
+                                                  {isMonthExpanded && (
+                                                    <div className="ml-4 space-y-0.5">
+                                                      {days.map((d) => (
+                                                        <label
+                                                          key={d}
+                                                          className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-purple-50 rounded cursor-pointer text-xs"
+                                                        >
+                                                          <input
+                                                            type="checkbox"
+                                                            checked={(columnFilters[col.key] || []).includes(d)}
+                                                            onChange={() => handleToggleColumnFilterValue(col.key, d)}
+                                                            className="rounded text-purple-600"
+                                                          />
+                                                          <span className="truncate">{d.split("-")[0]}</span>
+                                                        </label>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </>
                               ) : (
                                 getUniqueColumnValues(col.key)
                                   .filter((v) =>
@@ -2406,18 +2544,18 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                     key={key}
                     className={`transition-colors group ${
                       isDuplicate
-                        ? "bg-amber-50/40 hover:bg-amber-50/70"
+                        ? "bg-amber-50/40 hover:bg-amber-100"
                         : isOutOfWty
-                        ? "bg-red-50/25 hover:bg-red-50/50"
-                        : "hover:bg-purple-50/50"
+                        ? "bg-red-50/25 hover:bg-red-100"
+                        : "hover:bg-indigo-100"
                     }`}
                   >
                     {/* Row Index */}
                     <td
-                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 sticky left-0 z-10 ${
+                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 sticky left-0 z-10 transition-colors ${
                         isOutOfWty
-                          ? "text-red-700 bg-red-50"
-                          : "text-slate-400 bg-slate-50"
+                          ? "text-red-700 bg-red-50 group-hover:bg-red-100"
+                          : "text-slate-400 bg-slate-50 group-hover:bg-indigo-100"
                       }`}
                     >
                       <div className="flex flex-col items-center justify-center gap-0.5">
@@ -2574,8 +2712,8 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                     <td
                       className={`${cellPadding} text-center sticky right-0 z-20 ${
                         isOutOfWty
-                          ? "bg-red-50/40 group-hover:bg-red-100/60"
-                          : "bg-white group-hover:bg-purple-50/90"
+                          ? "bg-red-50/40 group-hover:bg-red-100"
+                          : "bg-white group-hover:bg-indigo-100"
                       } shadow-md border-l border-slate-200`}
                     >
                       <RowActionButtons

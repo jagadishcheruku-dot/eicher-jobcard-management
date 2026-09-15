@@ -180,6 +180,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   const [activeFilterCol, setActiveFilterCol] = useState<string | null>(null);
   const [filterSearchText, setFilterSearchText] = useState<string>("");
   const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
   // Saving states for instant row-level feedback
   const [savingRows, setSavingRows] = useState<Record<string, boolean>>({});
@@ -645,26 +646,57 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
     return colKey === "jobDate" || colKey === "complaintDate" || colKey === "dateOfDelivery" || colKey === "actualClosedDate";
   };
 
-  const groupDatesByYearMonth = (colKey: string) => {
-    const grouped: Record<string, Set<string>> = {};
+  const MONTH_ORDER = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  // Excel-style Year > Month > Day tree of a date column's actual values,
+  // newest year first and months/days in calendar order within each year.
+  const groupDatesHierarchy = (colKey: string) => {
+    const grouped: Record<string, Record<string, Set<string>>> = {};
     allCards.forEach((card) => {
       const dateStr = getCardColValue(card, colKey) || "";
       if (dateStr && dateStr !== "") {
         const parts = dateStr.split("-");
         if (parts.length >= 3) {
-          const day = parts[0];
-          const month = parts[1];
-          const year = parts[2];
-          if (!grouped[year]) grouped[year] = new Set();
-          grouped[year].add(`${month}-${year}`);
+          const [, month, year] = parts;
+          if (!grouped[year]) grouped[year] = {};
+          if (!grouped[year][month]) grouped[year][month] = new Set();
+          grouped[year][month].add(dateStr);
         }
       }
     });
-    const result: Record<string, string[]> = {};
-    Object.keys(grouped).sort().reverse().forEach((year) => {
-      result[year] = Array.from(grouped[year]).sort();
+    return Object.keys(grouped)
+      .sort()
+      .reverse()
+      .map((year) => ({
+        year,
+        months: Object.keys(grouped[year])
+          .sort((a, b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b))
+          .map((month) => ({
+            month,
+            days: Array.from(grouped[year][month]).sort(
+              (a, b) => parseInt(a.split("-")[0], 10) - parseInt(b.split("-")[0], 10)
+            ),
+          })),
+      }));
+  };
+
+  // Adds or removes a whole batch of date values from a column's filter at
+  // once - used by the (Select All), year and month checkboxes so ticking
+  // one applies to every date it covers.
+  const setColumnFilterValues = (colKey: string, values: string[], select: boolean) => {
+    setColumnFilters((prev) => {
+      const curr = prev[colKey] || [];
+      const updated = select
+        ? Array.from(new Set([...curr, ...values]))
+        : curr.filter((v) => !values.includes(v));
+      if (updated.length === 0) {
+        const next = { ...prev };
+        delete next[colKey];
+        return next;
+      }
+      return { ...prev, [colKey]: updated };
     });
-    return result;
+    setCurrentPage(1);
   };
 
   const handleToggleFilterValue = (colKey: string, val: string) => {
@@ -1074,7 +1106,11 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                 }}
                 className="flex-1 py-1 px-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 rounded font-bold text-[10px] text-center transition-colors cursor-pointer"
               >
-                A → Z {isTe ? "ఆరోహణ" : "Asc"}
+                {isDateColumn(colKey)
+                  ? isTe
+                    ? "పాత నుండి కొత్తది"
+                    : "Oldest → Newest"
+                  : `A → Z ${isTe ? "ఆరోహణ" : "Asc"}`}
               </button>
               <button
                 type="button"
@@ -1085,7 +1121,11 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                 }}
                 className="flex-1 py-1 px-1.5 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 rounded font-bold text-[10px] text-center transition-colors cursor-pointer"
               >
-                Z → A {isTe ? "అవరోహణ" : "Desc"}
+                {isDateColumn(colKey)
+                  ? isTe
+                    ? "కొత్త నుండి పాతది"
+                    : "Newest → Oldest"
+                  : `Z → A ${isTe ? "అవరోహణ" : "Desc"}`}
               </button>
             </div>
 
@@ -1103,64 +1143,140 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
             <div className="max-h-60 overflow-y-auto space-y-0.5 pr-1 mb-2.5">
               {isDateColumn(colKey) ? (
-                Object.entries(groupDatesByYearMonth(colKey)).map(([year, months]) => {
-                  const isExpanded = expandedYears.has(year);
-                  const filteredMonths = months.filter(m => m.toLowerCase().includes(filterSearchText.toLowerCase()));
-                  return (
-                    <div key={year}>
-                      <div
-                        className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50 rounded cursor-pointer text-[11px] font-semibold"
-                        onClick={() => {
-                          setExpandedYears((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(year)) next.delete(year);
-                            else next.add(year);
-                            return next;
-                          });
-                        }}
-                      >
-                        <span className="text-emerald-600 font-bold">{isExpanded ? "−" : "+"}</span>
-                        <span>{year}</span>
-                      </div>
-                      {isExpanded && filteredMonths.length > 0 && (
-                        <div className="ml-4 space-y-0.5">
-                          {filteredMonths.map((monthYear) => {
-                            const dates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear}`));
-                            return (
-                              <label key={monthYear} className="flex items-center justify-between p-1 hover:bg-emerald-50/50 rounded cursor-pointer text-[11px]">
-                                <div className="flex items-center gap-2 truncate pr-1">
-                                  <input
-                                    type="checkbox"
-                                    checked={dates.length > 0 && dates.every(d => (columnFilters[colKey] || []).includes(d.value))}
-                                    onChange={() => {
-                                      setColumnFilters((prev) => {
-                                        const curr = prev[colKey] || [];
-                                        const monthDates = popupDisplayValues.filter(d => d.value.endsWith(`-${monthYear}`)).map(d => d.value);
-                                        const allSelected = monthDates.length > 0 && monthDates.every(d => curr.includes(d));
-                                        const updated = allSelected
-                                          ? curr.filter(x => !monthDates.includes(x))
-                                          : [...new Set([...curr, ...monthDates])];
-                                        if (updated.length === 0) {
-                                          const next = { ...prev };
-                                          delete next[colKey];
-                                          return next;
-                                        }
-                                        return { ...prev, [colKey]: updated };
-                                      });
-                                      setCurrentPage(1);
-                                    }}
-                                    className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-                                  />
-                                  <span className="truncate text-slate-800 font-medium">{monthYear.split("-").reverse().join("/")}</span>
-                                </div>
-                              </label>
-                            );
-                          })}
+                <>
+                  {(() => {
+                    const allDates = activeColUniqueValues.map((d) => d.value);
+                    const allChecked =
+                      allDates.length > 0 && allDates.every((d) => (columnFilters[colKey] || []).includes(d));
+                    return (
+                      <label className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50 rounded cursor-pointer text-[11px] font-bold border-b border-slate-100 pb-1 mb-0.5">
+                        <input
+                          type="checkbox"
+                          checked={allChecked}
+                          onChange={() => setColumnFilterValues(colKey, allDates, !allChecked)}
+                          className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        />
+                        <span>{isTe ? "(అన్నీ ఎంపిక చేయండి)" : "(Select All)"}</span>
+                      </label>
+                    );
+                  })()}
+                  {groupDatesHierarchy(colKey)
+                    .filter(({ year, months }) =>
+                      !filterSearchText.trim() ||
+                      year.includes(filterSearchText) ||
+                      months.some((m) => m.month.toLowerCase().includes(filterSearchText.toLowerCase()))
+                    )
+                    .map(({ year, months }) => {
+                    const isYearExpanded = expandedYears.has(year);
+                    const yearDates = months.flatMap((m) => m.days);
+                    const yearChecked =
+                      yearDates.length > 0 && yearDates.every((d) => (columnFilters[colKey] || []).includes(d));
+                    return (
+                      <div key={year}>
+                        <div className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50 rounded text-[11px] font-semibold">
+                          <span
+                            className="text-emerald-600 font-bold w-3 text-center cursor-pointer shrink-0"
+                            onClick={() => {
+                              setExpandedYears((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(year)) next.delete(year);
+                                else next.add(year);
+                                return next;
+                              });
+                            }}
+                          >
+                            {isYearExpanded ? "−" : "+"}
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={yearChecked}
+                            onChange={() => setColumnFilterValues(colKey, yearDates, !yearChecked)}
+                            className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                          />
+                          <span
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setExpandedYears((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(year)) next.delete(year);
+                                else next.add(year);
+                                return next;
+                              });
+                            }}
+                          >
+                            {year}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  );
-                })
+                        {isYearExpanded && (
+                          <div className="ml-4 space-y-0.5">
+                            {months.map(({ month, days }) => {
+                              const monthKey = `${year}-${month}`;
+                              const isMonthExpanded = expandedMonths.has(monthKey);
+                              const monthChecked =
+                                days.length > 0 && days.every((d) => (columnFilters[colKey] || []).includes(d));
+                              return (
+                                <div key={month}>
+                                  <div className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50 rounded text-[11px]">
+                                    <span
+                                      className="text-emerald-600 font-bold w-3 text-center cursor-pointer shrink-0"
+                                      onClick={() => {
+                                        setExpandedMonths((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(monthKey)) next.delete(monthKey);
+                                          else next.add(monthKey);
+                                          return next;
+                                        });
+                                      }}
+                                    >
+                                      {isMonthExpanded ? "−" : "+"}
+                                    </span>
+                                    <input
+                                      type="checkbox"
+                                      checked={monthChecked}
+                                      onChange={() => setColumnFilterValues(colKey, days, !monthChecked)}
+                                      className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                                    />
+                                    <span
+                                      className="cursor-pointer"
+                                      onClick={() => {
+                                        setExpandedMonths((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(monthKey)) next.delete(monthKey);
+                                          else next.add(monthKey);
+                                          return next;
+                                        });
+                                      }}
+                                    >
+                                      {month}
+                                    </span>
+                                  </div>
+                                  {isMonthExpanded && (
+                                    <div className="ml-4 space-y-0.5">
+                                      {days.map((d) => (
+                                        <label
+                                          key={d}
+                                          className="flex items-center gap-1.5 px-1.5 py-0.5 hover:bg-emerald-50/50 rounded cursor-pointer text-[11px]"
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={(columnFilters[colKey] || []).includes(d)}
+                                            onChange={() => handleToggleFilterValue(colKey, d)}
+                                            className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                          />
+                                          <span className="truncate text-slate-800 font-medium">{d.split("-")[0]}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </>
               ) : popupDisplayValues.length === 0 ? (
                 <div className="text-center py-4 text-slate-400 text-[11px]">
                   {isTe ? "విలువలు లేవు" : "No matching values"}
@@ -1640,14 +1756,22 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                 return (
                   <tr
                     key={card.id || `card-${idx}`}
-                    className={`transition-colors group hover:bg-emerald-50/40 ${
-                      isSelected ? "bg-emerald-50/70" : idx % 2 === 1 ? "bg-slate-50/30" : "bg-white"
+                    className={`transition-colors group ${
+                      isSelected
+                        ? "bg-emerald-50/70 hover:bg-emerald-100"
+                        : idx % 2 === 1
+                        ? "bg-slate-50/30 hover:bg-indigo-100"
+                        : "bg-white hover:bg-indigo-100"
                     }`}
                   >
                     {/* 1. SELECTION & SL NO */}
                     <td
-                      className={`${cellPadding} text-center font-mono border-r border-slate-200 select-none sticky left-0 z-10 ${
-                        isSelected ? "bg-emerald-50" : idx % 2 === 1 ? "bg-slate-50" : "bg-white"
+                      className={`${cellPadding} text-center font-mono border-r border-slate-200 select-none sticky left-0 z-10 transition-colors ${
+                        isSelected
+                          ? "bg-emerald-50 group-hover:bg-emerald-100"
+                          : idx % 2 === 1
+                          ? "bg-slate-50 group-hover:bg-indigo-100"
+                          : "bg-white group-hover:bg-indigo-100"
                       }`}
                     >
                       <div className="flex items-center justify-center gap-1">
@@ -1756,7 +1880,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                     })}
 
                     {/* LAST COLUMN: ACTIONS WITH ROW ACTION BUTTONS */}
-                    <td className={`${cellPadding} text-center sticky right-0 z-20 bg-white group-hover:bg-emerald-50/90 shadow-md border-l border-slate-200`}>
+                    <td className={`${cellPadding} text-center sticky right-0 z-20 bg-white group-hover:bg-indigo-100 shadow-md border-l border-slate-200`}>
                       <RowActionButtons
                         isExpanded={!!expandedRowKeys[card.id]}
                         onToggleExpand={() => toggleRowActions(card.id)}
@@ -1836,6 +1960,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               <option value={50}>50</option>
               <option value={100}>100</option>
               <option value={250}>250</option>
+              <option value={999999}>{isTe ? "అన్నీ (All)" : "Show All"}</option>
             </select>
           </div>
 
