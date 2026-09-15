@@ -22,7 +22,7 @@ import {
   ShieldCheck,
   Building2
 } from "lucide-react";
-import { formatDisplayDate } from "../utils/dateFormatter";
+import { formatDisplayDate, isDeliveryOutOfWarranty } from "../utils/dateFormatter";
 
 export interface CustomerCallLogModalProps {
   isOpen: boolean;
@@ -115,11 +115,18 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
 
   if (!isOpen || !customer) return null;
 
-  // Helper extraction
+  // Helper extraction - also checks customer.rec, since some callers (the
+  // Free Service Followup / Telecalling customer lists) only flatten a
+  // subset of fields onto the top-level object and keep the rest nested
+  // under .rec (the original raw record).
   const getVal = (keys: string[]): string => {
+    const raw = customer.rec || {};
     for (const k of keys) {
       if (customer[k] !== undefined && customer[k] !== null && String(customer[k]).trim() !== "") {
         return String(customer[k]).trim();
+      }
+      if (raw[k] !== undefined && raw[k] !== null && String(raw[k]).trim() !== "") {
+        return String(raw[k]).trim();
       }
     }
     return "";
@@ -142,6 +149,7 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
   const dspName = getVal(["dspName", "DSP Name", "DSP NAME"]);
   const district = getVal(["district", "District", "DISTRICT", "Distict"]);
   const pinCode = getVal(["pinCode", "PIN CODE", "PIN CO", "Pin code"]);
+  const isOutOfWarranty = delDate ? isDeliveryOutOfWarranty(delDate, 2) : false;
 
   // Find job cards for this chassis
   const relatedCards = allCards.filter((c) => {
@@ -244,44 +252,17 @@ Supervisor: ${supervisor || "—"}`;
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150">
 
-        {/* Header */}
-        <div className="bg-purple-950 text-white p-4 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-500 text-slate-950 rounded-xl font-bold shrink-0">
-              <PhoneCall className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-black flex items-center gap-2 flex-wrap">
-                <span>{custName}</span>
-                {chassisNo && (
-                  <span className="font-mono bg-yellow-400 text-slate-950 px-2 py-0.5 rounded text-xs font-black">
-                    {chassisNo}
-                  </span>
-                )}
-              </h3>
-              <p className="text-xs text-purple-200 flex items-center gap-3 mt-0.5 flex-wrap">
-                <span>🚜 {model}</span>
-                <span>•</span>
-                <span>🏢 {branch || "Main Branch"}</span>
-                {cleanPhone && (
-                  <>
-                    <span>•</span>
-                    <a
-                      href={`tel:${cleanPhone}`}
-                      className="text-emerald-400 hover:text-emerald-300 font-mono font-bold flex items-center gap-1 underline"
-                    >
-                      <Phone className="w-3 h-3" />
-                      {cleanPhone}
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
+        {/* Header - kept minimal on purpose: full details are already shown
+            in the profile banner below, so this bar only carries the icon
+            and close button to avoid repeating the same info twice. */}
+        <div className="bg-indigo-50 border-b border-indigo-100 p-3 flex items-center justify-between shrink-0">
+          <div className="p-2 bg-indigo-600 text-white rounded-xl shrink-0">
+            <PhoneCall className="w-5 h-5" />
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-purple-300 hover:text-white p-1.5 rounded-lg hover:bg-purple-900 transition-colors cursor-pointer shrink-0"
+            className="text-slate-500 hover:text-slate-800 p-1.5 rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -327,6 +308,15 @@ Supervisor: ${supervisor || "—"}`;
               <p className="text-lg font-black text-slate-900 leading-tight">
                 {custName}
               </p>
+              {cleanPhone && (
+                <a
+                  href={`tel:${cleanPhone}`}
+                  className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2.5 py-1 rounded-lg font-mono font-black text-sm hover:bg-emerald-200 transition-colors"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  {cleanPhone}
+                </a>
+              )}
 
               <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
                 <span>{isTe ? "👨 S/o" : "👨 Father"}</span>
@@ -359,6 +349,13 @@ Supervisor: ${supervisor || "—"}`;
                 {modelType && <span className="text-xs text-slate-600 ml-1">({modelType})</span>}
               </p>
 
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <span>🔩 {isTe ? "ఛాసిస్ నెం." : "Chassis No"}</span>
+              </p>
+              <p className="text-sm font-mono font-bold text-slate-800">
+                {chassisNo || "—"}
+              </p>
+
               <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-pink-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
                 <span>⚙️ {isTe ? "ఇంజిన్" : "Engine"}</span>
               </p>
@@ -372,6 +369,26 @@ Supervisor: ${supervisor || "—"}`;
               </p>
               <p className="text-sm font-mono font-bold text-slate-800">
                 {formatDisplayDate(delDate) || "—"}
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <ShieldCheck className="w-4 h-4 text-slate-700" />
+                <span>{isTe ? "వారంటీ" : "Warranty"}</span>
+              </p>
+              <p className="text-sm">
+                {delDate ? (
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                      isOutOfWarranty
+                        ? "bg-rose-100 text-rose-800 border border-rose-300"
+                        : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                    }`}
+                  >
+                    {isOutOfWarranty ? (isTe ? "వారంటీ ముగిసింది" : "Out of Warranty") : (isTe ? "వారంటీలో ఉంది" : "In Warranty")}
+                  </span>
+                ) : (
+                  <span className="font-bold text-slate-500">—</span>
+                )}
               </p>
             </div>
           </div>
