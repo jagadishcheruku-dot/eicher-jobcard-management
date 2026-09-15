@@ -413,16 +413,16 @@ Supervisor: ${supervisor || "—"}`;
               <div className="flex items-baseline gap-1.5">
                 <Building2 className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "బ్రాంచ్:" : "Br:"}</span>
-                <span className="font-bold text-slate-900 text-sm truncate">{branch || "Main Branch"}</span>
+                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{branch || "Main Branch"}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <User className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "సూపర్:" : "Sup:"}</span>
-                <span className="font-bold text-slate-900 text-sm truncate">{supervisor || "Unassigned"}</span>
+                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{supervisor || "Unassigned"}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">DSP:</span>
-                <span className="font-bold text-slate-900 text-sm truncate">{dspName || "—"}</span>
+                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{dspName || "—"}</span>
               </div>
             </div>
 
@@ -431,7 +431,7 @@ Supervisor: ${supervisor || "—"}`;
               <div className="flex items-baseline gap-1.5">
                 <User className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "నామం:" : "Name:"}</span>
-                <span className="font-black text-slate-900 text-sm truncate">{custName}</span>
+                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">{custName}</span>
               </div>
               {cleanPhone && (
                 <div className="flex items-baseline gap-1.5">
@@ -447,12 +447,12 @@ Supervisor: ${supervisor || "—"}`;
               )}
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "S/o:" : "Father:"}</span>
-                <span className="font-bold text-slate-900 text-sm truncate">{fatherName || "—"}</span>
+                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{fatherName || "—"}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <MapPin className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "స్థలం:" : "Loc:"}</span>
-                <span className="font-semibold text-slate-800 text-sm truncate">
+                <span className="font-semibold text-slate-800 text-[11px] break-words min-w-0">
                   {village || "—"}{mandal ? `, ${mandal}` : ""}
                 </span>
               </div>
@@ -467,22 +467,22 @@ Supervisor: ${supervisor || "—"}`;
               <div className="flex items-baseline gap-1.5">
                 <Wrench className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "మోడల్:" : "Model:"}</span>
-                <span className="font-black text-slate-900 text-sm truncate">
+                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">
                   {model}{modelType && ` (${modelType})`}
                 </span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఛాసిస్:" : "Chassis:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-sm truncate">{chassisNo || "—"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{chassisNo || "—"}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఇంజిన్:" : "Engine:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-sm truncate">{engineNo || "—"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{engineNo || "—"}</span>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <Calendar className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "డెలివరీ:" : "Del:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-sm truncate">{formatDisplayDate(delDate) || "—"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{formatDisplayDate(delDate) || "—"}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
@@ -498,7 +498,7 @@ Supervisor: ${supervisor || "—"}`;
                     {isOutOfWarranty ? (isTe ? "ముగిసింది" : "Out") : (isTe ? "ఉంది" : "In")}
                   </span>
                 ) : (
-                  <span className="font-bold text-slate-500 text-sm">—</span>
+                  <span className="font-bold text-slate-500 text-[11px]">—</span>
                 )}
               </div>
             </div>
