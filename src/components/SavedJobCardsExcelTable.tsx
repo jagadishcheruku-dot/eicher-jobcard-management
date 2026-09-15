@@ -394,32 +394,32 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
   // Detailed 26 Columns definition
   const detailedColumns = [
-    { key: "jobNo", label: isTe ? "జాబ్ కార్డ్ (Job Card)" : "Job Card No", width: "min-w-[120px]" },
-    { key: "complaintDate", label: isTe ? "కంప్లైంట్ తేదీ" : "Complaint Date", width: "min-w-[130px]" },
-    { key: "onlineJobCardNo", label: isTe ? "ఆన్‌లైన్ జేసీ నెం." : "Online JC No", width: "min-w-[140px]" },
-    { key: "jobDate", label: isTe ? "ఓపెన్ తేదీ" : "Open Date", width: "min-w-[130px]" },
-    { key: "branch", label: isTe ? "బ్రాంచ్ (Branch)" : "Branch", width: "min-w-[120px]" },
-    { key: "historyFileNo", label: isTe ? "ఫైల్ నెం." : "File No", width: "min-w-[100px]" },
-    { key: "model", label: isTe ? "మోడల్ (Model)" : "Model", width: "min-w-[130px]" },
-    { key: "modelType", label: isTe ? "మోడల్ రకం" : "Model Type", width: "min-w-[110px]" },
-    { key: "chassisNo", label: isTe ? "ఛాసిస్ నెం." : "Chassis No", width: "min-w-[160px]" },
-    { key: "engineNo", label: isTe ? "ఇంజన్ నెం." : "Engine No", width: "min-w-[140px]" },
-    { key: "dateOfDelivery", label: isTe ? "డెలివరీ తేదీ" : "Delivery Date", width: "min-w-[130px]" },
-    { key: "custName", label: isTe ? "కస్టమర్ పేరు" : "Customer Name", width: "min-w-[170px]" },
-    { key: "fatherName", label: isTe ? "తండ్రి పేరు" : "Father's Name", width: "min-w-[150px]" },
-    { key: "village", label: isTe ? "గ్రామం" : "Village", width: "min-w-[130px]" },
-    { key: "mandal", label: isTe ? "మండలం" : "Mandal", width: "min-w-[120px]" },
-    { key: "phoneNo", label: isTe ? "మొబైల్ ఫోన్" : "Phone No", width: "min-w-[130px]" },
-    { key: "hourMeter", label: isTe ? "గంటలు (Hrs)" : "Hrs Run", width: "min-w-[90px]" },
-    { key: "serviceType", label: isTe ? "సర్వీస్ రకం" : "Service Type", width: "min-w-[140px]" },
-    { key: "freeServiceList", label: isTe ? "ఉచిత సర్వీస్" : "Free Service", width: "min-w-[120px]" },
-    { key: "extraRepairs", label: isTe ? "అదనపు రిపేర్లు" : "Extra Repairs", width: "min-w-[200px]" },
-    { key: "actualClosedDate", label: isTe ? "క్లోజ్డ్ తేదీ" : "Closed Date", width: "min-w-[130px]" },
-    { key: "billNo", label: isTe ? "బిల్ నెం." : "Bill No", width: "min-w-[110px]" },
-    { key: "mechanic", label: isTe ? "టెక్నీషియన్" : "Technician", width: "min-w-[140px]" },
-    { key: "serviceLocation", label: isTe ? "సర్వీస్ ప్రదేశం" : "Location", width: "min-w-[120px]" },
-    { key: "reasonsForAnalysis", label: isTe ? "కారణాలు / విశ్లేషణ" : "Analysis / Problem", width: "min-w-[220px]" },
-    { key: "telecalling", label: isTe ? "టెలికాలింగ్" : "Telecalling", width: "min-w-[140px]" }
+    { key: "jobNo", label: isTe ? "జాబ్ కార్డ్ (Job Card)" : "Job Card No", width: "min-w-[90px]" },
+    { key: "complaintDate", label: isTe ? "కంప్లైంట్ తేదీ" : "Complaint Date", width: "min-w-[100px]" },
+    { key: "onlineJobCardNo", label: isTe ? "ఆన్‌లైన్ జేసీ నెం." : "Online JC No", width: "min-w-[110px]" },
+    { key: "jobDate", label: isTe ? "ఓపెన్ తేదీ" : "Open Date", width: "min-w-[100px]" },
+    { key: "branch", label: isTe ? "బ్రాంచ్ (Branch)" : "Branch", width: "min-w-[100px]" },
+    { key: "historyFileNo", label: isTe ? "ఫైల్ నెం." : "File No", width: "min-w-[80px]" },
+    { key: "model", label: isTe ? "మోడల్ (Model)" : "Model", width: "min-w-[110px]" },
+    { key: "modelType", label: isTe ? "మోడల్ రకం" : "Model Type", width: "min-w-[90px]" },
+    { key: "chassisNo", label: isTe ? "ఛాసిస్ నెం." : "Chassis No", width: "min-w-[140px]" },
+    { key: "engineNo", label: isTe ? "ఇంజన్ నెం." : "Engine No", width: "min-w-[120px]" },
+    { key: "dateOfDelivery", label: isTe ? "డెలివరీ తేదీ" : "Delivery Date", width: "min-w-[100px]" },
+    { key: "custName", label: isTe ? "కస్టమర్ పేరు" : "Customer Name", width: "min-w-[150px]" },
+    { key: "fatherName", label: isTe ? "తండ్రి పేరు" : "Father's Name", width: "min-w-[130px]" },
+    { key: "village", label: isTe ? "గ్రామం" : "Village", width: "min-w-[110px]" },
+    { key: "mandal", label: isTe ? "మండలం" : "Mandal", width: "min-w-[100px]" },
+    { key: "phoneNo", label: isTe ? "మొబైల్ ఫోన్" : "Phone No", width: "min-w-[100px]" },
+    { key: "hourMeter", label: isTe ? "గంటలు (Hrs)" : "Hrs Run", width: "min-w-[70px]" },
+    { key: "serviceType", label: isTe ? "సర్వీస్ రకం" : "Service Type", width: "min-w-[120px]" },
+    { key: "freeServiceList", label: isTe ? "ఉచిత సర్వీస్" : "Free Service", width: "min-w-[100px]" },
+    { key: "extraRepairs", label: isTe ? "అదనపు రిపేర్లు" : "Extra Repairs", width: "min-w-[180px]" },
+    { key: "actualClosedDate", label: isTe ? "క్లోజ్డ్ తేదీ" : "Closed Date", width: "min-w-[100px]" },
+    { key: "billNo", label: isTe ? "బిల్ నెం." : "Bill No", width: "min-w-[80px]" },
+    { key: "mechanic", label: isTe ? "టెక్నీషియన్" : "Technician", width: "min-w-[110px]" },
+    { key: "serviceLocation", label: isTe ? "సర్వీస్ ప్రదేశం" : "Location", width: "min-w-[100px]" },
+    { key: "reasonsForAnalysis", label: isTe ? "కారణాలు / విశ్లేషణ" : "Analysis / Problem", width: "min-w-[200px]" },
+    { key: "telecalling", label: isTe ? "టెలికాలింగ్" : "Telecalling", width: "min-w-[110px]" }
   ];
 
   // Handle local cell edit with auto-status calculation
@@ -1690,7 +1690,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               </th>
 
               {/* Col 2: STATUS */}
-              {renderHeaderFilterCell("status", isTe ? "స్టేటస్ (Status)" : "Status", "w-28 text-center")}
+              {renderHeaderFilterCell("status", isTe ? "స్టేటస్ (Status)" : "Status", "w-14 text-center")}
 
               {/* ALL 26 DETAILED COLUMNS */}
               {detailedColumns.map((col) => renderHeaderFilterCell(col.key, col.label, col.width))}
