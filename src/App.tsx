@@ -10481,10 +10481,10 @@ ${b}`));
                             "text-xs font-black uppercase tracking-wide leading-none",
                           children: "SRI GAYATHRI",
                         }),
-                        i.jsx("p", {
+                        i.jsxs("p", {
                           className:
                             "text-[8px] text-blue-300 font-extrabold uppercase mt-0.5",
-                          children: "Automotives",
+                          children: ["Automotives ", i.jsx("span", { className: "text-amber-400", children: "build-20260915-1" })],
                         }),
                       ],
                     }),
@@ -10736,7 +10736,7 @@ ${b}`));
                       });
                     } else if (d === "job_cards_data") {
                       v = e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data";
-                      j = i.jsx(FileText, { className: "w-4 h-4 shrink-0 text-current" });
+                      j = i.jsx(Wrench, { className: "w-4 h-4 shrink-0 text-current" });
                       I = c === "job_cards_data" ? "bg-orange-900 text-white border-orange-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
                       N = i.jsx("span", {
                         className: `text-[10px] px-1.5 py-0.5 rounded-full font-black shrink-0 ${c === "job_cards_data" ? "bg-orange-800 text-white" : "bg-orange-100 text-orange-900"}`,
@@ -10995,7 +10995,7 @@ ${b}`));
                             children: _a.length,
                           });
                         } else if (d === "job_cards_data") {
-                          icon = i.jsx(FileText, { className: "w-4 h-4" });
+                          icon = i.jsx(Wrench, { className: "w-4 h-4" });
                           label = e === "te" ? "జాబ్ కార్డులు" : "Job Cards";
                           activeColor =
                             "bg-orange-700 text-white shadow-md ring-1 ring-orange-400";
