@@ -1084,6 +1084,15 @@ function buildCustMap(list) {
         followupHistory: mergedHistory,
       };
       delete N[k];
+      return;
+    }
+    // No chassis, no model, no phone match to fold into: this entry can't
+    // be linked to any real customer (a fully orphaned call-log artifact),
+    // so hide it from the list entirely instead of showing it as a
+    // near-empty row.
+    const model = String(rec.model || rec["Model"] || "").trim();
+    if (!model && !ph) {
+      delete N[k];
     }
   });
 
@@ -19958,12 +19967,24 @@ ${b}`));
                                                               if (chassis && phone && !phoneToId[phone]) phoneToId[phone] = r.id;
                                                             });
                                                             const junkIds = [];
+                                                            let mergeCount = 0, orphanCount = 0;
                                                             (raw || []).forEach((r) => {
                                                               const chassis = Ct(r.chassisNo || r.chassis || r["Chassis no"] || "");
                                                               if (chassis) return;
                                                               const phone = Ct(r.mobileNumber || r["Mobile Number"] || r.ownerMob || r.phone || "");
+                                                              const model = String(r.model || r["Model"] || "").trim();
                                                               const targetId = phone && phoneToId[phone];
-                                                              if (targetId && targetId !== r.id) junkIds.push(r.id);
+                                                              if (targetId && targetId !== r.id) {
+                                                                junkIds.push(r.id);
+                                                                mergeCount++;
+                                                              } else if (!model && !phone) {
+                                                                // No chassis, no model, no phone: this row can't be
+                                                                // linked to any real customer, so there is nothing to
+                                                                // merge it into - it's a leftover call-log artifact
+                                                                // from the legacy orphan-row bug and just gets removed.
+                                                                junkIds.push(r.id);
+                                                                orphanCount++;
+                                                              }
                                                             });
                                                             if (junkIds.length === 0) {
                                                               bc({ text: "✅ No junk duplicate rows found.", isSuccess: !0 });
@@ -19971,7 +19992,7 @@ ${b}`));
                                                             }
                                                             if (
                                                               !window.confirm(
-                                                                `Found ${junkIds.length} junk/orphan customer rows (no chassis, phone matches a real customer). Permanently delete them from the database? This cannot be undone.`,
+                                                                `Found ${junkIds.length} junk/orphan customer rows: ${mergeCount} duplicate a real customer's phone number, ${orphanCount} have no chassis/model/phone at all and can't be linked to any customer. Permanently delete them from the database? This cannot be undone.`,
                                                               )
                                                             ) {
                                                               bc({ text: "Cleanup cancelled.", isSuccess: !0 });

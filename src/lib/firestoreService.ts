@@ -164,7 +164,11 @@ export const firestoreApi = {
   fetchCustomers: async () =>
     (await readAll(COLLECTIONS.customers)).map((r: any) => ({
       ...r,
-      chassisNo: r.chassisNo || r.chassis || r['Chassis no'] || r.id,
+      // Never fall back to r.id here: for orphan/junk rows (no real chassis
+      // was ever resolvable) r.id is a random content hash, and showing it
+      // as if it were a chassis number both looks wrong in the UI and masks
+      // these rows from blank-chassis duplicate detection elsewhere.
+      chassisNo: r.chassisNo || r.chassis || r['Chassis no'] || '',
       tractorModel: r.tractorModel || r.model || r.modelType || '',
     })),
   getCustomers: async () => firestoreApi.fetchCustomers(),
