@@ -2478,10 +2478,8 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                   </th>
                 );
               })}
-              {/* Sticky Action Header Column - fixed width, never grows: the
-                  action buttons open in a floating dropdown instead of
-                  expanding inline, so this column stays this size. */}
-              <th className="py-2 px-1 text-center w-11 sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
+              {/* Sticky Action Header Column */}
+              <th className="py-2 px-1 text-center min-w-[130px] sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
                 {isTe ? "చర్యలు" : "Actions"}
               </th>
             </tr>
