@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { BarChart3, TrendingUp, Users, Calendar, Wrench, Target, AlertCircle } from "lucide-react";
+import { BarChart3, AlertCircle } from "lucide-react";
 
 export interface ReportsAnalyticsDashboardProps {
   allCards: any[];
@@ -165,62 +165,6 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
 
   return (
     <div className="space-y-4 text-xs">
-      {/* Performance Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-slate-600 font-bold">{isTe ? "మొత్తం నమూనాలు" : "Total Jobs"}</span>
-            <Wrench className="w-4 h-4 text-blue-600" />
-          </div>
-          <div className="text-2xl font-black text-blue-900">{filteredCards.length}</div>
-          <div className="text-[11px] text-blue-700 mt-1">
-            {isTe ? "ఎంచుకున్న సమయం" : "Selected Period"}
-          </div>
-        </div>
-
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-slate-600 font-bold">{isTe ? "సంపూర్ణ నమూనాలు" : "Completed"}</span>
-            <Target className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl font-black text-emerald-900">
-            {filteredCards.filter((c) => c.status === "Closed").length}
-          </div>
-          <div className="text-[11px] text-emerald-700 mt-1">
-            {filteredCards.length > 0
-              ? ((filteredCards.filter((c) => c.status === "Closed").length / filteredCards.length) * 100).toFixed(0)
-              : 0}
-            % {isTe ? "సంపూర్ణ" : "Complete"}
-          </div>
-        </div>
-
-        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-slate-600 font-bold">{isTe ? "మొత్తం ఆదాయం" : "Total Revenue"}</span>
-            <TrendingUp className="w-4 h-4 text-indigo-600" />
-          </div>
-          <div className="text-2xl font-black text-indigo-900">
-            ₹{(filteredCards.reduce((sum, c) => sum + Number(c.grandTotal || 0), 0) / 100000).toFixed(1)}L
-          </div>
-          <div className="text-[11px] text-indigo-700 mt-1">
-            {isTe ? "సేవ నుండి" : "From Services"}
-          </div>
-        </div>
-
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-slate-600 font-bold">{isTe ? "సగటు విలువ" : "Avg Job Value"}</span>
-            <BarChart3 className="w-4 h-4 text-purple-600" />
-          </div>
-          <div className="text-2xl font-black text-purple-900">
-            ₹{filteredCards.length > 0 ? (filteredCards.reduce((sum, c) => sum + Number(c.grandTotal || 0), 0) / filteredCards.length).toFixed(0) : 0}
-          </div>
-          <div className="text-[11px] text-purple-700 mt-1">
-            {isTe ? "సేవకు" : "Per Service"}
-          </div>
-        </div>
-      </div>
-
 
       {/* Service Type Distribution */}
       {serviceDistribution.length > 0 && (
