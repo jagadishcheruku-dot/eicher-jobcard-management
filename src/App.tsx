@@ -1042,6 +1042,51 @@ function buildCustMap(list) {
       N[key] = N[key] ? { ...N[key], ...custObj } : custObj;
     }
   });
+
+  // Post-process: fold orphaned phone/name-keyed entries into their real
+  // chassis-keyed customer record when phone numbers match, instead of
+  // leaving them as separate "half data" duplicate rows. These orphans come
+  // from a legacy bug where a call log was once saved without a resolvable
+  // chassis, hashing to a brand-new row instead of updating the real
+  // customer - this recovers that data into the correct record on read
+  // without touching any already-complete chassis-keyed entry.
+  const phoneToChassisKey = {};
+  Object.keys(N).forEach((k) => {
+    const rec = N[k];
+    const ch = Ct(rec.chassisNo || rec["Chassis no"] || "");
+    const ph = Ct(rec.mobileNumber || rec["Mobile Number"] || "");
+    if (ch && ph && !phoneToChassisKey[ph]) {
+      phoneToChassisKey[ph] = k;
+    }
+  });
+  Object.keys(N).forEach((k) => {
+    const rec = N[k];
+    const ch = Ct(rec.chassisNo || rec["Chassis no"] || "");
+    if (ch) return;
+    const ph = Ct(rec.mobileNumber || rec["Mobile Number"] || "");
+    const targetKey = ph && phoneToChassisKey[ph];
+    if (targetKey && targetKey !== k) {
+      const target = N[targetKey];
+      const mergedHistory = Array.isArray(target.followupHistory) ? [...target.followupHistory] : [];
+      const junkHistory = Array.isArray(rec.followupHistory) ? rec.followupHistory : [];
+      if (junkHistory.length > 0) {
+        const seenIds = new Set(mergedHistory.map((h) => h && h.id));
+        junkHistory.forEach((h) => {
+          if (!h || !seenIds.has(h.id)) mergedHistory.push(h);
+        });
+      }
+      N[targetKey] = {
+        ...target,
+        lastCallDate: target.lastCallDate || rec.lastCallDate,
+        lastRemarks: target.lastRemarks || rec.lastRemarks,
+        lastNextCallDate: target.lastNextCallDate || rec.lastNextCallDate,
+        lastCalledBy: target.lastCalledBy || rec.lastCalledBy,
+        followupHistory: mergedHistory,
+      };
+      delete N[k];
+    }
+  });
+
   return N;
 }
 function be(r, e) {
