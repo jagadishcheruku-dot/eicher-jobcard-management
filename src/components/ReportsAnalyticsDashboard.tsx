@@ -143,15 +143,23 @@ export const ReportsAnalyticsDashboard: React.FC<ReportsAnalyticsDashboardProps>
 
   // Service type distribution
   const serviceDistribution = useMemo(() => {
-    const dist: Record<string, number> = {};
+    // Group by a whitespace/case-insensitive key so trivial formatting
+    // differences (e.g. "POST WRY" vs "POSTWRY") don't split one service
+    // type into separate rows - the display label keeps whichever variant
+    // was seen first.
+    const dist: Record<string, { label: string; count: number }> = {};
 
     filteredCards.forEach((card) => {
-      const serviceType = card.serviceType || "General Service";
-      dist[serviceType] = (dist[serviceType] || 0) + 1;
+      const label = String(card.serviceType || "General Service").trim() || "General Service";
+      const key = label.replace(/\s+/g, "").toUpperCase();
+      if (!dist[key]) {
+        dist[key] = { label, count: 0 };
+      }
+      dist[key].count++;
     });
 
-    return Object.entries(dist)
-      .map(([type, count]) => ({ type, count }))
+    return Object.values(dist)
+      .map(({ label, count }) => ({ type: label, count }))
       .sort((a, b) => b.count - a.count);
   }, [filteredCards]);
 
