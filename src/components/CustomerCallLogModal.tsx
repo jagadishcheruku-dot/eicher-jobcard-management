@@ -310,41 +310,10 @@ Supervisor: ${supervisor || "—"}`;
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150">
 
         {/* Header - kept minimal on purpose: full details are already shown
-            in the profile banner below, so this bar only carries the icon,
-            quick actions, and close button to avoid repeating the same
-            info twice. */}
-        <div className="bg-indigo-50 border-b border-indigo-100 p-3 flex items-center justify-between shrink-0 gap-2">
-          <div className="p-2 bg-indigo-600 text-white rounded-xl shrink-0">
-            <PhoneCall className="w-5 h-5" />
-          </div>
-          <div className="flex items-center gap-1.5 flex-1 justify-end">
-            {onNewJobCard && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onNewJobCard(customer);
-                }}
-                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg shadow-2xs flex items-center gap-1 cursor-pointer transition-all"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{isTe ? "జాబ్ కార్డ్" : "Job Card"}</span>
-              </button>
-            )}
-            {onRegisterComplaint && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onRegisterComplaint(customer);
-                }}
-                className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] rounded-lg shadow-2xs flex items-center gap-1 cursor-pointer transition-all"
-              >
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>{isTe ? "కంప్లైంట్" : "Complaint"}</span>
-              </button>
-            )}
-          </div>
+            in the profile banner below, so this bar only carries the close
+            button to avoid repeating the same info twice. Job Card /
+            Complaint quick actions live in the footer, next to Close. */}
+        <div className="bg-indigo-50 border-b border-indigo-100 p-3 flex items-center justify-end shrink-0 gap-2">
           <button
             type="button"
             onClick={onClose}
@@ -788,13 +757,41 @@ Supervisor: ${supervisor || "—"}`;
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg cursor-pointer transition-all"
-          >
-            {isTe ? "మూసివేయి (Close)" : "Close"}
-          </button>
+          <div className="flex items-center gap-2">
+            {onNewJobCard && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onNewJobCard(customer);
+                }}
+                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg shadow-2xs flex items-center gap-1 cursor-pointer transition-all"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{isTe ? "జాబ్ కార్డ్" : "Job Card"}</span>
+              </button>
+            )}
+            {onRegisterComplaint && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onRegisterComplaint(customer);
+                }}
+                className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] rounded-lg shadow-2xs flex items-center gap-1 cursor-pointer transition-all"
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>{isTe ? "కంప్లైంట్" : "Complaint"}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg cursor-pointer transition-all"
+            >
+              {isTe ? "మూసివేయి (Close)" : "Close"}
+            </button>
+          </div>
         </div>
 
       </div>
