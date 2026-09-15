@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Phone,
   PhoneCall,
@@ -20,7 +20,8 @@ import {
   Tractor,
   ExternalLink,
   ShieldCheck,
-  Building2
+  Building2,
+  Camera
 } from "lucide-react";
 import { formatDisplayDate, isDeliveryOutOfWarranty } from "../utils/dateFormatter";
 
@@ -72,6 +73,17 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
   });
   const [showAddStatus, setShowAddStatus] = useState<boolean>(false);
   const [newStatusName, setNewStatusName] = useState<string>("");
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+
+  const customerPhotoKey = (cust: any): string => {
+    const raw = cust?.rec || cust || {};
+    const chassis = String(
+      cust?.chassisNo || cust?.["Chassis no"] || cust?.chassis_no || cust?.chassis ||
+      raw.chassisNo || raw["Chassis no"] || raw.chassis || ""
+    ).trim().toUpperCase();
+    return chassis ? `customer_photo_${chassis}` : "";
+  };
 
   // Sync state on open
   useEffect(() => {
@@ -81,8 +93,53 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
       setCallPreferredDate(customer.nextCallDate || customer.preferredDate || "");
       setCallSavedSuccess(false);
       setCopied(false);
+      try {
+        const key = customerPhotoKey(customer);
+        setPhotoDataUrl(key ? localStorage.getItem(key) : null);
+      } catch {
+        setPhotoDataUrl(null);
+      }
     }
   }, [customer, isOpen]);
+
+  const handlePhotoSelected = (file: File) => {
+    const key = customerPhotoKey(customer);
+    if (!key || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 200;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+        try {
+          localStorage.setItem(key, dataUrl);
+          setPhotoDataUrl(dataUrl);
+        } catch {
+          alert(isTe ? "ఫోటో సేవ్ చేయడంలో విఫలమైంది (స్టోరేజ్ నిండింది)." : "Could not save photo (storage full).");
+        }
+      };
+      img.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    const key = customerPhotoKey(customer);
+    if (!key) return;
+    try {
+      localStorage.removeItem(key);
+    } catch {}
+    setPhotoDataUrl(null);
+  };
 
   // Extract past followup & call history.
   // NOTE: every hook must run BEFORE the `isOpen` early return below. Otherwise the
@@ -302,8 +359,56 @@ Supervisor: ${supervisor || "—"}`;
 
           {/* 1. Customer & Tractor Profile Banner - compact, one heading color */}
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Left: Branch, Supervisor, DSP */}
+            {/* Left: Photo, Branch, Supervisor, DSP */}
             <div className="space-y-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2.5 md:pb-0 md:pr-3">
+              <div className="flex items-center gap-2.5 mb-1">
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePhotoSelected(file);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="relative w-14 h-14 rounded-xl border-2 border-dashed border-indigo-300 bg-white overflow-hidden shrink-0 flex items-center justify-center hover:border-indigo-500 transition-colors cursor-pointer group"
+                  title={isTe ? "ఫోటో జోడించండి" : "Add customer photo"}
+                >
+                  {photoDataUrl ? (
+                    <img src={photoDataUrl} alt={custName} className="w-full h-full object-cover" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-indigo-300 group-hover:text-indigo-500" />
+                  )}
+                  <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                    <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </span>
+                </button>
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => photoInputRef.current?.click()}
+                    className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer text-left"
+                  >
+                    {photoDataUrl ? (isTe ? "మార్చు" : "Change") : (isTe ? "+ ఫోటో జోడించు" : "+ Add Photo")}
+                  </button>
+                  {photoDataUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="text-[10px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer text-left"
+                    >
+                      {isTe ? "తీసివేయి" : "Remove"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
                 <Building2 className="w-3 h-3" />
                 <span>{isTe ? "బ్రాంచ్" : "Branch"}</span>
