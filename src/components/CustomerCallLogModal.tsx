@@ -489,10 +489,8 @@ Supervisor: ${supervisor || "—"}`;
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "వారంటీ:" : "Wty:"}</span>
                 {delDate ? (
                   <span
-                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase ${
-                      isOutOfWarranty
-                        ? "bg-rose-100 text-rose-800 border border-rose-300"
-                        : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                    className={`font-black text-[11px] uppercase ${
+                      isOutOfWarranty ? "text-rose-600" : "text-slate-900"
                     }`}
                   >
                     {isOutOfWarranty ? (isTe ? "ముగిసింది" : "Out") : (isTe ? "ఉంది" : "In")}
