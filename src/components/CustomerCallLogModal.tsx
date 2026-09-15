@@ -357,11 +357,11 @@ Supervisor: ${supervisor || "—"}`;
         {/* Modal Body */}
         <div className="p-4 md:p-5 overflow-y-auto max-h-[75vh] space-y-4 text-xs">
 
-          {/* 1. Customer & Tractor Profile Banner - compact, one heading color */}
+          {/* 1. Customer & Tractor Profile Banner - compact "Label: Value" rows */}
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* Left: Photo, Branch, Supervisor, DSP */}
-            <div className="space-y-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2.5 md:pb-0 md:pr-3">
-              <div className="flex items-center gap-2.5 mb-1">
+            {/* Left: Photo, HFN, Branch, Supervisor, DSP */}
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-slate-200 pb-2.5 md:pb-0 md:pr-3">
+              <div className="flex items-center gap-2 mb-1.5">
                 <input
                   ref={photoInputRef}
                   type="file"
@@ -377,145 +377,126 @@ Supervisor: ${supervisor || "—"}`;
                 <button
                   type="button"
                   onClick={() => photoInputRef.current?.click()}
-                  className="relative w-14 h-14 rounded-xl border-2 border-dashed border-indigo-300 bg-white overflow-hidden shrink-0 flex items-center justify-center hover:border-indigo-500 transition-colors cursor-pointer group"
+                  className="relative w-10 h-10 rounded-lg border-2 border-dashed border-indigo-300 bg-white overflow-hidden shrink-0 flex items-center justify-center hover:border-indigo-500 transition-colors cursor-pointer group"
                   title={isTe ? "ఫోటో జోడించండి" : "Add customer photo"}
                 >
                   {photoDataUrl ? (
                     <img src={photoDataUrl} alt={custName} className="w-full h-full object-cover" />
                   ) : (
-                    <Camera className="w-5 h-5 text-indigo-300 group-hover:text-indigo-500" />
+                    <Camera className="w-4 h-4 text-indigo-300 group-hover:text-indigo-500" />
                   )}
-                  <span className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                    <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </span>
                 </button>
-                <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer"
+                >
+                  {photoDataUrl ? (isTe ? "మార్చు" : "Change") : (isTe ? "+ ఫోటో" : "+ Photo")}
+                </button>
+                {photoDataUrl && (
                   <button
                     type="button"
-                    onClick={() => photoInputRef.current?.click()}
-                    className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 underline cursor-pointer text-left"
+                    onClick={handleRemovePhoto}
+                    className="text-[10px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer"
                   >
-                    {photoDataUrl ? (isTe ? "మార్చు" : "Change") : (isTe ? "+ ఫోటో జోడించు" : "+ Add Photo")}
+                    {isTe ? "తీసివేయి" : "Remove"}
                   </button>
-                  {photoDataUrl && (
-                    <button
-                      type="button"
-                      onClick={handleRemovePhoto}
-                      className="text-[10px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer text-left"
-                    >
-                      {isTe ? "తీసివేయి" : "Remove"}
-                    </button>
-                  )}
-                </div>
+                )}
+                {historyFileNo && (
+                  <span className="ml-auto font-mono font-bold text-[10px] bg-indigo-100 text-indigo-900 border border-indigo-200 px-1.5 py-0.5 rounded-md shrink-0">
+                    HFN: {historyFileNo}
+                  </span>
+                )}
               </div>
 
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <Building2 className="w-3 h-3" />
-                <span>{isTe ? "బ్రాంచ్" : "Branch"}</span>
-              </p>
-              <p className="font-bold text-slate-900 text-sm">{branch || "Main Branch"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <User className="w-3 h-3" />
-                <span>{isTe ? "సూపర్" : "Supervisor"}</span>
-              </p>
-              <p className="font-bold text-slate-900 text-sm">{supervisor || "Unassigned"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <span>DSP</span>
-              </p>
-              <p className="font-bold text-slate-900 text-sm">{dspName || "—"}</p>
+              <div className="flex items-baseline gap-1.5">
+                <Building2 className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "బ్రాంచ్:" : "Branch:"}</span>
+                <span className="font-bold text-slate-900 text-xs truncate">{branch || "Main Branch"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <User className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "సూపర్:" : "Supervisor:"}</span>
+                <span className="font-bold text-slate-900 text-xs truncate">{supervisor || "Unassigned"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">DSP:</span>
+                <span className="font-bold text-slate-900 text-xs truncate">{dspName || "—"}</span>
+              </div>
             </div>
 
             {/* Center: Name, Father, Location */}
-            <div className="space-y-1.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2.5 md:pb-0 md:pr-3">
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <User className="w-3 h-3" />
-                <span>{isTe ? "నామం" : "Name"}</span>
-              </p>
-              <p className="font-black text-slate-900 text-sm leading-tight">{custName}</p>
-              {cleanPhone && (
-                <a
-                  href={`tel:${cleanPhone}`}
-                  className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-md font-mono font-black text-xs hover:bg-emerald-200 transition-colors"
-                >
-                  <Phone className="w-3 h-3" />
-                  {cleanPhone}
-                </a>
-              )}
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <span>{isTe ? "S/o" : "Father"}</span>
-              </p>
-              <p className="font-bold text-slate-900 text-sm">{fatherName || "—"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <MapPin className="w-3 h-3" />
-                <span>{isTe ? "చిరునామా" : "Location"}</span>
-              </p>
-              <p className="font-semibold text-slate-800 text-xs">
-                {village || "—"}{mandal ? `, ${mandal}` : ""}
-              </p>
-              <p className="text-[10px] text-slate-600 font-bold">
+            <div className="space-y-1 border-b md:border-b-0 md:border-r border-slate-200 pb-2.5 md:pb-0 md:pr-3">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="font-black text-slate-900 text-sm leading-tight truncate">{custName}</span>
+                {cleanPhone && (
+                  <a
+                    href={`tel:${cleanPhone}`}
+                    className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded-md font-mono font-black text-[11px] hover:bg-emerald-200 transition-colors shrink-0"
+                  >
+                    <Phone className="w-3 h-3" />
+                    {cleanPhone}
+                  </a>
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "S/o:" : "Father:"}</span>
+                <span className="font-bold text-slate-900 text-xs truncate">{fatherName || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <MapPin className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "స్థలం:" : "Location:"}</span>
+                <span className="font-semibold text-slate-800 text-xs truncate">
+                  {village || "—"}{mandal ? `, ${mandal}` : ""}
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-600 font-bold">
                 <span className="bg-gray-100 px-1 py-0.5 rounded">Dist: {district || "—"}</span>
                 <span className="bg-gray-100 px-1 py-0.5 rounded ml-1">PIN: {pinCode || "—"}</span>
-              </p>
+              </div>
             </div>
 
             {/* Right: Model, Chassis, Engine, Delivery, Warranty */}
-            <div className="space-y-1.5">
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <Wrench className="w-3 h-3" />
-                <span>{isTe ? "మోడల్" : "Model"}</span>
-              </p>
-              <p className="font-black text-slate-900 text-sm">
-                {model}
-                {modelType && <span className="text-[10px] font-normal text-slate-600 ml-1">({modelType})</span>}
-              </p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <span>{isTe ? "ఛాసిస్ నెం." : "Chassis No"}</span>
-              </p>
-              <p className="font-mono font-bold text-slate-800 text-sm">{chassisNo || "—"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <span>{isTe ? "ఇంజిన్" : "Engine"}</span>
-              </p>
-              <p className="font-mono font-bold text-slate-800 text-sm">{engineNo || "—"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <Calendar className="w-3 h-3" />
-                <span>{isTe ? "డెలివరీ" : "Delivery"}</span>
-              </p>
-              <p className="font-mono font-bold text-slate-800 text-sm">{formatDisplayDate(delDate) || "—"}</p>
-
-              <p className="font-bold text-indigo-800 uppercase tracking-wide text-[10px] bg-indigo-100 px-1.5 py-1 rounded-md inline-flex items-center gap-1 w-fit">
-                <ShieldCheck className="w-3 h-3" />
-                <span>{isTe ? "వారంటీ" : "Warranty"}</span>
-              </p>
-              {delDate ? (
-                <span
-                  className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
-                    isOutOfWarranty
-                      ? "bg-rose-100 text-rose-800 border border-rose-300"
-                      : "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                  }`}
-                >
-                  {isOutOfWarranty ? (isTe ? "వారంటీ ముగిసింది" : "Out of Warranty") : (isTe ? "వారంటీలో ఉంది" : "In Warranty")}
+            <div className="space-y-1">
+              <div className="flex items-baseline gap-1.5">
+                <Wrench className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "మోడల్:" : "Model:"}</span>
+                <span className="font-black text-slate-900 text-xs truncate">
+                  {model}{modelType && ` (${modelType})`}
                 </span>
-              ) : (
-                <p className="font-bold text-slate-500 text-sm">—</p>
-              )}
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "ఛాసిస్:" : "Chassis:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-xs truncate">{chassisNo || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "ఇంజిన్:" : "Engine:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-xs truncate">{engineNo || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <Calendar className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "డెలివరీ:" : "Delivery:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-xs truncate">{formatDisplayDate(delDate) || "—"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-indigo-600 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[10px] uppercase shrink-0">{isTe ? "వారంటీ:" : "Warranty:"}</span>
+                {delDate ? (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                      isOutOfWarranty
+                        ? "bg-rose-100 text-rose-800 border border-rose-300"
+                        : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                    }`}
+                  >
+                    {isOutOfWarranty ? (isTe ? "ముగిసింది" : "Out") : (isTe ? "ఉంది" : "In Warranty")}
+                  </span>
+                ) : (
+                  <span className="font-bold text-slate-500 text-xs">—</span>
+                )}
+              </div>
             </div>
           </div>
-
-          {historyFileNo && (
-            <div className="flex justify-end -mt-2">
-              <span className="font-mono font-bold text-[10.5px] bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded-md">
-                HFN: {historyFileNo}
-              </span>
-            </div>
-          )}
 
           {/* 2. Service & Job Card History */}
           <div className="border border-slate-200 rounded-xl p-3.5 space-y-2.5 bg-slate-50/50">
