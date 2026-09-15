@@ -6087,7 +6087,16 @@ function gY() {
             return;
           }
           try {
-            await Rs.deleteJobCard(d);
+            // Supabase's row id for a job card is jobNo || onlineJobCardNo || id
+            // (set this way at save time in supabaseService's toRow/ids.job_cards) -
+            // not the local React `.id`. Deleting by `d` alone silently matched
+            // zero rows whenever jobNo was set, so the card reappeared after a
+            // reload even though it looked deleted locally.
+            const supabaseJobCardId = b.jobNo || b.onlineJobCardNo || d;
+            await Rs.deleteJobCard(supabaseJobCardId);
+            if (supabaseJobCardId !== d) {
+              await Rs.deleteJobCard(d).catch(() => {});
+            }
           } catch (v) {
             console.warn("Cloud SQL deleteJobCard:", v);
           }
