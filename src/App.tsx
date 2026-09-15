@@ -10829,12 +10829,12 @@ ${b}`));
               className: `
         ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"}
         w-72 ${f ? "md:w-[76px]" : "md:w-72"}
-        shrink-0 bg-slate-800 border-r border-slate-700 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
+        shrink-0 bg-white border-r border-slate-200 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
       `,
               children: [
                 i.jsxs("div", {
                   className:
-                    "p-4 border-b border-slate-700 bg-slate-800 flex items-center justify-between gap-2",
+                    "p-4 border-b border-slate-200 bg-white flex items-center justify-between gap-2",
                   children: [
                     i.jsxs("div", {
                       className: "flex items-center gap-2.5 overflow-hidden",
@@ -10853,12 +10853,12 @@ ${b}`));
                             children: [
                               i.jsx("h1", {
                                 className:
-                                  "text-sm font-black text-white leading-tight tracking-tight",
+                                  "text-sm font-black text-slate-900 leading-tight tracking-tight",
                                 children: "Sri Gayathri",
                               }),
                               i.jsx("p", {
                                 className:
-                                  "text-[10px] text-slate-400 font-bold uppercase tracking-wider",
+                                  "text-[10px] text-slate-500 font-bold uppercase tracking-wider",
                                 children: "Automotives",
                               }),
                             ],
@@ -10872,7 +10872,7 @@ ${b}`));
                           type: "button",
                           onClick: () => m(!f),
                           className:
-                            "hidden md:flex items-center justify-center w-7 h-7 rounded-xl hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0",
+                            "hidden md:flex items-center justify-center w-7 h-7 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer shrink-0",
                           title: f ? "Expand Sidebar" : "Collapse Sidebar",
                           children: f
                             ? i.jsx(uD, { className: "w-4 h-4" })
@@ -10882,7 +10882,7 @@ ${b}`));
                           type: "button",
                           onClick: () => C(!0),
                           className:
-                            "flex items-center justify-center w-7 h-7 rounded-xl hover:bg-red-900/40 text-slate-400 hover:text-red-400 transition-colors cursor-pointer shrink-0",
+                            "flex items-center justify-center w-7 h-7 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors cursor-pointer shrink-0",
                           title: "Hide Sidebar",
                           children: i.jsx(Ja, { className: "w-4 h-4" }),
                         }),
@@ -10892,10 +10892,10 @@ ${b}`));
                 }),
                 !f && i.jsx("div", {
                   className:
-                    "px-4 py-3 border-b border-slate-700 flex items-center justify-center shrink-0",
+                    "px-4 py-3 border-b border-slate-200 flex items-center justify-center shrink-0",
                   children: i.jsxs("div", {
                       className:
-                        "flex items-center bg-slate-900 p-1 rounded-full w-full",
+                        "flex items-center bg-slate-100 p-1 rounded-full w-full",
                       children: [
                         i.jsx("button", {
                           type: "button",
@@ -10903,7 +10903,7 @@ ${b}`));
                             s("te");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "te" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "te" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`,
                           title: "తెలుగు భాష ఎంచుకోండి",
                           children: "తెలుగు",
                         }),
@@ -10913,7 +10913,7 @@ ${b}`));
                             s("en");
                             try { sessionStorage.setItem("sri_language_session_selected", "true"); } catch {}
                           },
-                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "en" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`,
+                          className: `flex-1 px-3 py-1.5 text-[11px] font-black rounded-full transition-all cursor-pointer ${e === "en" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"}`,
                           title: "Select English Language",
                           children: "English",
                         }),
@@ -10921,11 +10921,11 @@ ${b}`));
                     }),
                 }),
                 f && i.jsx("div", {
-                  className: "px-3 py-3 border-b border-slate-700 flex items-center justify-center shrink-0",
+                  className: "px-3 py-3 border-b border-slate-200 flex items-center justify-center shrink-0",
                   children: i.jsx("button", {
                     type: "button",
                     onClick: () => setShowLanguageModal(true),
-                    className: "w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-slate-700 text-white transition-colors cursor-pointer",
+                    className: "w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer",
                     title: e === "te" ? "భాషను మార్చుకోండి" : "Change language",
                     children: i.jsx(NK, { className: "w-4 h-4" }),
                   }),
@@ -11069,14 +11069,14 @@ ${b}`));
                           i.jsxs("button", {
                             type: "button",
                             onClick: () => u(d),
-                            className: `flex-1 flex items-center ${f ? "justify-center p-2" : "justify-between p-2"} rounded-lg font-bold text-[12px] transition-all duration-150 cursor-pointer ${R ? "bg-slate-700 text-white" : "text-slate-300 hover:bg-slate-700/60 hover:text-white"}`,
+                            className: `flex-1 flex items-center ${f ? "justify-center p-2" : "justify-between p-2"} rounded-lg font-bold text-[12px] transition-all duration-150 cursor-pointer ${R ? "bg-indigo-50 text-indigo-900 border border-indigo-200" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent"}`,
                             title: f ? v : void 0,
                             children: [
                               i.jsxs("div", {
                                 className: "flex items-center gap-2.5 min-w-0",
                                 children: [
                                   i.jsx("span", {
-                                    className: `flex items-center justify-center w-5 h-5 shrink-0 transition-colors ${R ? "text-indigo-400" : "text-slate-400"}`,
+                                    className: `flex items-center justify-center w-5 h-5 shrink-0 transition-colors ${R ? "text-indigo-600" : "text-slate-400"}`,
                                     children: j,
                                   }),
                                   !f &&
@@ -11092,7 +11092,7 @@ ${b}`));
                                   children: [
                                     N,
                                     i.jsx(uD, {
-                                      className: `w-3.5 h-3.5 ${R ? "text-indigo-400" : "text-slate-500"}`,
+                                      className: `w-3.5 h-3.5 ${R ? "text-indigo-600" : "text-slate-400"}`,
                                     }),
                                   ],
                                 }),
@@ -11107,7 +11107,7 @@ ${b}`));
                 }),
                 i.jsxs("div", {
                   className:
-                    "p-3 border-t border-slate-700 shrink-0 space-y-1.5",
+                    "p-3 border-t border-slate-200 shrink-0 space-y-1.5",
                   children: [
                     i.jsxs("button", {
                       type: "button",
@@ -11138,7 +11138,7 @@ ${b}`));
                           tu(null);
                         }
                       },
-                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-slate-700 hover:bg-rose-900/40 text-rose-300 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-slate-600 mt-auto`,
+                      className: `w-full flex items-center justify-center ${f ? "p-2.5" : "gap-2 py-2.5 px-3"} bg-slate-100 hover:bg-rose-50 text-rose-600 font-bold text-xs rounded-2xl transition-colors cursor-pointer border border-slate-200 mt-auto`,
                       title: f ? "Change Supervisor" : void 0,
                       children: [
                         i.jsx(jK, { className: "w-4 h-4 shrink-0" }),
