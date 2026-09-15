@@ -48,6 +48,7 @@ export interface SavedJobCardsExcelTableProps {
   onToggleSelect?: (id: string) => void;
   onSave: (id: string, updatedFields: any) => Promise<void> | void;
   onDelete: (id: string) => Promise<void> | void;
+  onBulkDelete?: (ids: string[]) => Promise<void> | void;
   onEdit: (card: any) => void;
   onPrint: (card: any) => void;
   onView: (card: any) => void;
@@ -90,6 +91,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   onToggleSelect,
   onSave,
   onDelete,
+  onBulkDelete,
   onEdit,
   onPrint,
   onView,
@@ -1514,6 +1516,46 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               {isTe ? "అన్నీ తీసివేయి" : "Clear All"}
             </button>
           )}
+        </div>
+      )}
+
+      {/* Bulk selection action bar */}
+      {selectedIds.length > 0 && canDelete && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-rose-50 border border-rose-200 rounded-lg">
+          <span className="text-xs font-bold text-rose-900">
+            {isTe
+              ? `${selectedIds.length} వరుసలు ఎంపిక చేయబడ్డాయి`
+              : `${selectedIds.length} row(s) selected`}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onSelectAll && onSelectAll([])}
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-lg border border-slate-300 cursor-pointer"
+            >
+              {isTe ? "ఎంపిక తీసివేయి" : "Clear"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const msg = isTe
+                  ? `${selectedIds.length} జాబ్ కార్డులను శాశ్వతంగా తొలగించాలనుకుంటున్నారా? ఇది వెనక్కి తీసుకోలేరు.`
+                  : `Permanently delete ${selectedIds.length} job card(s)? This cannot be undone.`;
+                if (window.confirm(msg)) {
+                  if (onBulkDelete) onBulkDelete(selectedIds);
+                  if (onSelectAll) onSelectAll([]);
+                }
+              }}
+              className="px-3 py-1 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>
+                {isTe
+                  ? `ఎంపిక చేసినవి తొలగించు (${selectedIds.length})`
+                  : `Delete Selected (${selectedIds.length})`}
+              </span>
+            </button>
+          </div>
         </div>
       )}
 

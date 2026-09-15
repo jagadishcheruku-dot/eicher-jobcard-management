@@ -6173,6 +6173,77 @@ function gY() {
         }
       }
     },
+    rxBulk = async (ids) => {
+      const idList = Array.isArray(ids) ? ids.filter(Boolean) : [];
+      if (idList.length === 0) return;
+      if (
+        !window.confirm(
+          `Are you sure you want to delete ${idList.length} selected job card(s)? This cannot be undone.`,
+        )
+      )
+        return;
+      if (mr) {
+        if (!xa) {
+          alert(
+            "⚠️ గూగుల్ షీట్స్ సెషన్ ముగిసింది. దయచేసి పైన ఉన్న కనెక్ట్ బటన్ క్లిక్ చేసి తిరిగి సైన్-ఇన్ అవ్వండి.",
+          );
+          return;
+        }
+        try {
+          for (const d of idList) {
+            await Fb(ss, "JobCards", d).catch((v) =>
+              console.error("Error deleting job card from sheets:", v),
+            );
+          }
+          Oa((v) => {
+            const j = v.filter((I) => !idList.includes(I.id));
+            return (bo(j), j);
+          });
+          if (idList.includes(ki)) y0(null);
+          alert(
+            `✅ ${idList.length} జాబ్ కార్డులు గూగుల్ షీట్స్ నుండి విజయవంతంగా తొలగించబడ్డాయి!`,
+          );
+        } catch (v) {
+          console.error("Error deleting job cards from sheets (bulk):", v);
+          alert("❌ గూగుల్ షీట్స్ నుండి తొలగించడం విఫలమైంది.");
+        }
+        return;
+      }
+      try {
+        const resolvedIds = idList.map((d) => {
+          const b = Br.find((v) => v.id === d);
+          return (b && (b.jobNo || b.onlineJobCardNo)) || d;
+        });
+        const res = await Rs.bulkDeleteJobcards(resolvedIds);
+        const dbOk = !!(res && res.success);
+        if (!dbOk) console.warn("Bulk job card delete did not confirm success:", res);
+
+        Oa((v) => {
+          const j = v.filter((I) => !idList.includes(I.id));
+          return (bo(j), j);
+        });
+        if (idList.includes(ki)) y0(null);
+        if (kt) {
+          for (const d of idList) {
+            try {
+              await xS(Qs(kt, "jobcards", d));
+            } catch (v) {
+              console.error("Error deleting job card from Firestore:", v);
+            }
+          }
+        }
+        if (dbOk) {
+          alert(`✅ Deleted ${idList.length} job card(s) successfully!`);
+        } else {
+          alert(
+            "⚠️ Removed from this screen, but the database did not confirm the delete - some may come back after a refresh. Please try again.",
+          );
+        }
+      } catch (v) {
+        console.error("Error deleting job cards (bulk):", v);
+        alert("❌ Failed to delete selected job cards.");
+      }
+    },
     sx = async (incomingData?: any) => {
       var d;
       const dataToSave = incomingData || qt;
@@ -22205,6 +22276,7 @@ ${b}`));
                                   },
                                   onSave: handleUpdateJobCardRow,
                                   onDelete: rx,
+                                  onBulkDelete: rxBulk,
                                   onRegisterComplaint: (card) => {
                                     if (card) {
                                       Q0(card);
