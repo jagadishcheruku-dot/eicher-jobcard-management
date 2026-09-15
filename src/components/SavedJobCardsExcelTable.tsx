@@ -1695,8 +1695,9 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               {/* ALL 26 DETAILED COLUMNS */}
               {detailedColumns.map((col) => renderHeaderFilterCell(col.key, col.label, col.width))}
 
-              {/* LAST COLUMN: ACTIONS */}
-              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10px] border-b-2 border-slate-300 py-2 px-1 text-center select-none min-w-[130px] sticky right-0 z-30 shadow-md">
+              {/* LAST COLUMN: ACTIONS - fixed width, never grows: actions
+                  open in a floating dropdown instead of expanding inline. */}
+              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10px] border-b-2 border-slate-300 py-2 px-1 text-center select-none w-11 sticky right-0 z-30 shadow-md">
                 <div className="flex items-center justify-center gap-1">
                   <span>{isTe ? "చర్యలు" : "Actions"}</span>
                 </div>

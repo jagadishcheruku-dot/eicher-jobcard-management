@@ -10,7 +10,8 @@ import {
   Trash2,
   Eye,
   Printer,
-  History
+  History,
+  ChevronDown
 } from "lucide-react";
 
 export interface RowActionButtonsProps {
@@ -37,12 +38,15 @@ export interface RowActionButtonsProps {
   canCreate?: boolean;
 }
 
-// All applicable icons show inline, all the time, at a small fixed size -
-// no per-row expand/collapse. That keeps every row's Actions cell showing
-// the same fixed set of icons, so the column's width never shifts when you
-// interact with a single row (which is what used to hide other columns'
-// data).
+// Single fixed-size triangle toggle button per row. Clicking it opens a
+// small floating menu listing that row's actions - the menu floats above
+// the table instead of expanding inline, so the Actions column always stays
+// the same width and clicking one row's toggle never resizes the column or
+// pushes other rows' data out of view. Only the row whose toggle you click
+// shows its menu; every other row stays collapsed.
 export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
+  isExpanded = false,
+  onToggleExpand,
   language = "te",
   onCall,
   onNewJobCard,
@@ -64,121 +68,146 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
 }) => {
   const isTe = language === "te";
 
+  const actions: {
+    key: string;
+    onClick: () => void;
+    label: string;
+    icon: React.ReactNode;
+    className: string;
+    disabled?: boolean;
+  }[] = [];
+
+  if (onCall) {
+    actions.push({
+      key: "call",
+      onClick: onCall,
+      label: isTe ? "కాల్ లాగ్ & టెలీకాలింగ్" : "Log Call & Information",
+      icon: <PhoneCall className="w-3.5 h-3.5" />,
+      className: "text-amber-700 hover:bg-amber-50 font-black",
+    });
+  }
+  if (onEdit && canEdit) {
+    actions.push({
+      key: "edit",
+      onClick: onEdit,
+      label: isTe ? "సవరించు" : "Edit",
+      icon: <PenLine className="w-3.5 h-3.5" />,
+      className: "text-blue-700 hover:bg-blue-50",
+    });
+  }
+  if (onView) {
+    actions.push({
+      key: "view",
+      onClick: onView,
+      label: isTe ? "వివరాలు చూడండి" : "View Details",
+      icon: <Eye className="w-3.5 h-3.5" />,
+      className: "text-slate-700 hover:bg-slate-100",
+    });
+  }
+  if (onPrint) {
+    actions.push({
+      key: "print",
+      onClick: onPrint,
+      label: isTe ? "ప్రింట్" : "Print",
+      icon: <Printer className="w-3.5 h-3.5" />,
+      className: "text-indigo-700 hover:bg-indigo-50",
+    });
+  }
+  if (onNewJobCard && canCreate) {
+    actions.push({
+      key: "newjc",
+      onClick: onNewJobCard,
+      label: jobCardLabel || (isTe ? "జాబ్ కార్డ్" : "New Job Card"),
+      icon: <Plus className="w-3.5 h-3.5 stroke-[2.5]" />,
+      className: "text-emerald-700 hover:bg-emerald-50 font-black",
+    });
+  }
+  if (onHistory) {
+    actions.push({
+      key: "history",
+      onClick: onHistory,
+      label: isTe ? "చరిత్ర" : "History",
+      icon: <History className="w-3.5 h-3.5" />,
+      className: "text-sky-700 hover:bg-sky-50",
+    });
+  }
+  if (onWhatsApp && hasPhone) {
+    actions.push({
+      key: "whatsapp",
+      onClick: onWhatsApp,
+      label: "WhatsApp",
+      icon: <MessageCircle className="w-3.5 h-3.5" />,
+      className: "text-emerald-700 hover:bg-emerald-50",
+    });
+  }
+  if (onRegisterComplaint) {
+    actions.push({
+      key: "complaint",
+      onClick: onRegisterComplaint,
+      label: isTe ? "కంప్లైంట్" : "Complaint",
+      icon: <AlertCircle className="w-3.5 h-3.5" />,
+      className: "text-rose-700 hover:bg-rose-50",
+    });
+  }
+  if (onSave) {
+    actions.push({
+      key: "save",
+      onClick: onSave,
+      label: isSaved ? (isTe ? "సేవ్ అయ్యింది!" : "Saved!") : (isTe ? "సేవ్ చేయండి" : "Save"),
+      icon: isSaved ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : <Save className="w-3.5 h-3.5" />,
+      className: isSaved ? "text-emerald-700 bg-emerald-50" : "text-purple-700 hover:bg-purple-50",
+      disabled: isSaving,
+    });
+  }
+  if (onDelete && canDelete) {
+    actions.push({
+      key: "delete",
+      onClick: onDelete,
+      label: isTe ? "తొలగించు" : "Delete",
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+      className: "text-red-600 hover:bg-red-50",
+    });
+  }
+
   return (
-    <div className="flex items-center justify-end gap-0.5 flex-nowrap shrink-0">
-      {onView && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onView(); }}
-          className="w-5 h-5 p-0.5 bg-slate-100 hover:bg-slate-700 text-slate-700 hover:text-white rounded border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "వివరాలు చూడండి" : "View Details"}
-        >
-          <Eye className="w-2.5 h-2.5" />
-        </button>
-      )}
+    <div className="relative inline-flex items-center justify-end shrink-0">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onToggleExpand) onToggleExpand();
+        }}
+        className={`w-6 h-6 p-1 rounded-lg border transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+          isExpanded
+            ? "bg-slate-700 text-white border-slate-700"
+            : "bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white border-slate-300"
+        }`}
+        title={isTe ? "చర్యలు" : "Actions"}
+      >
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+      </button>
 
-      {onEdit && canEdit && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          className="w-5 h-5 p-0.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded border border-blue-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "సవరించు" : "Edit"}
+      {isExpanded && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-full right-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 w-44 max-h-72 overflow-y-auto"
         >
-          <PenLine className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onPrint && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onPrint(); }}
-          className="w-5 h-5 p-0.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded border border-indigo-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "ప్రింట్" : "Print"}
-        >
-          <Printer className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onNewJobCard && canCreate && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onNewJobCard(); }}
-          className="w-5 h-5 p-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={jobCardLabel || (isTe ? "జాబ్ కార్డ్" : "New Job Card")}
-        >
-          <Plus className="w-2.5 h-2.5 stroke-[2.5]" />
-        </button>
-      )}
-
-      {onCall && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onCall(); }}
-          className="w-5 h-5 p-0.5 bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white rounded border border-amber-600 transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-sm shadow-amber-500/30"
-          title={isTe ? "📞 కాల్ లాగ్ & టెలీకాలింగ్" : "📞 Log Call & Information"}
-        >
-          <PhoneCall className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onHistory && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onHistory(); }}
-          className="w-5 h-5 p-0.5 bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white rounded border border-sky-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "చరిత్ర" : "History"}
-        >
-          <History className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onWhatsApp && hasPhone && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onWhatsApp(); }}
-          className="w-5 h-5 p-0.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded border border-emerald-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title="WhatsApp"
-        >
-          <MessageCircle className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onRegisterComplaint && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onRegisterComplaint(); }}
-          className="w-5 h-5 p-0.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded border border-rose-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "కంప్లైంట్" : "Complaint"}
-        >
-          <AlertCircle className="w-2.5 h-2.5" />
-        </button>
-      )}
-
-      {onSave && (
-        <button
-          type="button"
-          disabled={isSaving}
-          onClick={(e) => { e.stopPropagation(); onSave(); }}
-          className={`w-5 h-5 p-0.5 rounded border transition-all flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-            isSaved
-              ? "bg-emerald-600 text-white border-emerald-700"
-              : "bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border-purple-200"
-          }`}
-          title={isSaved ? "Saved!" : "Save"}
-        >
-          {isSaved ? <Check className="w-2.5 h-2.5 stroke-[2.5]" /> : <Save className="w-2.5 h-2.5" />}
-        </button>
-      )}
-
-      {onDelete && canDelete && (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="w-5 h-5 p-0.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded border border-red-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "తొలగించు" : "Delete"}
-        >
-          <Trash2 className="w-2.5 h-2.5" />
-        </button>
+          {actions.map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              disabled={a.disabled}
+              onClick={(e) => {
+                e.stopPropagation();
+                a.onClick();
+              }}
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-[11px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${a.className}`}
+            >
+              {a.icon}
+              <span className="truncate">{a.label}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

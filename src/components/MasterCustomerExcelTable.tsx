@@ -2156,7 +2156,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
       )}
 
       {/* 3. MAIN SPREADSHEET TABLE (Excel Style with Sticky Headers and Action Column) */}
-      <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
+      <div className="w-full overflow-x-auto overflow-y-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
         <table className="w-full border-separate border-spacing-0 text-left text-slate-900 min-w-[2800px] text-xs">
           {/* Header Row */}
           <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
@@ -2478,8 +2478,10 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                   </th>
                 );
               })}
-              {/* Sticky Action Header Column */}
-              <th className="py-2 px-1 text-center min-w-[130px] sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
+              {/* Sticky Action Header Column - fixed width, never grows:
+                  actions open in a floating dropdown instead of expanding
+                  inline. */}
+              <th className="py-2 px-1 text-center w-11 sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
                 {isTe ? "చర్యలు" : "Actions"}
               </th>
             </tr>
