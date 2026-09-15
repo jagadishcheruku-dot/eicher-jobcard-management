@@ -19936,6 +19936,60 @@ ${b}`));
                                                       i.jsx("button", {
                                                         type: "button",
                                                         onClick: async () => {
+                                                          bc({
+                                                            text: "⏳ Scanning for junk rows...",
+                                                            isSuccess: !1,
+                                                          });
+                                                          try {
+                                                            const raw = await Rs.getCustomers();
+                                                            const phoneToId = {};
+                                                            (raw || []).forEach((r) => {
+                                                              const chassis = Ct(r.chassisNo || r.chassis || r["Chassis no"] || "");
+                                                              const phone = Ct(r.mobileNumber || r["Mobile Number"] || r.ownerMob || r.phone || "");
+                                                              if (chassis && phone && !phoneToId[phone]) phoneToId[phone] = r.id;
+                                                            });
+                                                            const junkIds = [];
+                                                            (raw || []).forEach((r) => {
+                                                              const chassis = Ct(r.chassisNo || r.chassis || r["Chassis no"] || "");
+                                                              if (chassis) return;
+                                                              const phone = Ct(r.mobileNumber || r["Mobile Number"] || r.ownerMob || r.phone || "");
+                                                              const targetId = phone && phoneToId[phone];
+                                                              if (targetId && targetId !== r.id) junkIds.push(r.id);
+                                                            });
+                                                            if (junkIds.length === 0) {
+                                                              bc({ text: "✅ No junk duplicate rows found.", isSuccess: !0 });
+                                                              return;
+                                                            }
+                                                            if (
+                                                              !window.confirm(
+                                                                `Found ${junkIds.length} junk/orphan customer rows (no chassis, phone matches a real customer). Permanently delete them from the database? This cannot be undone.`,
+                                                              )
+                                                            ) {
+                                                              bc({ text: "Cleanup cancelled.", isSuccess: !0 });
+                                                              return;
+                                                            }
+                                                            bc({ text: `⏳ Deleting ${junkIds.length} junk rows...`, isSuccess: !1 });
+                                                            await Rs.deleteCustomersByIds(junkIds);
+                                                            const fresh = await Rs.getCustomers();
+                                                            const freshMap = buildCustMap(fresh || []);
+                                                            Pi(freshMap);
+                                                            ui(Dc, freshMap);
+                                                            try {
+                                                              localStorage.setItem("jobcard_sg_customer_v2", JSON.stringify(freshMap));
+                                                            } catch {}
+                                                            bc({ text: `✅ Deleted ${junkIds.length} junk rows permanently.`, isSuccess: !0 });
+                                                          } catch (err) {
+                                                            console.error("Junk cleanup error:", err);
+                                                            bc({ text: "⚠️ Cleanup failed. Check console.", isSuccess: !1 });
+                                                          }
+                                                        },
+                                                        className:
+                                                          "flex items-center justify-center gap-1.5 bg-slate-700 hover:bg-slate-800 text-white font-bold text-[11px] py-1.5 px-2.5 rounded-lg transition-colors cursor-pointer shadow-xs",
+                                                        children: "🧹 Clean Junk Rows",
+                                                      }),
+                                                      i.jsx("button", {
+                                                        type: "button",
+                                                        onClick: async () => {
                                                           if (
                                                             window.confirm(
                                                               "⚠️ WARNING: This will permanently delete ALL customer data. Are you sure?",

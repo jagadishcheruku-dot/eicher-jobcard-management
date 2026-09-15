@@ -253,6 +253,11 @@ export const supabaseApi = {
 
   deleteAllCustomers: async () =>
     (await deleteAllRows('customers')) ? ok(0) : fail('Could not clear customers'),
+  deleteCustomer: async (id: string) => removeOne('customers', id),
+  deleteCustomersByIds: async (idsToDelete: string[]) =>
+    (await deleteIds('customers', idsToDelete.map((v) => String(v ?? '').trim()).filter(Boolean)))
+      ? ok(idsToDelete.length)
+      : fail('Could not delete customer rows'),
 
   // Spares
   fetchSpares: async () => readRecords('spares'),

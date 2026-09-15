@@ -182,6 +182,15 @@ export const firestoreApi = {
     const done = await deleteIds(COLLECTIONS.customers, existing);
     return done ? ok(existing.length) : fail('Could not clear customers');
   },
+  deleteCustomer: async (id: string) => {
+    const key = String(id ?? '').trim();
+    if (!key) return fail('Missing id');
+    return (await deleteIds(COLLECTIONS.customers, [key])) ? ok(1) : fail('Could not delete customer');
+  },
+  deleteCustomersByIds: async (idsToDelete: string[]) => {
+    const clean = idsToDelete.map((v) => String(v ?? '').trim()).filter(Boolean);
+    return (await deleteIds(COLLECTIONS.customers, clean)) ? ok(clean.length) : fail('Could not delete customer rows');
+  },
 
   // Spares
   fetchSpares: async () =>
