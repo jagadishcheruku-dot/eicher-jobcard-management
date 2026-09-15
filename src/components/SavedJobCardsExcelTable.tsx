@@ -103,7 +103,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   const isTe = language === "te";
 
   // Density mode: compact, normal, spacious
-  const [rowDensity, setRowDensity] = useState<"compact" | "normal" | "spacious">("normal");
+  const [rowDensity, setRowDensity] = useState<"compact" | "normal" | "spacious">("compact");
 
   // Global Search state
   const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery || "");
@@ -972,7 +972,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   // Row padding based on density
   const cellPadding =
     rowDensity === "compact"
-      ? "py-1 px-1.5 text-[11px]"
+      ? "py-0.5 px-1.5 text-[11px]"
       : rowDensity === "spacious"
       ? "py-2 px-2 text-xs"
       : "py-1.5 px-2 text-[11.5px]";
@@ -1566,7 +1566,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           <thead className="sticky top-0 z-30 shadow-xs">
             <tr>
               {/* Col 1: Sl No & Selection */}
-              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10.5px] border-r border-b-2 border-slate-300 p-2 text-center select-none w-14">
+              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10.5px] border-r border-b-2 border-slate-300 p-1.5 text-center select-none w-12 sticky left-0 z-40">
                 <div className="flex items-center justify-center gap-1">
                   <input
                     type="checkbox"
@@ -1580,7 +1580,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                         }
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    className="w-3 h-3 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                   />
                   <span>#</span>
                 </div>
@@ -1645,8 +1645,12 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                     }`}
                   >
                     {/* 1. SELECTION & SL NO */}
-                    <td className={`${cellPadding} text-center font-mono border-r border-slate-200 select-none bg-slate-50/50`}>
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td
+                      className={`${cellPadding} text-center font-mono border-r border-slate-200 select-none sticky left-0 z-10 ${
+                        isSelected ? "bg-emerald-50" : idx % 2 === 1 ? "bg-slate-50" : "bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-1">
                         <input
                           type="checkbox"
                           checked={isSelected}
@@ -1657,7 +1661,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                               onToggleSelect(card.id);
                             }
                           }}
-                          className="w-3.5 h-3.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                          className="w-3 h-3 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
                         />
                         <span className="text-slate-400 text-[10.5px] font-bold">{globalIndex}</span>
                       </div>

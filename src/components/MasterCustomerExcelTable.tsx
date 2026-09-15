@@ -116,7 +116,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   const isTe = language === "te";
 
   // Density & View mode
-  const [rowDensity, setRowDensity] = useState<"compact" | "normal" | "spacious">("normal");
+  const [rowDensity, setRowDensity] = useState<"compact" | "normal" | "spacious">("compact");
 
   // Global Search
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -1658,7 +1658,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
   // Cell padding based on density
   const cellPadding =
     rowDensity === "compact"
-      ? "py-1 px-1.5 text-xs"
+      ? "py-0.5 px-1.5 text-[11px]"
       : rowDensity === "spacious"
       ? "py-2.5 px-3 text-sm"
       : "py-1.5 px-2 text-xs";
@@ -2153,8 +2153,8 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
           {/* Header Row */}
           <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
             <tr>
-              <th className="py-2 px-1 text-center w-14 min-w-[56px] border-r border-purple-800 bg-purple-950 font-mono text-[11px]">
-                <div className="flex flex-col items-center justify-center gap-0.5">
+              <th className="py-1 px-1 text-center w-12 min-w-[48px] border-r border-purple-800 bg-purple-950 font-mono text-[10.5px] sticky left-0 z-30">
+                <div className="flex items-center justify-center gap-1">
                   {canDelete && (
                     <input
                       type="checkbox"
@@ -2175,7 +2175,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                           return next;
                         });
                       }}
-                      className="w-3.5 h-3.5 rounded cursor-pointer"
+                      className="w-3 h-3 rounded cursor-pointer shrink-0"
                       title={isTe ? "ఈ పేజీలో అన్నీ ఎంపిక చేయండి" : "Select all on this page"}
                     />
                   )}
@@ -2414,32 +2414,34 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                   >
                     {/* Row Index */}
                     <td
-                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 ${
+                      className={`${cellPadding} text-center font-mono font-bold border-r border-slate-200 sticky left-0 z-10 ${
                         isOutOfWty
-                          ? "text-red-700 bg-red-50/60"
-                          : "text-slate-400 bg-slate-50/60"
+                          ? "text-red-700 bg-red-50"
+                          : "text-slate-400 bg-slate-50"
                       }`}
                     >
                       <div className="flex flex-col items-center justify-center gap-0.5">
-                        {canDelete && (
-                          <input
-                            type="checkbox"
-                            checked={selectedRowKeys.has(key)}
-                            onChange={() => {
-                              setSelectedRowKeys((prev) => {
-                                const next = new Set(prev);
-                                if (next.has(key)) next.delete(key);
-                                else next.add(key);
-                                return next;
-                              });
-                            }}
-                            className="w-3.5 h-3.5 rounded cursor-pointer"
-                          />
-                        )}
-                        <span>{globalIdx}</span>
+                        <div className="flex items-center justify-center gap-1">
+                          {canDelete && (
+                            <input
+                              type="checkbox"
+                              checked={selectedRowKeys.has(key)}
+                              onChange={() => {
+                                setSelectedRowKeys((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(key)) next.delete(key);
+                                  else next.add(key);
+                                  return next;
+                                });
+                              }}
+                              className="w-3 h-3 rounded cursor-pointer shrink-0"
+                            />
+                          )}
+                          <span>{globalIdx}</span>
+                        </div>
                         {isOutOfWty && (
                           <span
-                            className="text-[8px] font-black uppercase text-red-600 tracking-tighter leading-none mt-0.5"
+                            className="text-[8px] font-black uppercase text-red-600 tracking-tighter leading-none"
                             title={isTe ? "వారంటీ ముగిసింది (>2 సంవత్సరాలు)" : "Out of Warranty (>2 Years)"}
                           >
                             OOW
