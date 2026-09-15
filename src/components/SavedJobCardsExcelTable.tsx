@@ -1332,10 +1332,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
   return (
     <div className="w-full min-w-full space-y-3 flex flex-col min-h-0 bg-white rounded-3xl shadow-sm p-3 md:p-4 font-sans">
       {/* EXCEL SPREADSHEET TOOLBAR */}
-      <div className="bg-slate-50 text-slate-800 p-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-        </div>
-
+      <div className="bg-slate-50 text-slate-800 p-2.5 rounded-2xl flex flex-wrap items-center justify-end gap-3">
         {/* Right Controls: Lock/Unlock 🔒, Clear Filters, Export XLSX */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Lock / Unlock Filters Button 🔒 / 🔓 */}
