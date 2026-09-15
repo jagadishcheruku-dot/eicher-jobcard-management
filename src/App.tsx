@@ -10676,12 +10676,12 @@ ${b}`));
               className: `
         ${x ? "hidden md:hidden" : "fixed inset-y-0 left-0 z-50 md:sticky md:top-0 md:h-screen md:flex"}
         w-72 ${f ? "md:w-[76px]" : "md:w-72"}
-        shrink-0 bg-white border-r border-slate-200/70 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
+        shrink-0 bg-pink-50 border-r border-slate-200/70 flex flex-col print:hidden shadow-2xl md:shadow-sm transition-all duration-300 ease-out
       `,
               children: [
                 i.jsxs("div", {
                   className:
-                    "p-4 border-b border-slate-100 bg-white flex items-center justify-between gap-2",
+                    "p-4 border-b border-slate-100 bg-pink-50 flex items-center justify-between gap-2",
                   children: [
                     i.jsxs("div", {
                       className: "flex items-center gap-2.5 overflow-hidden",
