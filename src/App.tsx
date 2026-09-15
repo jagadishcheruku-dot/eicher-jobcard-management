@@ -4414,7 +4414,10 @@ function gY() {
         });
       } catch (b) {
         (console.error("Failed to save spares to database:", b),
-          Ol({ text: "⚠️ Spares data saved in database.", isSuccess: !0 }));
+          Ol({
+            text: "❌ Failed to save spares to the database - they will only be visible on this device until re-uploaded. Check your connection and try again.",
+            isSuccess: !1,
+          }));
       }
     },
     q0 = (d) => {
