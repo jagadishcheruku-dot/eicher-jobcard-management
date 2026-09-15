@@ -19,7 +19,8 @@ import {
   Wrench,
   Tractor,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Building2
 } from "lucide-react";
 import { formatDisplayDate } from "../utils/dateFormatter";
 
@@ -137,6 +138,10 @@ export const CustomerCallLogModal: React.FC<CustomerCallLogModalProps> = ({
   const supervisor = getVal(["supervisor", "SUPERVISOR", "assignedSupervisor"]);
   const branch = getVal(["branch", "BRANCH"]);
   const historyFileNo = getVal(["historyFileNo", "fileNo", "HFN"]);
+  const fatherName = getVal(["fatherName", "FATHER NAME", "Father Name", "father"]);
+  const dspName = getVal(["dspName", "DSP Name", "DSP NAME"]);
+  const district = getVal(["district", "District", "DISTRICT", "Distict"]);
+  const pinCode = getVal(["pinCode", "PIN CODE", "PIN CO", "Pin code"]);
 
   // Find job cards for this chassis
   const relatedCards = allCards.filter((c) => {
@@ -238,31 +243,45 @@ Supervisor: ${supervisor || "—"}`;
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-150">
-        
+
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-950 text-white p-4 flex justify-between items-center shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-white/10 rounded-xl">
-              <PhoneCall className="w-5 h-5 text-amber-400" />
+        <div className="bg-purple-950 text-white p-4 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-amber-500 text-slate-950 rounded-xl font-bold shrink-0">
+              <PhoneCall className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm md:text-base flex items-center gap-2">
+              <h3 className="text-sm font-black flex items-center gap-2 flex-wrap">
                 <span>{custName}</span>
-                {cleanPhone && (
-                  <span className="font-mono text-xs text-purple-200 font-normal">
-                    ({cleanPhone})
+                {chassisNo && (
+                  <span className="font-mono bg-yellow-400 text-slate-950 px-2 py-0.5 rounded text-xs font-black">
+                    {chassisNo}
                   </span>
                 )}
               </h3>
-              <p className="text-[11px] text-purple-200 font-medium">
-                {isTe ? "కస్టమర్ కాల్ లాగ్ & సర్వీస్ రికార్డులు" : "Customer Call Log & Service Profile"}
+              <p className="text-xs text-purple-200 flex items-center gap-3 mt-0.5 flex-wrap">
+                <span>🚜 {model}</span>
+                <span>•</span>
+                <span>🏢 {branch || "Main Branch"}</span>
+                {cleanPhone && (
+                  <>
+                    <span>•</span>
+                    <a
+                      href={`tel:${cleanPhone}`}
+                      className="text-emerald-400 hover:text-emerald-300 font-mono font-bold flex items-center gap-1 underline"
+                    >
+                      <Phone className="w-3 h-3" />
+                      {cleanPhone}
+                    </a>
+                  </>
+                )}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 hover:bg-white/20 rounded-lg text-white transition-colors cursor-pointer"
+            className="text-purple-300 hover:text-white p-1.5 rounded-lg hover:bg-purple-900 transition-colors cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -270,69 +289,100 @@ Supervisor: ${supervisor || "—"}`;
 
         {/* Modal Body */}
         <div className="p-4 md:p-5 overflow-y-auto max-h-[75vh] space-y-4 text-xs">
-          
-          {/* 1. Customer Snapshot Card */}
-          <div className="bg-purple-50/70 border border-purple-200 rounded-xl p-3.5 space-y-2">
-            <div className="flex items-center justify-between border-b border-purple-200 pb-2">
-              <span className="font-extrabold text-purple-950 text-[11px] uppercase tracking-wide flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-purple-700" />
-                <span>{isTe ? "కస్టమర్ పూర్తి ప్రొఫైల్" : "Customer Overview"}</span>
-              </span>
-              <div className="flex items-center gap-1.5">
-                {historyFileNo && (
-                  <span className="font-mono font-bold text-[10.5px] bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded-md">
-                    HFN: {historyFileNo}
-                  </span>
-                )}
-                {supervisor && (
-                  <span className="text-[10.5px] font-bold bg-purple-200/80 text-purple-900 px-2 py-0.5 rounded-md">
-                    Sup: {supervisor}
-                  </span>
-                )}
-              </div>
+
+          {/* 1. Customer & Tractor Profile Banner */}
+          <div className="bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200 p-4 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Left: Branch, Supervisor, DSP */}
+            <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+              <p className="font-black text-purple-950 uppercase tracking-widest text-[11px] bg-purple-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <Building2 className="w-4 h-4 text-purple-700" />
+                <span>{isTe ? "🏢 బ్రాంచ్" : "🏢 Branch"}</span>
+              </p>
+              <p className="text-sm">
+                <span className="font-black text-purple-950 text-base">{branch || "Main Branch"}</span>
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-amber-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <User className="w-4 h-4 text-amber-700" />
+                <span>{isTe ? "👤 సూపర్" : "👤 Supervisor"}</span>
+              </p>
+              <p className="text-sm">
+                <span className="font-black text-slate-900">{supervisor || "Unassigned"}</span>
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-blue-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <span>👷 DSP</span>
+              </p>
+              <p className="text-sm">
+                <span className="font-bold">{dspName || "—"}</span>
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "ఛాసిస్ నెం." : "Chassis No"}</span>
-                <span className="font-mono font-black text-slate-900 bg-white px-2 py-0.5 rounded border border-purple-200 inline-block mt-0.5">
-                  {chassisNo || "—"}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "ట్రాక్టర్ మోడల్" : "Model"}</span>
-                <span className="font-extrabold text-purple-950 block mt-0.5">
-                  {model} {modelType ? `(${modelType})` : ""}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "ఇంజిన్ నెం." : "Engine No"}</span>
-                <span className="font-mono text-slate-800 block mt-0.5">
-                  {engineNo || "—"}
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "గ్రామం & మండలం" : "Village & Mandal"}</span>
-                <span className="font-bold text-slate-800 flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-                  <span>{village || "—"}{mandal ? `, ${mandal}` : ""}</span>
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "డెలివరీ తేదీ" : "Delivery Date"}</span>
-                <span className="font-mono font-bold text-slate-800 flex items-center gap-1 mt-0.5">
-                  <Calendar className="w-3 h-3 text-purple-600 shrink-0" />
-                  <span>{formatDisplayDate(delDate)}</span>
-                </span>
-              </div>
-              <div>
-                <span className="text-slate-500 font-bold block text-[10px] uppercase">{isTe ? "బ్రాంచ్" : "Branch"}</span>
-                <span className="font-bold text-slate-800 block mt-0.5">
-                  {branch || "Main Branch"}
-                </span>
-              </div>
+            {/* Center: Name, Father, Location */}
+            <div className="space-y-2.5 border-b md:border-b-0 md:border-r-2 border-purple-200/80 pb-3 md:pb-0 md:pr-4">
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <User className="w-4 h-4 text-slate-700" />
+                <span>{isTe ? "👤 నామం" : "👤 Name"}</span>
+              </p>
+              <p className="text-lg font-black text-slate-900 leading-tight">
+                {custName}
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-slate-200 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <span>{isTe ? "👨 S/o" : "👨 Father"}</span>
+              </p>
+              <p className="text-sm font-bold">
+                {fatherName || "—"}
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-teal-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <MapPin className="w-4 h-4 text-teal-700" />
+                <span>{isTe ? "📍 చిరునామా" : "📍 Location"}</span>
+              </p>
+              <p className="text-sm font-semibold text-slate-800">
+                {village || "—"}{mandal ? `, ${mandal}` : ""}
+              </p>
+              <p className="text-xs text-slate-600 font-bold">
+                <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">Dist: {district || "—"}</span>
+                <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded ml-1">PIN: {pinCode || "—"}</span>
+              </p>
+            </div>
+
+            {/* Right: Model, Engine, Delivery */}
+            <div className="space-y-2.5">
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-orange-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <Wrench className="w-4 h-4 text-orange-700" />
+                <span>{isTe ? "🚜 మోడల్" : "🚜 Model"}</span>
+              </p>
+              <p className="text-sm">
+                <span className="font-black text-slate-900 text-base">{model}</span>
+                {modelType && <span className="text-xs text-slate-600 ml-1">({modelType})</span>}
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-pink-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <span>⚙️ {isTe ? "ఇంజిన్" : "Engine"}</span>
+              </p>
+              <p className="text-sm font-mono font-bold text-slate-800">
+                {engineNo || "—"}
+              </p>
+
+              <p className="font-black text-slate-900 uppercase tracking-widest text-[11px] bg-green-100 px-2 py-1.5 rounded-lg inline-flex items-center gap-1.5 w-fit">
+                <Calendar className="w-4 h-4 text-green-700" />
+                <span>{isTe ? "📅 డెలివరీ" : "📅 Delivery"}</span>
+              </p>
+              <p className="text-sm font-mono font-bold text-slate-800">
+                {formatDisplayDate(delDate) || "—"}
+              </p>
             </div>
           </div>
+
+          {historyFileNo && (
+            <div className="flex justify-end -mt-2">
+              <span className="font-mono font-bold text-[10.5px] bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded-md">
+                HFN: {historyFileNo}
+              </span>
+            </div>
+          )}
 
           {/* 2. Service & Job Card History */}
           <div className="border border-slate-200 rounded-xl p-3.5 space-y-2.5 bg-slate-50/50">
