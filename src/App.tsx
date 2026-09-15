@@ -925,10 +925,40 @@ function buildCustMap(list) {
       rawData["EXCHANGE TRACTOR MODELS"] || be(S, "exchangeTractorModels") || S.exchangetractormodels || ""
     ).toString().trim();
 
+    const lastCallDate = (
+      R.lastCallDate || R.last_call_date || rawData.lastCallDate || rawData.last_call_date || ""
+    ).toString().trim();
+    const lastRemarks = (
+      R.lastRemarks || R.last_remarks || rawData.lastRemarks || rawData.last_remarks || ""
+    ).toString().trim();
+    const lastNextCallDate = (
+      R.lastNextCallDate || R.last_next_call_date || rawData.lastNextCallDate || rawData.last_next_call_date || ""
+    ).toString().trim();
+    const lastCalledBy = (
+      R.lastCalledBy || R.last_called_by || rawData.lastCalledBy || rawData.last_called_by || ""
+    ).toString().trim();
+    const rawFollowupHistory =
+      R.followupHistory || R.followup_history || rawData.followupHistory || rawData.followup_history || [];
+    let followupHistory: any[] = [];
+    if (Array.isArray(rawFollowupHistory)) {
+      followupHistory = rawFollowupHistory;
+    } else if (typeof rawFollowupHistory === "string" && rawFollowupHistory) {
+      try {
+        followupHistory = JSON.parse(rawFollowupHistory);
+      } catch {
+        followupHistory = [];
+      }
+    }
+
     const custObj = {
       ...rawData,
       ...R,
       ...S,
+      ...(lastCallDate ? { lastCallDate } : {}),
+      ...(lastRemarks ? { lastRemarks } : {}),
+      ...(lastNextCallDate ? { lastNextCallDate } : {}),
+      ...(lastCalledBy ? { lastCalledBy } : {}),
+      ...(followupHistory.length > 0 ? { followupHistory } : {}),
       SUPERVISOR: supervisor,
       supervisor: supervisor,
       BRANCH: branch,
@@ -9733,18 +9763,14 @@ ${b}`));
         }
 
         try {
-          Rs.saveCustomer({
-            chassis_no: cleanChassis,
-            chassis_key: normKey || cleanChassis,
-            cust_name: custName,
-            owner_mob: cleanPhone,
-            last_call_date: callDate,
-            last_remarks: remarks,
-            last_next_call_date: nextCallDate,
-            last_called_by: calledBy,
-            followup_history: JSON.stringify(updatedCustRecord?.followupHistory || [newEntry]),
-            full_data: JSON.stringify(updatedCustRecord || {}),
-          }).catch(console.warn);
+          if (updatedCustRecord) {
+            // Save the whole merged customer record (camelCase chassisNo etc.)
+            // rather than a snake_case-only partial: Rs.saveCustomer resolves
+            // the row id from chassisNo, so a partial payload without it would
+            // hash to a brand-new row instead of updating the existing
+            // customer, silently orphaning the call log that was just saved.
+            Rs.saveCustomer(updatedCustRecord).catch(console.warn);
+          }
         } catch {}
 
         if (kt) {

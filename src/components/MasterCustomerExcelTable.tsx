@@ -2506,6 +2506,12 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                         onSave={() => handleSaveRow(cust, rowUniqueIndex)}
                         isSaving={isSaving}
                         isSaved={isSaved}
+                        onCall={() => {
+                          setSelectedCallCustomer(cust);
+                          setCallStatus("Interested");
+                          setCallNotes("");
+                          setCallPreferredDate("");
+                        }}
                         onDelete={() => {
                           if (chassisNo && window.confirm(isTe ? `కస్టమర్ ${chassisNo} ని తొలగించాలనుకుంటున్నారా?` : `Are you sure you want to delete customer ${chassisNo}?`)) {
                             if (onDelete) onDelete(chassisNo);
