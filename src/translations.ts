@@ -17,9 +17,9 @@ export const translations = {
 
   // Navigation
   dashboard: { te: 'డ్యాష్‌బోర్డ్', en: 'Dashboard' },
-  serviceCampPlanning: { te: '⛺ సర్వీస్ క్యాంప్ ప్లానింగ్', en: '⛺ Service Camp Planning' },
+  serviceCampPlanning: { te: 'సర్వీస్ క్యాంప్ ప్లానింగ్', en: 'Service Camp Planning' },
   newJobEntry: { te: 'కొత్త జాబ్ కార్డ్ ఎంట్రీ', en: 'New Job Entry' },
-  customersAndJobCards: { te: '👥 కస్టమర్లు & జాబ్ కార్డులు', en: '👥 Customers & Job Cards' },
+  customersAndJobCards: { te: 'కస్టమర్లు & జాబ్ కార్డులు', en: 'Customers & Job Cards' },
   savedJobCards: { te: 'సేవ్ చేసిన జాబ్ కార్డులు', en: 'Saved Job Cards' },
   reportsAnalytics: { te: 'రిపోర్ట్స్ & ఎనలిటిక్స్', en: 'Reports & Analytics' },
   customerData: { te: 'కస్టమర్ డేటా & ఫాలో-అప్', en: 'Customer Data' },

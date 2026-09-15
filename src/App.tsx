@@ -10727,7 +10727,7 @@ ${b}`));
                             })
                           : null));
                     else if (d === "customer_data") {
-                      v = e === "te" ? "👤 కస్టమర్ డేటా" : "👤 Customer Data";
+                      v = e === "te" ? "కస్టమర్ డేటా" : "Customer Data";
                       j = i.jsx(Users, { className: "w-4 h-4 shrink-0 text-current" });
                       I = c === "customer_data" ? "bg-blue-900 text-white border-blue-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
                       N = i.jsx("span", {
@@ -10735,7 +10735,7 @@ ${b}`));
                         children: _a.length
                       });
                     } else if (d === "job_cards_data") {
-                      v = e === "te" ? "🔧 జాబ్ కార్డ్ డేటా" : "🔧 Job Cards Data";
+                      v = e === "te" ? "జాబ్ కార్డ్ డేటా" : "Job Cards Data";
                       j = i.jsx(Wrench, { className: "w-4 h-4 shrink-0 text-current" });
                       I = c === "job_cards_data" ? "bg-orange-900 text-white border-orange-900 shadow-sm" : "bg-slate-200 text-slate-700 border-slate-300";
                       N = i.jsx("span", {
@@ -10743,7 +10743,7 @@ ${b}`));
                         children: hh.length
                       });
                     } else if (d === "saved_cards" || d === "followup" || d === "customer_details") {
-                      v = n("customersAndJobCards") || (e === "te" ? "👥 కస్టమర్లు & జాబ్ కార్డులు" : "👥 Customers & Job Cards");
+                      v = n("customersAndJobCards") || (e === "te" ? "కస్టమర్లు & జాబ్ కార్డులు" : "Customers & Job Cards");
                       j = i.jsx(Users, { className: "w-4 h-4 shrink-0 text-current" });
                       I = "bg-purple-900 text-white border-purple-900 shadow-sm";
                       N = i.jsxs("span", {
