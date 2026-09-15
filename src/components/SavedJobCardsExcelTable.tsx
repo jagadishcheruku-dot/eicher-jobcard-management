@@ -1331,70 +1331,6 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
   return (
     <div className="w-full min-w-full space-y-3 flex flex-col min-h-0 bg-white rounded-3xl shadow-sm p-3 md:p-4 font-sans">
-      {/* EXCEL SPREADSHEET TOOLBAR */}
-      <div className="bg-slate-50 text-slate-800 p-2.5 rounded-2xl flex flex-wrap items-center justify-end gap-3">
-        {/* Right Controls: Lock/Unlock 🔒, Clear Filters, Export XLSX */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Lock / Unlock Filters Button 🔒 / 🔓 */}
-          <button
-            type="button"
-            onClick={toggleFiltersLock}
-            className={`px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-              isFiltersLocked
-                ? "bg-amber-400 hover:bg-amber-500 text-amber-950 shadow-sm"
-                : "bg-white hover:bg-slate-100 text-slate-600"
-            }`}
-            title={
-              isFiltersLocked
-                ? isTe
-                  ? "ఫిల్టర్లు లాక్ చేయబడ్డాయి. అన్‌లాక్ చేయడానికి 🔒 నొక్కండి"
-                  : "Filters are locked. Click 🔒 to unlock"
-                : isTe
-                ? "ఫిల్టర్లను లాక్ చేయడానికి 🔓 నొక్కండి"
-                : "Click to lock filters 🔒"
-            }
-          >
-            <span className="text-sm">{isFiltersLocked ? "🔒" : "🔓"}</span>
-            <span className="whitespace-nowrap">
-              {isFiltersLocked
-                ? isTe
-                  ? "లాక్ (Locked)"
-                  : "Filters Locked"
-                : isTe
-                ? "అన్‌లాక్ (Unlocked)"
-                : "Filters Unlocked"}
-            </span>
-          </button>
-
-          {(Object.keys(columnFilters).length > 0 || searchQuery || statusFilter !== "all") && (
-            <button
-              type="button"
-              disabled={isFiltersLocked}
-              onClick={handleClearAllFilters}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                isFiltersLocked
-                  ? "opacity-50 cursor-not-allowed bg-slate-200 text-slate-400"
-                  : "bg-amber-400 hover:bg-amber-500 text-amber-950 cursor-pointer shadow-sm"
-              }`}
-              title="Reset all active filters"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>{isTe ? "ఫిల్టర్లు రీసెట్" : "Reset Filters"}</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={handleExportFilteredExcel}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-black transition-colors shadow-sm cursor-pointer"
-            title="Export filtered records to Excel"
-          >
-            <Download className="w-4 h-4 text-white" />
-            <span>{isTe ? "ఎక్సెల్ డౌన్‌లోడ్" : "Export Excel"}</span>
-          </button>
-        </div>
-      </div>
-
       {/* QUICK STATUS FILTER TABS */}
       <div className="flex items-center justify-between gap-2 flex-wrap bg-slate-50 p-2 rounded-2xl">
         <div className="flex items-center gap-1.5 flex-wrap">
@@ -1463,10 +1399,64 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
           </button>
         </div>
 
-        <div className="text-[11px] text-slate-500 font-medium">
-          {isTe
-            ? "⚡ సెల్ లో నేరుగా టైప్ చేసి మార్పులు చేయవచ్చు (Auto-save on Blur)"
-            : "⚡ Click any cell to edit directly (Auto-saves on blur/Enter)"}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Lock / Unlock Filters Button 🔒 / 🔓 */}
+          <button
+            type="button"
+            onClick={toggleFiltersLock}
+            className={`px-3 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+              isFiltersLocked
+                ? "bg-amber-400 hover:bg-amber-500 text-amber-950 shadow-sm"
+                : "bg-white hover:bg-slate-100 text-slate-600"
+            }`}
+            title={
+              isFiltersLocked
+                ? isTe
+                  ? "ఫిల్టర్లు లాక్ చేయబడ్డాయి. అన్‌లాక్ చేయడానికి 🔒 నొక్కండి"
+                  : "Filters are locked. Click 🔒 to unlock"
+                : isTe
+                ? "ఫిల్టర్లను లాక్ చేయడానికి 🔓 నొక్కండి"
+                : "Click to lock filters 🔒"
+            }
+          >
+            <span className="text-sm">{isFiltersLocked ? "🔒" : "🔓"}</span>
+            <span className="whitespace-nowrap">
+              {isFiltersLocked
+                ? isTe
+                  ? "లాక్ (Locked)"
+                  : "Filters Locked"
+                : isTe
+                ? "అన్‌లాక్ (Unlocked)"
+                : "Filters Unlocked"}
+            </span>
+          </button>
+
+          {(Object.keys(columnFilters).length > 0 || searchQuery || statusFilter !== "all") && (
+            <button
+              type="button"
+              disabled={isFiltersLocked}
+              onClick={handleClearAllFilters}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                isFiltersLocked
+                  ? "opacity-50 cursor-not-allowed bg-slate-200 text-slate-400"
+                  : "bg-amber-400 hover:bg-amber-500 text-amber-950 cursor-pointer shadow-sm"
+              }`}
+              title="Reset all active filters"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>{isTe ? "ఫిల్టర్లు రీసెట్" : "Reset Filters"}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleExportFilteredExcel}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-black transition-colors shadow-sm cursor-pointer"
+            title="Export filtered records to Excel"
+          >
+            <Download className="w-4 h-4 text-white" />
+            <span>{isTe ? "ఎక్సెల్ డౌన్‌లోడ్" : "Export Excel"}</span>
+          </button>
         </div>
       </div>
 
