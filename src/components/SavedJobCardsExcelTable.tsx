@@ -1664,7 +1664,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
 
       {/* SPREADSHEET TABLE CONTAINER - EXPANDED FULL DISPLAY */}
       <div className="w-full overflow-x-auto border border-slate-300 rounded-xl shadow-xs bg-white max-h-[calc(100vh-220px)] overflow-y-auto relative">
-        <table className="w-full text-left text-slate-700 border-collapse border border-slate-300 font-sans min-w-max">
+        <table className="w-full text-left text-slate-700 border-separate border-spacing-0 border border-slate-300 font-sans min-w-max">
           {/* HEADER ROW */}
           <thead className="sticky top-0 z-30 shadow-xs">
             <tr>
@@ -1695,8 +1695,10 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
               {/* ALL 26 DETAILED COLUMNS */}
               {detailedColumns.map((col) => renderHeaderFilterCell(col.key, col.label, col.width))}
 
-              {/* LAST COLUMN: ACTIONS */}
-              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10px] border-b-2 border-slate-300 py-2 px-1 text-center select-none w-20 min-w-[80px] sticky right-0 z-30 shadow-md">
+              {/* LAST COLUMN: ACTIONS - fixed width, never grows: the action
+                  buttons open in a floating dropdown instead of expanding
+                  inline, so this column stays this size for every row. */}
+              <th className="bg-slate-100 text-slate-800 font-extrabold uppercase tracking-wider text-[10px] border-b-2 border-slate-300 py-2 px-1 text-center select-none w-11 sticky right-0 z-30 shadow-md">
                 <div className="flex items-center justify-center gap-1">
                   <span>{isTe ? "చర్యలు" : "Actions"}</span>
                 </div>
@@ -1824,7 +1826,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                       return (
                         <td
                           key={col.key}
-                          className={`${cellPadding} border-r border-slate-200 p-0.5 relative ${
+                          className={`${cellPadding} border-r border-slate-200 p-0.5 relative min-w-0 ${
                             isDirty ? "bg-amber-50/60 ring-1 ring-amber-300" : ""
                           }`}
                         >
@@ -1850,7 +1852,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                                   : "Bill #"
                                 : ""
                             }
-                            className={`w-full text-xs transition-all outline-none rounded px-1.5 py-1 ${
+                            className={`w-full min-w-0 text-xs transition-all outline-none rounded px-1.5 py-1 ${
                               isOnlineJCEmpty
                                 ? "bg-rose-50 hover:bg-white focus:bg-white text-rose-900 border border-rose-300 focus:border-rose-600 focus:ring-1 focus:ring-rose-500 font-mono font-black placeholder:text-rose-400 placeholder:font-sans"
                                 : isOnlineJC
@@ -1866,8 +1868,11 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                       );
                     })}
 
-                    {/* LAST COLUMN: ACTIONS WITH ROW ACTION BUTTONS */}
-                    <td className={`${cellPadding} text-center sticky right-0 z-20 bg-white group-hover:bg-indigo-100 shadow-md border-l border-slate-200`}>
+                    {/* LAST COLUMN: ACTIONS WITH ROW ACTION BUTTONS - the
+                        expanded row's cell gets a higher z-index than the
+                        rest so its dropdown isn't hidden behind the sticky
+                        cells of rows further down the table. */}
+                    <td className={`${cellPadding} text-center sticky right-0 bg-white group-hover:bg-indigo-100 shadow-md border-l border-slate-200 ${expandedRowKeys[card.id] ? "z-40" : "z-20"}`}>
                       <RowActionButtons
                         isExpanded={!!expandedRowKeys[card.id]}
                         onToggleExpand={() => toggleRowActions(card.id)}

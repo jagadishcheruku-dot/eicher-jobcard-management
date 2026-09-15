@@ -2157,7 +2157,7 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
 
       {/* 3. MAIN SPREADSHEET TABLE (Excel Style with Sticky Headers and Action Column) */}
       <div className="w-full overflow-x-auto border border-slate-200 rounded-xl max-h-[72vh] shadow-inner bg-slate-50/40">
-        <table className="w-full border-collapse text-left text-slate-900 min-w-[2800px] text-xs">
+        <table className="w-full border-separate border-spacing-0 text-left text-slate-900 min-w-[2800px] text-xs">
           {/* Header Row */}
           <thead className="bg-gradient-to-r from-slate-800 to-slate-900 text-white sticky top-0 z-20 select-none shadow-sm text-xs font-bold">
             <tr>
@@ -2478,8 +2478,10 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                   </th>
                 );
               })}
-              {/* Sticky Action Header Column */}
-              <th className="py-2 px-1 text-center w-20 min-w-[80px] sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
+              {/* Sticky Action Header Column - fixed width, never grows: the
+                  action buttons open in a floating dropdown instead of
+                  expanding inline, so this column stays this size. */}
+              <th className="py-2 px-1 text-center w-11 sticky right-0 bg-purple-950 text-white z-30 font-bold border-l border-purple-800 shadow-md text-xs">
                 {isTe ? "చర్యలు" : "Actions"}
               </th>
             </tr>
@@ -2684,9 +2686,13 @@ export const MasterCustomerExcelTable: React.FC<MasterCustomerExcelTableProps> =
                       );
                     })}
 
-                    {/* 4. ACTIONS COLUMN WITH TRIANGLE TOGGLE BUTTON */}
+                    {/* 4. ACTIONS COLUMN - the expanded row's cell gets a
+                        higher z-index than the rest so its dropdown isn't
+                        hidden behind the sticky cells of rows further down. */}
                     <td
-                      className={`${cellPadding} text-center sticky right-0 z-20 ${
+                      className={`${cellPadding} text-center sticky right-0 ${
+                        expandedRowKeys[rowUniqueIndex] ? "z-40" : "z-20"
+                      } ${
                         isOutOfWty
                           ? "bg-red-50/40 group-hover:bg-red-100"
                           : "bg-white group-hover:bg-indigo-100"

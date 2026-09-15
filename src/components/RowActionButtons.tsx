@@ -11,7 +11,6 @@ import {
   Eye,
   Printer,
   History,
-  ChevronLeft,
   MoreVertical
 } from "lucide-react";
 
@@ -39,6 +38,11 @@ export interface RowActionButtonsProps {
   canCreate?: boolean;
 }
 
+// Renders a single small toggle button at a fixed size; the actual actions
+// open in a floating dropdown instead of expanding inline. Expanding inline
+// used to widen the whole Actions table column for every row (not just the
+// one clicked), pushing other columns out of view - the dropdown floats
+// over the table instead, so the column width never changes.
 export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
   isExpanded = false,
   onToggleExpand,
@@ -63,196 +67,146 @@ export const RowActionButtons: React.FC<RowActionButtonsProps> = ({
 }) => {
   const isTe = language === "te";
 
-  // Collapsed: show only a small toggle button. Clicking it reveals the
-  // full action row to its left; clicking again collapses it back.
-  if (!isExpanded && onToggleExpand) {
-    return (
-      <div className="flex items-center justify-end shrink-0 py-1">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand();
-          }}
-          className="w-7 h-7 p-1.5 bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white rounded-lg border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "చర్యలు చూపించు" : "Show actions"}
-        >
-          <MoreVertical className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    );
+  const actions: {
+    key: string;
+    onClick: () => void;
+    label: string;
+    icon: React.ReactNode;
+    className: string;
+    disabled?: boolean;
+  }[] = [];
+
+  if (onView) {
+    actions.push({
+      key: "view",
+      onClick: onView,
+      label: isTe ? "వివరాలు చూడండి" : "View Details",
+      icon: <Eye className="w-3.5 h-3.5" />,
+      className: "text-slate-700 hover:bg-slate-100",
+    });
+  }
+  if (onEdit && canEdit) {
+    actions.push({
+      key: "edit",
+      onClick: onEdit,
+      label: isTe ? "సవరించు" : "Edit",
+      icon: <PenLine className="w-3.5 h-3.5" />,
+      className: "text-blue-700 hover:bg-blue-50",
+    });
+  }
+  if (onPrint) {
+    actions.push({
+      key: "print",
+      onClick: onPrint,
+      label: isTe ? "ప్రింట్" : "Print",
+      icon: <Printer className="w-3.5 h-3.5" />,
+      className: "text-indigo-700 hover:bg-indigo-50",
+    });
+  }
+  if (onNewJobCard && canCreate) {
+    actions.push({
+      key: "newjc",
+      onClick: onNewJobCard,
+      label: jobCardLabel || (isTe ? "జాబ్ కార్డ్" : "New Job Card"),
+      icon: <Plus className="w-3.5 h-3.5 stroke-[2.5]" />,
+      className: "text-emerald-700 hover:bg-emerald-50 font-black",
+    });
+  }
+  if (onCall) {
+    actions.push({
+      key: "call",
+      onClick: onCall,
+      label: isTe ? "కాల్ లాగ్ & టెలీకాలింగ్" : "Log Call & Information",
+      icon: <PhoneCall className="w-3.5 h-3.5" />,
+      className: "text-amber-700 hover:bg-amber-50 font-black",
+    });
+  }
+  if (onHistory) {
+    actions.push({
+      key: "history",
+      onClick: onHistory,
+      label: isTe ? "చరిత్ర" : "History",
+      icon: <History className="w-3.5 h-3.5" />,
+      className: "text-sky-700 hover:bg-sky-50",
+    });
+  }
+  if (onWhatsApp && hasPhone) {
+    actions.push({
+      key: "whatsapp",
+      onClick: onWhatsApp,
+      label: "WhatsApp",
+      icon: <MessageCircle className="w-3.5 h-3.5" />,
+      className: "text-emerald-700 hover:bg-emerald-50",
+    });
+  }
+  if (onRegisterComplaint) {
+    actions.push({
+      key: "complaint",
+      onClick: onRegisterComplaint,
+      label: isTe ? "కంప్లైంట్" : "Complaint",
+      icon: <AlertCircle className="w-3.5 h-3.5" />,
+      className: "text-rose-700 hover:bg-rose-50",
+    });
+  }
+  if (onSave) {
+    actions.push({
+      key: "save",
+      onClick: onSave,
+      label: isSaved ? (isTe ? "సేవ్ అయ్యింది!" : "Saved!") : (isTe ? "సేవ్ చేయండి" : "Save"),
+      icon: isSaved ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : <Save className="w-3.5 h-3.5" />,
+      className: isSaved ? "text-emerald-700 bg-emerald-50" : "text-purple-700 hover:bg-purple-50",
+      disabled: isSaving,
+    });
+  }
+  if (onDelete && canDelete) {
+    actions.push({
+      key: "delete",
+      onClick: onDelete,
+      label: isTe ? "తొలగించు" : "Delete",
+      icon: <Trash2 className="w-3.5 h-3.5" />,
+      className: "text-red-600 hover:bg-red-50",
+    });
   }
 
   return (
-    <div className="flex items-center justify-end gap-1 flex-nowrap overflow-x-auto max-w-full py-1 shrink-0 scrollbar-none">
-      {/* 1. View */}
-      {onView && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onView();
-          }}
-          className="w-7 h-7 p-1.5 bg-slate-100 hover:bg-slate-700 text-slate-700 hover:text-white rounded-lg border border-slate-300 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "వివరాలు చూడండి" : "View Details"}
-        >
-          <Eye className="w-3.5 h-3.5" />
-        </button>
-      )}
+    <div className="relative inline-flex items-center justify-end shrink-0">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onToggleExpand) onToggleExpand();
+        }}
+        className={`w-6 h-6 p-1 rounded-lg border transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+          isExpanded
+            ? "bg-slate-700 text-white border-slate-700"
+            : "bg-slate-100 hover:bg-slate-700 text-slate-600 hover:text-white border-slate-300"
+        }`}
+        title={isTe ? "చర్యలు" : "Actions"}
+      >
+        <MoreVertical className="w-3 h-3" />
+      </button>
 
-      {/* 2. Edit (Only if permitted) */}
-      {onEdit && canEdit && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="w-7 h-7 p-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-lg border border-blue-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "సవరించు" : "Edit"}
+      {isExpanded && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-full right-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 w-44 max-h-72 overflow-y-auto"
         >
-          <PenLine className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* 3. Print */}
-      {onPrint && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onPrint();
-          }}
-          className="w-7 h-7 p-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white rounded-lg border border-indigo-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "ప్రింట్" : "Print"}
-        >
-          <Printer className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* 4. New Job Card (Only if permitted) */}
-      {onNewJobCard && canCreate && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onNewJobCard();
-          }}
-          className="w-7 h-7 p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={jobCardLabel || (isTe ? "జాబ్ కార్డ్" : "New Job Card")}
-        >
-          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-        </button>
-      )}
-
-      {/* 5. Call - HIGHLIGHTED */}
-      {onCall && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onCall();
-          }}
-          className="w-8 h-8 p-1.5 bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white rounded-lg border border-amber-600 transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-md shadow-amber-500/30 font-bold"
-          title={isTe ? "📞 కాల్ లాగ్ & టెలీకాలింగ్" : "📞 Log Call & Information"}
-        >
-          <PhoneCall className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* 6. History */}
-      {onHistory && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onHistory();
-          }}
-          className="w-7 h-7 p-1.5 bg-sky-50 hover:bg-sky-600 text-sky-700 hover:text-white rounded-lg border border-sky-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "చరిత్ర" : "History"}
-        >
-          <History className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* 7. WhatsApp */}
-      {onWhatsApp && hasPhone && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onWhatsApp();
-          }}
-          className="w-7 h-7 p-1.5 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white rounded-lg border border-emerald-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title="WhatsApp"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* 8. Complaint */}
-      {onRegisterComplaint && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRegisterComplaint();
-          }}
-          className="w-7 h-7 p-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white rounded-lg border border-rose-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "కంప్లైంట్" : "Complaint"}
-        >
-          <AlertCircle className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* 9. Save */}
-      {onSave && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSave();
-          }}
-          disabled={isSaving}
-          className={`w-7 h-7 p-1.5 rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer border ${
-            isSaved
-              ? "bg-emerald-600 text-white border-emerald-700"
-              : "bg-purple-50 hover:bg-purple-600 text-purple-700 hover:text-white border-purple-200"
-          }`}
-          title={isSaved ? "Saved!" : "Save"}
-        >
-          {isSaved ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : <Save className="w-3.5 h-3.5" />}
-        </button>
-      )}
-
-      {/* 10. Delete (Only if permitted) */}
-      {onDelete && canDelete && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="w-7 h-7 p-1.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-lg border border-red-200 transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "తొలగించు" : "Delete"}
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      )}
-
-      {/* Collapse back to the compact toggle */}
-      {onToggleExpand && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleExpand();
-          }}
-          className="w-7 h-7 p-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all flex items-center justify-center shrink-0 cursor-pointer"
-          title={isTe ? "మూసివేయి" : "Collapse"}
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
+          {actions.map((a) => (
+            <button
+              key={a.key}
+              type="button"
+              disabled={a.disabled}
+              onClick={(e) => {
+                e.stopPropagation();
+                a.onClick();
+              }}
+              className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-[11px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${a.className}`}
+            >
+              {a.icon}
+              <span className="truncate">{a.label}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
