@@ -10916,14 +10916,14 @@ ${b}`));
                           i.jsxs("button", {
                             type: "button",
                             onClick: () => u(d),
-                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-2.5"} rounded-2xl font-bold text-[13px] transition-all duration-150 cursor-pointer ${R ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/25" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`,
+                            className: `flex-1 flex items-center ${f ? "justify-center p-2.5" : "justify-between p-2.5"} rounded-2xl font-bold text-[13px] transition-all duration-150 cursor-pointer ${R ? "bg-indigo-100 text-indigo-900 shadow-sm border border-indigo-200" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`,
                             title: f ? v : void 0,
                             children: [
                               i.jsxs("div", {
                                 className: "flex items-center gap-3 min-w-0",
                                 children: [
                                   i.jsx("span", {
-                                    className: `flex items-center justify-center w-7 h-7 rounded-xl shrink-0 transition-colors ${R ? "bg-white/20" : "bg-slate-100 group-hover:bg-slate-200"}`,
+                                    className: `flex items-center justify-center w-7 h-7 rounded-xl shrink-0 transition-colors ${R ? "bg-indigo-600 text-white" : "bg-slate-100 group-hover:bg-slate-200"}`,
                                     children: j,
                                   }),
                                   !f &&
