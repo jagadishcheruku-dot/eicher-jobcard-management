@@ -6679,7 +6679,11 @@ function gY() {
           } catch {}
         }
         try {
-          Rs.saveCustomer({ chassis_no: chassisNo, ...updatedFields }).catch(() => {});
+          // Save the full merged record (has "Chassis no") rather than a
+          // snake_case-only partial - Rs.saveCustomer resolves the row id
+          // from camelCase/"Chassis no" keys, so a chassis_no-only payload
+          // would hash to a brand-new orphan row instead of updating this one.
+          Rs.saveCustomer(mergedCust).catch(() => {});
         } catch {}
 
         return { ...copy };
