@@ -1,6 +1,6 @@
 import { SystemUser } from "../components/UserManagementModal";
-import { doc, getDoc, setDoc, deleteDoc, collection, onSnapshot } from "firebase/firestore";
-import { db } from "../firebase";
+import { supabase } from "../lib/supabase";
+import { liveCollection, onLiveSnapshot } from "../lib/liveSync";
 import {
   BRANCH_DEFINITIONS,
   resolveBranchFromSupervisorOrCode,
@@ -256,33 +256,48 @@ export function setCurrentLoggedUser(user: SystemUser | null): void {
   } catch {}
 }
 
-// Save user to Firestore + LocalStorage
-export async function persistUserToFirestore(user: SystemUser): Promise<void> {
+// Save user to Supabase + LocalStorage
+export async function persistUserToSupabase(user: SystemUser): Promise<void> {
   try {
-    const userRef = doc(db, "system_users", user.id);
-    await setDoc(userRef, { ...user, updatedAt: new Date().toISOString() }, { merge: true });
+    const { error } = await supabase.from("system_users").upsert(
+      {
+        id: user.id,
+        username: user.username || null,
+        data: { ...user, updatedAt: new Date().toISOString() },
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+    if (error) throw error;
   } catch (err) {
-    console.warn("Could not save user to Firestore, cached locally:", err);
+    console.warn("Could not save user to Supabase, cached locally:", err);
   }
 }
 
-// Delete user from Firestore + LocalStorage
-export async function removeUserFromFirestore(userId: string): Promise<void> {
+// Delete user from Supabase + LocalStorage
+export async function removeUserFromSupabase(userId: string): Promise<void> {
   try {
-    const userRef = doc(db, "system_users", userId);
-    await deleteDoc(userRef);
+    const { error } = await supabase.from("system_users").delete().eq("id", userId);
+    if (error) throw error;
   } catch (err) {
-    console.warn("Could not delete user from Firestore, updated locally:", err);
+    console.warn("Could not delete user from Supabase, updated locally:", err);
   }
 }
 
-// Save branches to Firestore
-export async function persistBranchesToFirestore(branches: string[]): Promise<void> {
+// Save branches to Supabase
+export async function persistBranchesToSupabase(branches: string[]): Promise<void> {
   try {
-    const branchRef = doc(db, "settings", "branches");
-    await setDoc(branchRef, { list: branches, updatedAt: new Date().toISOString() }, { merge: true });
+    const { error } = await supabase.from("app_settings").upsert(
+      {
+        id: "branches",
+        value: JSON.stringify(branches),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+    if (error) throw error;
   } catch (err) {
-    console.warn("Could not save branches to Firestore, cached locally:", err);
+    console.warn("Could not save branches to Supabase, cached locally:", err);
   }
 }
 
@@ -342,43 +357,53 @@ export function isRecordVisibleForUser(
   return true;
 }
 
-// Subscribe to system users in Firestore for real-time multi-window & multi-device sync
+// Subscribe to system users in Supabase for real-time multi-window & multi-device sync
 export function subscribeToSystemUsers(callback: (users: SystemUser[]) => void) {
   try {
-    const colRef = collection(db, "system_users");
-    return onSnapshot(colRef, (snapshot) => {
-      const users: SystemUser[] = [];
-      snapshot.forEach((d) => {
-        users.push({ id: d.id, ...(d.data() as any) });
-      });
-      if (users.length > 0) {
-        setLocalUsers(users);
-        callback(users);
+    return onLiveSnapshot(
+      liveCollection("system_users"),
+      (snapshot) => {
+        const users: SystemUser[] = [];
+        snapshot.forEach((d) => {
+          users.push({ ...(d.data() as any), id: d.id });
+        });
+        if (users.length > 0) {
+          setLocalUsers(users);
+          callback(users);
+        }
+      },
+      (err) => {
+        console.warn("Users listener notice:", err);
       }
-    }, (err) => {
-      console.warn("Users listener notice:", err);
-    });
+    );
   } catch (err) {
     console.warn("Could not subscribe to system users:", err);
     return () => {};
   }
 }
 
-// Subscribe to branches in Firestore for real-time sync
+// Subscribe to branches in Supabase for real-time sync
 export function subscribeToBranches(callback: (branches: string[]) => void) {
   try {
-    const docRef = doc(db, "settings", "branches");
-    return onSnapshot(docRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data && Array.isArray(data.list) && data.list.length > 0) {
-          setLocalBranches(data.list);
-          callback(data.list);
-        }
+    return onLiveSnapshot(
+      liveCollection("app_settings"),
+      (snapshot) => {
+        snapshot.forEach((d) => {
+          if (d.id !== "branches") return;
+          const data = d.data() as any;
+          try {
+            const list = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+            if (Array.isArray(list) && list.length > 0) {
+              setLocalBranches(list);
+              callback(list);
+            }
+          } catch {}
+        });
+      },
+      (err) => {
+        console.warn("Branches listener notice:", err);
       }
-    }, (err) => {
-      console.warn("Branches listener notice:", err);
-    });
+    );
   } catch (err) {
     console.warn("Could not subscribe to branches:", err);
     return () => {};

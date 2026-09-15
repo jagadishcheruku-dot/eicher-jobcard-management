@@ -31,36 +31,36 @@ const i = {
 };
 import * as kR from "xlsx";
 import Papa from "papaparse";
-import {
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut as sH,
-  onAuthStateChanged as rH,
-  User,
-} from "firebase/auth";
-import { auth as ey, db as firestoreDb } from "./firebase";
+// Firebase (project deleted) is gone from the app. What follows are inert
+// stand-ins for its old identifiers: the Google sign-in flow already fell
+// back to a plain admin session on any Firebase error (see Rg below), and
+// every direct Firestore call in this file was already unreachable dead
+// code once Supabase took over (guarded by `kt`, permanently null here) -
+// authService.ts is the only place that still talks to a real backend for
+// the sign-in accounts, and it now uses Supabase too.
+type User = any;
+const signInWithPopup = null as any,
+  GoogleAuthProvider = null as any,
+  sH = async (..._args: any[]) => {},
+  rH = (..._args: any[]) => () => {},
+  ey = null as any,
+  firestoreDb = null as any;
 import { isSupabaseConfigured } from "./lib/supabase";
 import { liveCollection, onLiveSnapshot } from "./lib/liveSync";
 
-// Once Supabase holds the records, the direct Firestore reads and listeners in
-// this file would keep pushing the old copies into the UI alongside them. They
-// are all guarded by `kt`, so dropping it here silences every one of them.
-// authService keeps its own Firestore handle for the sign-in accounts.
-const kt = isSupabaseConfigured ? null : firestoreDb;
-import {
-  collection as ci,
-  doc as Qs,
-  setDoc as xu,
-  getDoc as Zv,
-  deleteDoc as xS,
-  getDocs as ud,
-  writeBatch as Bu,
-  onSnapshot as Gp,
-  query as C5,
-  orderBy,
-  updateDoc as nf,
-  addDoc as LW,
-} from "firebase/firestore";
+const kt = null;
+const ci = (..._args: any[]) => null as any,
+  Qs = (..._args: any[]) => null as any,
+  xu = async (..._args: any[]) => {},
+  Zv = async (..._args: any[]) => ({ exists: () => false, data: () => ({}) }),
+  xS = async (..._args: any[]) => {},
+  ud = async (..._args: any[]) => ({ forEach: (_cb: any) => {}, empty: true, docs: [] as any[] }),
+  Bu = () => ({ set: () => {}, delete: () => {}, update: () => {}, commit: async () => {} }),
+  Gp = (..._args: any[]) => () => {},
+  C5 = (..._args: any[]) => null as any,
+  orderBy = (..._args: any[]) => null as any,
+  nf = async (..._args: any[]) => {},
+  LW = async (..._args: any[]) => ({ id: "" });
 import {
   loginWithGoogleForSheets as GW,
   getOrCreateSpreadsheet as zW,
@@ -106,9 +106,9 @@ import {
   setLocalBranches,
   getCurrentLoggedUser,
   setCurrentLoggedUser,
-  persistUserToFirestore,
-  removeUserFromFirestore,
-  persistBranchesToFirestore,
+  persistUserToSupabase,
+  removeUserFromSupabase,
+  persistBranchesToSupabase,
   isRecordVisibleForUser,
   subscribeToSystemUsers,
   subscribeToBranches,
@@ -2482,36 +2482,22 @@ function gY() {
 
   ce.useEffect(() => {
     try {
-      const unsubUsers = Gp(ci(firestoreDb, "system_users"), (snapshot) => {
-        if (!snapshot.empty) {
-          const uList: any[] = [];
-          snapshot.forEach((docSnap) => {
-            uList.push({ id: docSnap.id, ...docSnap.data() });
-          });
-          setCustomUsers(uList);
-          setLocalUsers(uList);
-          if (currentSystemUser) {
-            const updated = uList.find((u) => u.id === currentSystemUser.id || u.username === currentSystemUser.username);
-            if (updated) {
-              setCurrentSystemUser(updated);
-              setCurrentLoggedUser(updated);
-              rh(updated.isAdmin ? "admin" : (updated.role || "staff"));
-            }
+      const unsubUsers = subscribeToSystemUsers((uList) => {
+        setCustomUsers(uList);
+        setLocalUsers(uList);
+        if (currentSystemUser) {
+          const updated = uList.find((u) => u.id === currentSystemUser.id || u.username === currentSystemUser.username);
+          if (updated) {
+            setCurrentSystemUser(updated);
+            setCurrentLoggedUser(updated);
+            rh(updated.isAdmin ? "admin" : (updated.role || "staff"));
           }
-        } else {
-          persistUserToFirestore(DEFAULT_USERS[0]);
         }
-      }, (err) => {
-        console.warn("Firestore system_users listener error:", err);
       });
 
-      const unsubBranches = Gp(Qs(firestoreDb, "settings", "branches"), (docSnap) => {
-        if (docSnap.exists() && Array.isArray(docSnap.data()?.list)) {
-          setSystemBranches(docSnap.data().list);
-          setLocalBranches(docSnap.data().list);
-        }
-      }, (err) => {
-        console.warn("Firestore branches listener error:", err);
+      const unsubBranches = subscribeToBranches((list) => {
+        setSystemBranches(list);
+        setLocalBranches(list);
       });
 
       return () => {

@@ -734,8 +734,8 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
         <div className="px-6 py-3.5 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
           <div className="text-xs text-slate-500 font-semibold">
             {isTe
-              ? "అడ్మిన్ మార్పులు తక్షణమే అన్ని సిస్టమ్‌లలో (Firestore) సింక్ అవుతాయి."
-              : "User changes and permissions sync immediately to Firestore across all systems."}
+              ? "అడ్మిన్ మార్పులు తక్షణమే అన్ని సిస్టమ్‌లలో (Supabase) సింక్ అవుతాయి."
+              : "User changes and permissions sync immediately to Supabase across all systems."}
           </div>
           <button
             type="button"
