@@ -2446,7 +2446,11 @@ function gY() {
     try {
       if (Array.isArray(Br)) {
         for (const jc of Br) {
-          const raw = String(jc.onlineJobCardNo || jc.jobNo || jc.jobCardNo || "").trim();
+          // Job Card No only - onlineJobCardNo is a separate, unrelated
+          // number range (from Eicher's portal), and mixing it in used to
+          // pick up a huge stray digit run from it instead of the real
+          // next sequential job card number.
+          const raw = String(jc.jobNo || jc.jobCardNo || "").trim();
           const matches = raw.match(/\d+/g);
           if (matches) {
             for (const m of matches) {
@@ -14651,7 +14655,7 @@ ${b}`));
                                                           }),
                                                           i.jsxs("div", {
                                                             children: [
-                                                              i.jsxs("div", { className: "flex items-center justify-between", children: [Js("Online Job Card No.", ho, !0), i.jsx("span", { className: "text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded", children: "⚡ ఆటో: " + getNextJobCardNumber() })] }),
+                                                              i.jsxs("div", { className: "flex items-center justify-between", children: [Js("Online Job Card No.", ho, !0), i.jsx("span", { className: "text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded", children: (e === "te" ? "⚡ తదుపరి జాబ్ కార్డ్ నెం: " : "⚡ Next Job Card No: ") + getNextJobCardNumber() })] }),
                                                               i.jsx("input", {
                                                                 type: "text",
                                                                 value: ho,
@@ -14661,8 +14665,7 @@ ${b}`));
                                                                   const b =
                                                                     d.target
                                                                       .value;
-                                                                  (Gm(b),
-                                                                    qd(b));
+                                                                  Gm(b);
                                                                 },
                                                                 placeholder:
                                                                   "✏️ Enter No...",
