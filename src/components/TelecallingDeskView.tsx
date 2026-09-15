@@ -834,6 +834,7 @@ export const TelecallingDeskView: React.FC<TelecallingDeskViewProps> = ({
             onNavigateToJobCard(c);
           }
         }}
+        onRegisterComplaint={onRegisterComplaint ? (c) => onRegisterComplaint(c) : undefined}
       />
 
       {/* Customer Call & Service History Drawer */}

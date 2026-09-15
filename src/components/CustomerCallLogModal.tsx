@@ -426,20 +426,25 @@ Supervisor: ${supervisor || "—"}`;
               </div>
             </div>
 
-            {/* Center: Name, Father, Location */}
+            {/* Center: Name, Phone, Father, Location */}
             <div className="space-y-0.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2 md:pb-0 md:pr-3">
-              <div className="flex items-center justify-between gap-2 mb-0.5">
-                <span className="font-black text-slate-900 text-sm leading-tight truncate">{custName}</span>
-                {cleanPhone && (
+              <div className="flex items-baseline gap-1.5">
+                <User className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "నామం:" : "Name:"}</span>
+                <span className="font-black text-slate-900 text-sm truncate">{custName}</span>
+              </div>
+              {cleanPhone && (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఫోన్:" : "Phone:"}</span>
                   <a
                     href={`tel:${cleanPhone}`}
-                    className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded-md font-mono font-black text-[11px] hover:bg-emerald-200 transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded-md font-mono font-black text-xs hover:bg-emerald-200 transition-colors"
                   >
-                    <Phone className="w-3 h-3" />
+                    <Phone className="w-2.5 h-2.5" />
                     {cleanPhone}
                   </a>
-                )}
-              </div>
+                </div>
+              )}
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "S/o:" : "Father:"}</span>
                 <span className="font-bold text-slate-900 text-sm truncate">{fatherName || "—"}</span>

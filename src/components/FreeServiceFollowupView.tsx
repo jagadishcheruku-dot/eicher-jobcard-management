@@ -731,6 +731,7 @@ export const FreeServiceFollowupView: React.FC<FreeServiceFollowupViewProps> = (
           }
         }}
         onNewJobCard={onCreateJobCard ? (c) => onCreateJobCard(c) : undefined}
+        onRegisterComplaint={onRegisterComplaint ? (c) => onRegisterComplaint(c) : undefined}
       />
     </div>
   );
