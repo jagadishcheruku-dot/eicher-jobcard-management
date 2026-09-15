@@ -11549,7 +11549,7 @@ ${b}`));
                               Ws
                                 ? i.jsxs("div", {
                                     className:
-                                      "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5",
+                                      "grid grid-cols-1 sm:grid-cols-2 gap-2.5",
                                     children: [
                                       i.jsxs("div", {
                                         onClick: () => {
@@ -11579,28 +11579,6 @@ ${b}`));
                                             className:
                                               "text-lg font-black text-indigo-950",
                                             children: qn.length,
-                                          }),
-                                        ],
-                                      }),
-                                      i.jsxs("div", {
-                                        onClick: sf,
-                                        className:
-                                          "bg-white border border-slate-200 p-2.5 rounded-xl shadow-2xs hover:shadow-sm transition-all cursor-pointer flex items-center justify-between group",
-                                        children: [
-                                          i.jsx("div", {
-                                            className:
-                                              "text-[10px] font-extrabold text-slate-700 uppercase",
-                                            children: "Follow-up Tab View",
-                                          }),
-                                          i.jsx("div", {
-                                            className:
-                                              "text-indigo-600 font-bold text-xs flex items-center gap-1",
-                                            children: [
-                                              i.jsx("span", {
-                                                children: "Open Follow-up",
-                                              }),
-                                              " →",
-                                            ],
                                           }),
                                         ],
                                       }),
@@ -11689,11 +11667,23 @@ ${b}`));
                                       className:
                                         "space-y-1 max-h-64 overflow-y-auto bg-slate-50 rounded border border-slate-200 p-2",
                                       children: _a.filter((cust) => {
-                                        const q = lookupSearchText.toLowerCase();
+                                        const qRaw = lookupSearchText.trim();
+                                        const q = qRaw.toLowerCase();
+                                        const qNorm = Ct(qRaw);
                                         const name = (cust.customerName || cust["Customer Name"] || "").toLowerCase();
                                         const phone = (cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "").toString();
-                                        const chassis = (cust.chassisNo || cust["Chassis no"] || "").toLowerCase();
-                                        return name.includes(q) || phone.includes(q) || chassis.includes(q);
+                                        const chassisRaw = (cust.chassisNo || cust["Chassis no"] || "").toString();
+                                        const chassis = chassisRaw.toLowerCase();
+                                        const chassisNorm = Ct(chassisRaw);
+                                        // Matches the chassis anywhere, and also matches the tail
+                                        // specifically (formatting-agnostic) so typing just the last
+                                        // 4-6 digits printed on the chassis plate finds the record.
+                                        return (
+                                          name.includes(q) ||
+                                          phone.includes(q) ||
+                                          chassis.includes(q) ||
+                                          (qNorm.length >= 3 && chassisNorm.endsWith(qNorm))
+                                        );
                                       }).slice(0, 8).map((cust, idx) => {
                                         const custName = cust.customerName || cust["Customer Name"] || "Customer";
                                         const custPhone = cust.mobileNumber || cust["Mobile No"] || cust.phoneNo || "—";

@@ -1796,7 +1796,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                       <button
                         type="button"
                         onClick={(e) => handleToggleStatus(card, e)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase transition-all shadow-2xs cursor-pointer border flex items-center justify-center gap-1 mx-auto ${
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide uppercase transition-all shadow-2xs cursor-pointer border flex items-center justify-center gap-1 mx-auto ${
                           isClosed
                             ? "bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200"
                             : "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200"
@@ -1811,7 +1811,7 @@ export const SavedJobCardsExcelTable: React.FC<SavedJobCardsExcelTableProps> = (
                             : "Status: Open (Enter Closed Date & Bill No to close)"
                         }
                       >
-                        <span className="text-sm">{isClosed ? "🔒" : "🟢"}</span>
+                        <span className="text-[10px] leading-none">{isClosed ? "🔒" : "🟢"}</span>
                       </button>
                     </td>
 
