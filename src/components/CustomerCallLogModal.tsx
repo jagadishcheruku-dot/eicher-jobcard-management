@@ -360,8 +360,83 @@ Supervisor: ${supervisor || "—"}`;
           {/* 1. Customer & Tractor Profile Banner - compact "Label: Value" rows,
               small labels, larger readable values, ~3cm total height */}
           <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl grid grid-cols-1 md:grid-cols-3 gap-2.5">
-            {/* Left: Photo, HFN, Branch, Supervisor, DSP */}
+            {/* Left: Model, Chassis, Engine, Delivery, Warranty */}
             <div className="space-y-0.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2 md:pb-0 md:pr-3">
+              <div className="flex items-baseline gap-1.5">
+                <Wrench className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "మోడల్:" : "Model:"}</span>
+                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">
+                  {model}{modelType && ` (${modelType})`}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఛాసిస్:" : "Chassis:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{chassisNo || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఇంజిన్:" : "Engine:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{engineNo || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <Calendar className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "డెలివరీ:" : "Del:"}</span>
+                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{formatDisplayDate(delDate) || "—"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "వారంటీ:" : "Wty:"}</span>
+                {delDate ? (
+                  <span
+                    className={`font-black text-[11px] uppercase ${
+                      isOutOfWarranty ? "text-rose-600" : "text-slate-900"
+                    }`}
+                  >
+                    {isOutOfWarranty ? (isTe ? "ముగిసింది" : "Out") : (isTe ? "ఉంది" : "In")}
+                  </span>
+                ) : (
+                  <span className="font-bold text-slate-500 text-[11px]">—</span>
+                )}
+              </div>
+            </div>
+
+            {/* Center: Name, Phone, Father, Location */}
+            <div className="space-y-0.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2 md:pb-0 md:pr-3">
+              <div className="flex items-baseline gap-1.5">
+                <User className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "నామం:" : "Name:"}</span>
+                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">{custName}</span>
+              </div>
+              {cleanPhone && (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఫోన్:" : "Phone:"}</span>
+                  <a
+                    href={`tel:${cleanPhone}`}
+                    className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded-md font-mono font-black text-xs hover:bg-emerald-200 transition-colors"
+                  >
+                    <Phone className="w-2.5 h-2.5" />
+                    {cleanPhone}
+                  </a>
+                </div>
+              )}
+              <div className="flex items-baseline gap-1.5">
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "S/o:" : "Father:"}</span>
+                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{fatherName || "—"}</span>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <MapPin className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "స్థలం:" : "Loc:"}</span>
+                <span className="font-semibold text-slate-800 text-[11px] break-words min-w-0">
+                  {village || "—"}{mandal ? `, ${mandal}` : ""}
+                </span>
+              </div>
+              <div className="text-[9px] text-slate-600 font-bold">
+                <span className="bg-gray-100 px-1 py-0.5 rounded">Dist: {district || "—"}</span>
+                <span className="bg-gray-100 px-1 py-0.5 rounded ml-1">PIN: {pinCode || "—"}</span>
+              </div>
+            </div>
+
+            {/* Right: Photo, HFN, Branch, Supervisor, DSP */}
+            <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 mb-1">
                 <input
                   ref={photoInputRef}
@@ -423,81 +498,6 @@ Supervisor: ${supervisor || "—"}`;
               <div className="flex items-baseline gap-1.5">
                 <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">DSP:</span>
                 <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{dspName || "—"}</span>
-              </div>
-            </div>
-
-            {/* Center: Name, Phone, Father, Location */}
-            <div className="space-y-0.5 border-b md:border-b-0 md:border-r border-slate-200 pb-2 md:pb-0 md:pr-3">
-              <div className="flex items-baseline gap-1.5">
-                <User className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "నామం:" : "Name:"}</span>
-                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">{custName}</span>
-              </div>
-              {cleanPhone && (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఫోన్:" : "Phone:"}</span>
-                  <a
-                    href={`tel:${cleanPhone}`}
-                    className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.5 rounded-md font-mono font-black text-xs hover:bg-emerald-200 transition-colors"
-                  >
-                    <Phone className="w-2.5 h-2.5" />
-                    {cleanPhone}
-                  </a>
-                </div>
-              )}
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "S/o:" : "Father:"}</span>
-                <span className="font-bold text-slate-900 text-[11px] break-words min-w-0">{fatherName || "—"}</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <MapPin className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "స్థలం:" : "Loc:"}</span>
-                <span className="font-semibold text-slate-800 text-[11px] break-words min-w-0">
-                  {village || "—"}{mandal ? `, ${mandal}` : ""}
-                </span>
-              </div>
-              <div className="text-[9px] text-slate-600 font-bold">
-                <span className="bg-gray-100 px-1 py-0.5 rounded">Dist: {district || "—"}</span>
-                <span className="bg-gray-100 px-1 py-0.5 rounded ml-1">PIN: {pinCode || "—"}</span>
-              </div>
-            </div>
-
-            {/* Right: Model, Chassis, Engine, Delivery, Warranty */}
-            <div className="space-y-0.5">
-              <div className="flex items-baseline gap-1.5">
-                <Wrench className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "మోడల్:" : "Model:"}</span>
-                <span className="font-black text-slate-900 text-[11px] break-words min-w-0">
-                  {model}{modelType && ` (${modelType})`}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఛాసిస్:" : "Chassis:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{chassisNo || "—"}</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "ఇంజిన్:" : "Engine:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{engineNo || "—"}</span>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <Calendar className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "డెలివరీ:" : "Del:"}</span>
-                <span className="font-mono font-bold text-slate-800 text-[11px] break-words min-w-0">{formatDisplayDate(delDate) || "—"}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
-                <span className="font-bold text-indigo-700 text-[9px] uppercase shrink-0">{isTe ? "వారంటీ:" : "Wty:"}</span>
-                {delDate ? (
-                  <span
-                    className={`font-black text-[11px] uppercase ${
-                      isOutOfWarranty ? "text-rose-600" : "text-slate-900"
-                    }`}
-                  >
-                    {isOutOfWarranty ? (isTe ? "ముగిసింది" : "Out") : (isTe ? "ఉంది" : "In")}
-                  </span>
-                ) : (
-                  <span className="font-bold text-slate-500 text-[11px]">—</span>
-                )}
               </div>
             </div>
           </div>
